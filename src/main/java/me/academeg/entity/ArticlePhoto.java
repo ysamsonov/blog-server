@@ -21,6 +21,10 @@ public class ArticlePhoto {
     @Column(nullable = false)
     private String thumbnailPath;
 
+    @ManyToOne
+    @JoinColumn(name = "article_id", nullable = false)
+    private Article article;
+
     public ArticlePhoto() {
     }
 
@@ -46,5 +50,13 @@ public class ArticlePhoto {
 
     public void setThumbnailPath(String thumbnailPath) {
         this.thumbnailPath = thumbnailPath;
+    }
+
+    public Article getArticle() {
+        return article;
+    }
+
+    public void setArticle(Article article) {
+        this.article = article;
     }
 }

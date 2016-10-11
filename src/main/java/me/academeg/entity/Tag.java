@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "tag")
@@ -17,6 +18,12 @@ public class Tag {
 
     @Column(nullable = false, unique = true)
     private String value;
+
+    @ManyToMany
+    @JoinTable(name = "article_tag",
+            joinColumns = @JoinColumn(name = "article_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+    private List<Article> articles;
 
     public Tag() {
     }
@@ -35,5 +42,9 @@ public class Tag {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public List<Article> getArticles() {
+        return articles;
     }
 }

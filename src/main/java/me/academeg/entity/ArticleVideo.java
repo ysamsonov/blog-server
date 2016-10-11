@@ -18,6 +18,10 @@ public class ArticleVideo {
     @Column(nullable = false)
     private String url;
 
+    @ManyToOne
+    @JoinColumn(name = "article_id", nullable = false)
+    private Article article;
+
     public ArticleVideo() {
     }
 
@@ -35,5 +39,13 @@ public class ArticleVideo {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public Article getArticle() {
+        return article;
+    }
+
+    public void setArticle(Article article) {
+        this.article = article;
     }
 }

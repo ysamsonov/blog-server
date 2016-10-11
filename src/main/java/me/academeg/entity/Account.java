@@ -35,7 +35,7 @@ public class Account {
     @JoinColumn(name = "avatar_id", unique = true)
     private Avatar avatar;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "author")
     private List<Article> articles;
 
     public Account() {

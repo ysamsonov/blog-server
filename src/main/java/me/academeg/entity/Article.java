@@ -18,6 +18,7 @@ public class Article {
     private long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "author_id", nullable = false)
     private Account author;
 
     @Column(nullable = false, columnDefinition = "text")
@@ -26,13 +27,13 @@ public class Article {
     @Column(nullable = false)
     private Timestamp timestamp;
 
-    @OneToMany
+    @OneToMany(mappedBy = "article")
     private List<ArticlePhoto> photos;
 
-    @OneToMany
+    @OneToMany(mappedBy = "article")
     private List<ArticleVideo> videos;
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "articles")
     private List<Tag> tags;
 
     public Article() {
