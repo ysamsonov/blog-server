@@ -1,0 +1,41 @@
+group 'me.academeg'
+
+buildscript {
+    ext {
+        springBootVersion = '1.4.1.RELEASE'
+        hibernateVersion = '5.2.2.Final'
+        version = '1.0-SNAPSHOT'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'spring-boot'
+
+jar {
+    baseName = rootProject.name
+    version = { $version }
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootVersion
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: springBootVersion
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springBootVersion
+    compile group: 'org.springframework.data', name: 'spring-data-commons', version: '1.12.4.RELEASE'
+
+//    compile group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.0.11.RELEASE'
+
+    compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.4'
+}
