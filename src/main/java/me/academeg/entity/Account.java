@@ -5,6 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "account")
@@ -37,6 +38,12 @@ public class Account {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "author")
     private List<Article> articles;
+
+    @ManyToMany
+    @JoinTable(name = "authority_account",
+            joinColumns = @JoinColumn(name = "account_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))
+    private Set<Authority> authorities;
 
     public Account() {
     }
@@ -103,5 +110,13 @@ public class Account {
 
     public void setArticles(List<Article> articles) {
         this.articles = articles;
+    }
+
+    public Set<Authority> getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(Set<Authority> authorities) {
+        this.authorities = authorities;
     }
 }
