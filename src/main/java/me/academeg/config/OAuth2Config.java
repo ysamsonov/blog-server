@@ -15,6 +15,9 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
+import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
+
+import javax.sql.DataSource;
 
 @Configuration
 public class OAuth2Config {
@@ -40,6 +43,9 @@ public class OAuth2Config {
         @Autowired
         @Qualifier("authenticationManagerBean")
         private AuthenticationManager authenticationManager;
+
+        @Autowired
+        private DataSource dataSource;
 
         @Override
         public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
@@ -67,7 +73,7 @@ public class OAuth2Config {
 
         @Bean
         public TokenStore tokenStoreBean() {
-            return new InMemoryTokenStore();
+            return new JdbcTokenStore(dataSource);
         }
     }
 }
