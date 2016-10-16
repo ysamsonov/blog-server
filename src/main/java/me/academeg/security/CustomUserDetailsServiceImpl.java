@@ -1,7 +1,6 @@
 package me.academeg.security;
 
 import me.academeg.entity.Account;
-import me.academeg.entity.Authority;
 import me.academeg.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,11 +28,9 @@ public class CustomUserDetailsServiceImpl implements org.springframework.securit
         }
 
         Collection<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        for (Authority authority : accountFromDb.getAuthorities()) {
-            GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(authority.getName());
-            grantedAuthorities.add(grantedAuthority);
-        }
-        
+        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(accountFromDb.getAuthority());
+        grantedAuthorities.add(grantedAuthority);
+
         return new org.springframework.security.core.userdetails.User(
                 accountFromDb.getEmail(),
                 accountFromDb.getPassword(),

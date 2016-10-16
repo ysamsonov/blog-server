@@ -2,7 +2,7 @@ package me.academeg.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.Email;
 
 import javax.persistence.*;
@@ -31,7 +31,7 @@ public class Account {
     @Column(nullable = false, unique = true)
     private String email;
 
-//    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private String password;
 
@@ -44,11 +44,7 @@ public class Account {
     private List<Article> articles;
 
     @JsonIgnore
-    @ManyToMany
-    @JoinTable(name = "authority_account",
-            joinColumns = @JoinColumn(name = "account_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))
-    private Set<Authority> authorities;
+    private String authority;
 
     public Account() {
     }
@@ -117,11 +113,26 @@ public class Account {
         this.articles = articles;
     }
 
-    public Set<Authority> getAuthorities() {
-        return authorities;
+    public String getAuthority() {
+        return authority;
     }
 
-    public void setAuthorities(Set<Authority> authorities) {
-        this.authorities = authorities;
+    public void setAuthority(String authority) {
+        this.authority = authority;
+    }
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "id=" + id +
+                ", login='" + login + '\'' +
+                ", name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", avatar=" + avatar +
+                ", articles=" + articles +
+                ", authority='" + authority + '\'' +
+                '}';
     }
 }

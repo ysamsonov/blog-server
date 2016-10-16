@@ -1,7 +1,7 @@
 package me.academeg.controllers;
 
 import me.academeg.entity.Account;
-import me.academeg.entity.Authority;
+import me.academeg.security.Role;
 import me.academeg.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,8 +33,9 @@ public class AccountController {
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public Account createAccount(@Valid @RequestBody Account acc) {
+        System.out.println(acc);
         if (acc.getEmail() == null || acc.getLogin() == null || acc.getPassword() == null) {
-            throw new IllegalArgumentException("Email, login or password cannot be null");
+            throw new IllegalArgumentException("Email, login and password cannot be null");
         }
         if (accountService.getByEmail(acc.getEmail()) != null) {
             throw new IllegalArgumentException("Email is already used");
@@ -44,14 +45,15 @@ public class AccountController {
         }
 
         acc.setPassword(passwordEncoder.encode(acc.getPassword()));
+        acc.setAuthority(Role.ROLE_USER.name());
         return accountService.add(acc);
     }
 
     @RequestMapping(value = "", method = RequestMethod.PUT)
     public Account updateAccount(@Valid @RequestBody Account acc,
                                  @AuthenticationPrincipal User user) {
-        if (acc.getEmail() == null || acc.getLogin() == null || acc.getPassword() == null) {
-            throw new IllegalArgumentException("Email, login or password cannot be null");
+        if (acc.getEmail() == null || acc.getLogin() == null) {
+            throw new IllegalArgumentException("Email and login cannot be null");
         }
 
         Account authUser = accountService.getByEmail(user.getUsername());
@@ -90,10 +92,7 @@ public class AccountController {
         Account authUser = accountService.getByEmail(user.getUsername());
         Account userById = accountService.getById(id);
 
-        Authority authority = new Authority();
-        authority.setName("ROLE_ADMIN");
-
-        if (!(authUser.getId() == userById.getId() || authUser.getAuthorities().contains(authority))) {
+        if (!(authUser.getId() == userById.getId() || authUser.getAuthority().equals(Role.ROLE_ADMIN.name()))) {
             throw new IllegalArgumentException("You have not access");
         }
         accountService.delete(userById);
