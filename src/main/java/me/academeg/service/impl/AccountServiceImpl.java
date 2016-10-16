@@ -9,9 +9,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class AccountServiceImpl implements AccountService {
 
-    @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    public AccountServiceImpl(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
 
     @Override
     public Account add(Account account) {
@@ -30,13 +33,12 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account getByLogin(String login) {
-
-        return null;
+        return accountRepository.getByLogin(login.toLowerCase());
     }
 
     @Override
     public Account getByEmail(String email) {
-        return null;
+        return accountRepository.getByEmail(email.toLowerCase());
     }
 
     @Override
