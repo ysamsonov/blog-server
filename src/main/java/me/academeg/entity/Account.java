@@ -1,7 +1,9 @@
 package me.academeg.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.hibernate.annotations.GenericGenerator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.hibernate.validator.constraints.Email;
 
 import javax.persistence.*;
 import java.util.List;
@@ -9,7 +11,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "account")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 public class Account {
 
     @Id
@@ -25,9 +27,11 @@ public class Account {
     @Column
     private String surname;
 
+    @Email
     @Column(nullable = false, unique = true)
     private String email;
 
+//    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
@@ -35,9 +39,11 @@ public class Account {
     @JoinColumn(name = "avatar_id", unique = true)
     private Avatar avatar;
 
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "author")
     private List<Article> articles;
 
+    @JsonIgnore
     @ManyToMany
     @JoinTable(name = "authority_account",
             joinColumns = @JoinColumn(name = "account_id", referencedColumnName = "id"),
