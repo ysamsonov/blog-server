@@ -53,7 +53,7 @@ public class AvatarController {
         avatar.setThumbnailPath("avatar/" + thumbnailImageName);
 
         Account account = accountService.getByEmail(user.getUsername());
-        return avatarService.add(avatar, account);
+        return avatarService.set(avatar, account);
     }
 
     @RequestMapping(value = "/account/delete-avatar", method = RequestMethod.DELETE)

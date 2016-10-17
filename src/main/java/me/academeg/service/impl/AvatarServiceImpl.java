@@ -3,7 +3,6 @@ package me.academeg.service.impl;
 import me.academeg.entity.Account;
 import me.academeg.entity.Avatar;
 import me.academeg.repository.AvatarRepository;
-import me.academeg.service.AccountService;
 import me.academeg.service.AvatarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,25 +11,28 @@ import org.springframework.stereotype.Service;
 public class AvatarServiceImpl implements AvatarService {
 
     private AvatarRepository avatarRepository;
-    private AccountService accountService;
 
     @Autowired
-    public AvatarServiceImpl(AvatarRepository avatarRepository, AccountService accountService) {
+    public AvatarServiceImpl(AvatarRepository avatarRepository) {
         this.avatarRepository = avatarRepository;
-        this.accountService = accountService;
     }
 
     @Override
-    public Avatar add(Avatar avatar, Account account) {
+    public Avatar set(Avatar avatar, Account account) {
         avatar.setAccount(account);
-        Avatar avaDb = avatarRepository.saveAndFlush(avatar);
-        account.setAvatar(avaDb);
-        accountService.edit(account);
-        return avaDb;
+        if (account.getAvatar() != null) {
+            avatarRepository.delete(account.getAvatar());
+        }
+        return avatarRepository.saveAndFlush(avatar);
     }
 
     @Override
     public void delete(Avatar avatar) {
         avatarRepository.delete(avatar);
+    }
+
+    @Override
+    public void delete(long id) {
+        avatarRepository.delete(id);
     }
 }
