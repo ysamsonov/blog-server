@@ -35,8 +35,7 @@ public class Account {
     @Column(nullable = false)
     private String password;
 
-    @OneToOne
-    @JoinColumn(name = "avatar_id", unique = true)
+    @OneToOne(mappedBy = "account")
     private Avatar avatar;
 
     @JsonIgnore

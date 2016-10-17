@@ -21,7 +21,8 @@ public class Avatar {
     private String thumbnailPath;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @OneToOne(mappedBy = "avatar")
+    @OneToOne
+    @JoinColumn(name = "account_id", unique = true)
     private Account account;
 
     public Avatar() {
