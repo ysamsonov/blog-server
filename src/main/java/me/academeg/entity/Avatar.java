@@ -1,6 +1,7 @@
 package me.academeg.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 
@@ -19,6 +20,7 @@ public class Avatar {
     @Column(nullable = false)
     private String thumbnailPath;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToOne(mappedBy = "avatar")
     private Account account;
 
@@ -29,11 +31,31 @@ public class Avatar {
         return id;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public String getOriginalPath() {
         return originalPath;
     }
 
+    public void setOriginalPath(String originalPath) {
+        this.originalPath = originalPath;
+    }
+
     public String getThumbnailPath() {
         return thumbnailPath;
+    }
+
+    public void setThumbnailPath(String thumbnailPath) {
+        this.thumbnailPath = thumbnailPath;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
     }
 }
