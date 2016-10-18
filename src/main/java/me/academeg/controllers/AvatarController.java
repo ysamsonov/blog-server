@@ -69,9 +69,9 @@ public class AvatarController {
         return new ResponseEntity<>("Avatar delete successful", HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/avatars/{id}", method = RequestMethod.GET)
-    public void getAvatar(@PathVariable long id) {
-
+    @RequestMapping(value = "/avatars/{name}", method = RequestMethod.GET, produces = "image/jpg")
+    public byte[] getAvatar(@PathVariable String name) {
+        return ImageUtils.toByteArray(new File(AVATAR_PATH + name));
     }
 
     private void deleteAvatarFromStorage(Avatar avatar) {

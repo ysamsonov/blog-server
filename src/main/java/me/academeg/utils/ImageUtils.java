@@ -57,4 +57,20 @@ public class ImageUtils {
 
         return resizedImage;
     }
+
+    public static byte[] toByteArray(File file) {
+        try (InputStream inputStream = new FileInputStream(file);
+             ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+            int nRead;
+            byte[] data = new byte[16384];
+            while ((nRead = inputStream.read(data)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+            buffer.flush();
+            return buffer.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
