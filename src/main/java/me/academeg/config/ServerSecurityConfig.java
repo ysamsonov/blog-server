@@ -11,6 +11,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+/**
+ * ServerSecurityConfig Configuration
+ *
+ * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
+ * @version 1.0
+ */
 @Configuration
 public class ServerSecurityConfig extends WebSecurityConfigurerAdapter {
 

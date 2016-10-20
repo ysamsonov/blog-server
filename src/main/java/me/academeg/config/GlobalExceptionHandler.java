@@ -15,6 +15,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * GlobalExceptionHandler Configuration
+ *
+ * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
+ * @version 1.0
+ */
 @ControllerAdvice
 @Component
 public class GlobalExceptionHandler {

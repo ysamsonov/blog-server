@@ -9,6 +9,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * AccountServiceImpl Service
+ *
+ * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
+ * @version 1.0
+ */
 @Service
 public class AccountServiceImpl implements AccountService {
 

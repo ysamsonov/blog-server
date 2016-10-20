@@ -9,6 +9,12 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Article Entity
+ *
+ * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
+ * @version 1.0
+ */
 @Entity
 @Table(name = "article")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

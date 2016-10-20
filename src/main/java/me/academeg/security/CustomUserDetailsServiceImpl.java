@@ -13,6 +13,12 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * CustomUserDetailsServiceImpl Service
+ *
+ * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
+ * @version 1.0
+ */
 @Component("userDetailsService")
 public class CustomUserDetailsServiceImpl implements org.springframework.security.core.userdetails.UserDetailsService {
 

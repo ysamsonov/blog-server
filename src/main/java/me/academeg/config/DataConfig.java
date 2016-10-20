@@ -16,6 +16,12 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.util.Properties;
 
+/**
+ * DataConfig Configuration
+ *
+ * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
+ * @version 1.0
+ */
 @Configuration
 @EnableTransactionManagement
 @ComponentScan("me.academeg")

@@ -8,6 +8,12 @@ import javax.persistence.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Tag Entity
+ *
+ * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
+ * @version 1.0
+ */
 @Entity
 @Table(name = "tag")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

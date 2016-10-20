@@ -16,6 +16,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.UUID;
 
+/**
+ * AccountController Controller
+ *
+ * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
+ * @version 1.0
+ */
 @RestController
 @RequestMapping("/api/account")
 @Validated

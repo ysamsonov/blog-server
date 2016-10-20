@@ -9,6 +9,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+/**
+ * AvatarServiceImpl Service
+ *
+ * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
+ * @version 1.0
+ */
 @Service
 public class AvatarServiceImpl implements AvatarService {
 

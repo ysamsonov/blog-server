@@ -16,6 +16,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 
+/**
+ * AvatarController Controller
+ *
+ * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
+ * @version 1.0
+ */
 @RestController
 @RequestMapping("/api")
 @Validated

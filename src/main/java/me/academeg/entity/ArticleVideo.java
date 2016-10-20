@@ -7,6 +7,12 @@ import org.hibernate.annotations.Type;
 import javax.persistence.*;
 import java.util.UUID;
 
+/**
+ * ArticleVideo Entity
+ *
+ * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
+ * @version 1.0
+ */
 @Entity
 @Table(name = "article_video")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

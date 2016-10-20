@@ -8,6 +8,12 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.UUID;
 
+/**
+ * ImageUtils
+ *
+ * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
+ * @version 1.0
+ */
 public class ImageUtils {
 
     private static int MAX_THUMBNAIL_SIZE = 200;
