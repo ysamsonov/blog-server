@@ -2,8 +2,10 @@ package me.academeg.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.UUID;
 
 @Entity
 @Table(name = "avatar")
@@ -11,8 +13,9 @@ import javax.persistence.*;
 public class Avatar {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    @GenericGenerator(name = "uuid-gen", strategy = "uuid2")
+    @GeneratedValue(generator = "uuid-gen")
+    private UUID id;
 
     @Column(nullable = false)
     private String originalPath;
@@ -28,11 +31,11 @@ public class Avatar {
     public Avatar() {
     }
 
-    public long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/account")
@@ -76,7 +77,8 @@ public class AccountController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public Account getAccount(@PathVariable long id) {
+    public Account getAccount(@PathVariable UUID id) {
+        System.out.println(id);
         Account byId = accountService.getById(id);
         if (byId == null) {
             throw new IllegalArgumentException("Account not exist");
@@ -84,8 +86,13 @@ public class AccountController {
         return byId;
     }
 
+    @RequestMapping(value = "/all", method = RequestMethod.GET)
+    public Iterable<Account> getAllAccounts() {
+        return accountService.getAll();
+    }
+
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public String deleteAccount(@PathVariable long id,
+    public String deleteAccount(@PathVariable UUID id,
                                 @AuthenticationPrincipal User user,
                                 HttpServletRequest request) {
 

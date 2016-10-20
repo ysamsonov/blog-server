@@ -6,6 +6,9 @@ import me.academeg.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.UUID;
+
 @Service
 public class AccountServiceImpl implements AccountService {
 
@@ -27,7 +30,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account getById(long id) {
+    public Account getById(UUID id) {
         return accountRepository.findOne(id);
     }
 
@@ -39,6 +42,11 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account getByEmail(String email) {
         return accountRepository.getByEmail(email.toLowerCase());
+    }
+
+    @Override
+    public List<Account> getAll() {
+        return accountRepository.findAll();
     }
 
     @Override

@@ -6,6 +6,7 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "article")
@@ -13,8 +14,9 @@ import java.util.List;
 public class Article {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    @GenericGenerator(name = "uuid-gen", strategy = "uuid2")
+    @GeneratedValue(generator = "uuid-gen")
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id", nullable = false)
@@ -38,11 +40,11 @@ public class Article {
     public Article() {
     }
 
-    public long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

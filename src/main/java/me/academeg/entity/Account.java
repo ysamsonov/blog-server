@@ -3,11 +3,12 @@ package me.academeg.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.Email;
 
 import javax.persistence.*;
 import java.util.List;
-import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name = "account")
@@ -15,8 +16,9 @@ import java.util.Set;
 public class Account {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    @GenericGenerator(name = "uuid-gen", strategy = "uuid2")
+    @GeneratedValue(generator = "uuid-gen")
+    private UUID id;
 
     @Column(nullable = false, unique = true)
     private String login;
@@ -48,11 +50,11 @@ public class Account {
     public Account() {
     }
 
-    public long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.UUID;
 
 @Entity
 @Table(name = "article_photo")
@@ -11,8 +12,9 @@ import javax.persistence.*;
 public class ArticlePhoto {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    @GenericGenerator(name = "uuid-gen", strategy = "uuid2")
+    @GeneratedValue(generator = "uuid-gen")
+    private UUID id;
 
     @Column(nullable = false)
     private String originalPath;
@@ -27,11 +29,11 @@ public class ArticlePhoto {
     public ArticlePhoto() {
     }
 
-    public long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
