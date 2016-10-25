@@ -6,7 +6,6 @@ import me.academeg.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -27,7 +26,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account add(Account account) {
-        return accountRepository.saveAndFlush(account);
+        return accountRepository.save(account);
     }
 
     @Override
@@ -51,12 +50,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<Account> getAll() {
+    public Iterable<Account> getAll() {
         return accountRepository.findAll();
     }
 
     @Override
     public Account edit(Account account) {
-        return accountRepository.saveAndFlush(account);
+        return accountRepository.save(account);
     }
 }

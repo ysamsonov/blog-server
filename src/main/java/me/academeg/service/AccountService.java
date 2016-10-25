@@ -2,7 +2,6 @@ package me.academeg.service;
 
 import me.academeg.entity.Account;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -23,7 +22,7 @@ public interface AccountService {
 
     Account getByEmail(String email);
 
-    List<Account> getAll();
+    Iterable<Account> getAll();
 
     Account edit(Account account);
 }

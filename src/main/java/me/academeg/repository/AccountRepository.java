@@ -1,7 +1,7 @@
 package me.academeg.repository;
 
 import me.academeg.entity.Account;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 
 import java.util.UUID;
 
@@ -11,7 +11,7 @@ import java.util.UUID;
  * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
  * @version 1.0
  */
-public interface AccountRepository extends JpaRepository<Account, UUID> {
+public interface AccountRepository extends CrudRepository<Account, UUID> {
 
     Account getByEmail(String email);
 

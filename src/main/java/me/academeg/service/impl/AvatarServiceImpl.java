@@ -31,7 +31,7 @@ public class AvatarServiceImpl implements AvatarService {
         if (account.getAvatar() != null) {
             avatarRepository.delete(account.getAvatar());
         }
-        return avatarRepository.saveAndFlush(avatar);
+        return avatarRepository.save(avatar);
     }
 
     @Override
