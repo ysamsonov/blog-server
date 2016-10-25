@@ -6,14 +6,13 @@ import me.academeg.service.AccountService;
 import me.academeg.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.xml.datatype.DatatypeConstants;
 import java.sql.Timestamp;
-import java.util.Calendar;
 import java.util.UUID;
 
 /**
@@ -37,8 +36,9 @@ public class ArticleController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public Iterable<Article> get(@RequestParam int page, @RequestParam int count) {
-        PageRequest pageRequest = new PageRequest(page, count);
+    public Iterable<Article> get(@RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(defaultValue = "20") int count) {
+        PageRequest pageRequest = new PageRequest(page, count, Sort.Direction.DESC, "timestamp");
         return articleService.getAll(pageRequest);
     }
 
