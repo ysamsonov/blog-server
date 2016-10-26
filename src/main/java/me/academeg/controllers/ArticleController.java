@@ -5,6 +5,7 @@ import me.academeg.entity.Article;
 import me.academeg.service.AccountService;
 import me.academeg.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,8 +37,8 @@ public class ArticleController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public Iterable<Article> get(@RequestParam(defaultValue = "0") int page,
-                                 @RequestParam(defaultValue = "20") int count) {
+    public Page<Article> get(@RequestParam(defaultValue = "0") int page,
+                             @RequestParam(defaultValue = "20") int count) {
         PageRequest pageRequest = new PageRequest(page, count, Sort.Direction.DESC, "timestamp");
         return articleService.getAll(pageRequest);
     }

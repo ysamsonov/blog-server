@@ -1,6 +1,7 @@
 package me.academeg.service;
 
 import me.academeg.entity.Article;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
@@ -19,7 +20,7 @@ public interface ArticleService {
 
     Article getByUuid(UUID uuid);
 
-    Iterable<Article> getAll(Pageable pageable);
+    Page<Article> getAll(Pageable pageable);
 
     Article edit(Article article);
 }

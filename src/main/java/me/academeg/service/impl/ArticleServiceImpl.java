@@ -4,6 +4,7 @@ import me.academeg.entity.Article;
 import me.academeg.repository.ArticleRepository;
 import me.academeg.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +42,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public Iterable<Article> getAll(Pageable pageable) {
+    public Page<Article> getAll(Pageable pageable) {
         return articleRepository.findAll(pageable);
     }
 
