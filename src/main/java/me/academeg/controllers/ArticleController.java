@@ -55,15 +55,39 @@ public class ArticleController {
         return articleService.add(article);
     }
 
-    @RequestMapping(value = "", method = RequestMethod.PUT)
-    public Article edit(@AuthenticationPrincipal User user, @RequestBody Article article) {
-        
-        return null;
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    public Article edit(@AuthenticationPrincipal User user, @PathVariable UUID id, @RequestBody Article article) {
+        Article articleFromDb = articleService.getByUuid(id);
+        if (articleFromDb == null) {
+            throw new IllegalArgumentException("WRONG UUID");
+        }
+
+        Account author = articleFromDb.getAuthor();
+        Account authAccount = accountService.getByEmail(user.getUsername());
+        if (!authAccount.getId().equals(author.getId())) {
+            throw new IllegalArgumentException("You cannot to edit this article");
+        }
+
+        articleFromDb.setText(article.getText());
+        return articleService.edit(articleFromDb);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public Article delete(@AuthenticationPrincipal User user, @PathVariable UUID id) {
+    public String delete(@AuthenticationPrincipal User user, @PathVariable UUID id) {
+        Article articleFromDb = articleService.getByUuid(id);
+        if (articleFromDb == null) {
+            throw new IllegalArgumentException("Wrong UUID");
+        }
 
-        return null;
+        Account authAccount = accountService.getByEmail(user.getUsername());
+        if (!authAccount.getAuthority().equals("ROLE_MODERATOR")
+                && !authAccount.getAuthority().equals("ROLE_ADMIN")
+                && !authAccount.getId().equals(articleFromDb.getAuthor().getId())) {
+            System.out.println(authAccount.getId().equals(articleFromDb.getAuthor().getId()));
+            throw new IllegalArgumentException("You cannot to edit this article");
+        }
+
+        articleService.delete(id);
+        return "ok";
     }
 }
