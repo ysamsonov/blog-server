@@ -4,6 +4,8 @@ import me.academeg.entity.Account;
 import me.academeg.repository.AccountRepository;
 import me.academeg.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -50,8 +52,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Iterable<Account> getAll() {
-        return accountRepository.findAll();
+    public Page<Account> getAll(Pageable pageable) {
+        return accountRepository.findAll(pageable);
     }
 
     @Override

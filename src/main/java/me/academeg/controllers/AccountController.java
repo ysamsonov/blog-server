@@ -1,9 +1,13 @@
 package me.academeg.controllers;
 
 import me.academeg.entity.Account;
+import me.academeg.exceptions.*;
 import me.academeg.security.Role;
 import me.academeg.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,77 +44,80 @@ public class AccountController {
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public Account createAccount(@Valid @RequestBody Account acc) {
-        System.out.println(acc);
         if (acc.getEmail() == null || acc.getLogin() == null || acc.getPassword() == null) {
-            throw new IllegalArgumentException("Email, login and password cannot be null");
+            throw new EmptyFieldException("Email, login and password cannot be null");
         }
         if (accountService.getByEmail(acc.getEmail()) != null) {
-            throw new IllegalArgumentException("Email is already used");
+            throw new EmailExistException("Email is already exist");
         }
         if (accountService.getByLogin(acc.getLogin()) != null) {
-            throw new IllegalArgumentException("Login is already used");
+            throw new LoginExistException("Login is already exist");
         }
 
-        acc.setPassword(passwordEncoder.encode(acc.getPassword()));
-        acc.setAuthority(Role.ROLE_USER.name());
-        return accountService.add(acc);
+        Account accountDb = new Account();
+        accountDb.setLogin(acc.getLogin());
+        accountDb.setName(acc.getName());
+        accountDb.setSurname(acc.getSurname());
+        accountDb.setEmail(acc.getEmail());
+        accountDb.setPassword(passwordEncoder.encode(acc.getPassword()));
+        accountDb.setAuthority(Role.ROLE_USER.name());
+        return accountService.add(accountDb);
     }
 
-    @RequestMapping(value = "", method = RequestMethod.PUT)
-    public Account updateAccount(@Valid @RequestBody Account acc,
-                                 @AuthenticationPrincipal User user) {
-        if (acc.getEmail() == null || acc.getLogin() == null) {
-            throw new IllegalArgumentException("Email and login cannot be null");
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    public Account updateAccount(@AuthenticationPrincipal User user, @PathVariable UUID id,
+                                 @Valid @RequestBody Account acc) {
+
+        if (acc.getLogin() == null) {
+            throw new EmptyFieldException("Login cannot be null");
         }
 
         Account authUser = accountService.getByEmail(user.getUsername());
-        if (acc.getEmail() != null && !authUser.getEmail().equals(acc.getEmail())) {
-            if (accountService.getByEmail(acc.getEmail()) != null) {
-                throw new IllegalArgumentException("Email is already used");
-            }
+        if (!authUser.getId().equals(id)) {
+            throw new AccountNotExistException("Account not exist");
         }
-        if (acc.getLogin() != null && !authUser.getLogin().equals(acc.getLogin())) {
-            if (accountService.getByLogin(acc.getLogin()) != null) {
-                throw new IllegalArgumentException("Login is already used");
-            }
+        if (!authUser.getLogin().equals(acc.getLogin()) && accountService.getByLogin(acc.getLogin()) != null) {
+            throw new LoginExistException("Login is already used");
         }
 
         authUser.setSurname(acc.getSurname());
         authUser.setName(acc.getName());
-        authUser.setEmail(acc.getEmail());
         authUser.setLogin(acc.getLogin());
         return accountService.add(authUser);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public Account getAccount(@PathVariable UUID id) {
-        System.out.println(id);
-        Account byId = accountService.getById(id);
-        if (byId == null) {
-            throw new IllegalArgumentException("Account not exist");
+        Account account = accountService.getById(id);
+        if (account == null) {
+            throw new AccountNotExistException("Account not exist");
         }
-        return byId;
+        return account;
     }
 
-    @RequestMapping(value = "/all", method = RequestMethod.GET)
-    public Iterable<Account> getAllAccounts() {
-        return accountService.getAll();
+    @RequestMapping(value = "", method = RequestMethod.GET)
+    public Page<Account> getAllAccounts(@RequestParam(defaultValue = "0") int page,
+                                        @RequestParam(defaultValue = "20") int size) {
+        PageRequest pageRequest = new PageRequest(page, size);
+        return accountService.getAll(pageRequest);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public String deleteAccount(@PathVariable UUID id,
-                                @AuthenticationPrincipal User user,
-                                HttpServletRequest request) {
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void deleteAccount(@PathVariable UUID id, @AuthenticationPrincipal User user, HttpServletRequest request) {
+        Account deletedUser = accountService.getById(id);
+        if (deletedUser == null) {
+            throw new AccountNotExistException("Account not exist");
+        }
 
         Account authUser = accountService.getByEmail(user.getUsername());
-        Account userById = accountService.getById(id);
-
-        if (!(authUser.getId() == userById.getId() || authUser.getAuthority().equals(Role.ROLE_ADMIN.name()))) {
-            throw new IllegalArgumentException("You have not access");
+        if (!authUser.getId().equals(deletedUser.getId()) && !authUser.getAuthority().equals(Role.ROLE_ADMIN.name())) {
+            throw new AccountPermissionException("You have not permission");
         }
-        accountService.delete(userById);
-        removeToken(request);
-        return "OK";
+        if (deletedUser.getId().equals(authUser.getId())) {
+            removeToken(request);
+        }
+        accountService.delete(deletedUser);
     }
 
     private void removeToken(HttpServletRequest request) {

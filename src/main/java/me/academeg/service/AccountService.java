@@ -1,6 +1,8 @@
 package me.academeg.service;
 
 import me.academeg.entity.Account;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
 
@@ -22,7 +24,7 @@ public interface AccountService {
 
     Account getByEmail(String email);
 
-    Iterable<Account> getAll();
+    Page<Account> getAll(Pageable pageable);
 
     Account edit(Account account);
 }
