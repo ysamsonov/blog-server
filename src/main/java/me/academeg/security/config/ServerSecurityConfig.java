@@ -1,4 +1,4 @@
-package me.academeg.config;
+package me.academeg.security.config;
 
 import me.academeg.security.CustomUserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;

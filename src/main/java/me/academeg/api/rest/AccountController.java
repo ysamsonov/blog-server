@@ -1,4 +1,4 @@
-package me.academeg.controllers;
+package me.academeg.api.rest;
 
 import me.academeg.entity.Account;
 import me.academeg.exceptions.*;

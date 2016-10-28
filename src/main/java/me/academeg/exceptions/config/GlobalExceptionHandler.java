@@ -1,4 +1,4 @@
-package me.academeg.config;
+package me.academeg.exceptions.config;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
