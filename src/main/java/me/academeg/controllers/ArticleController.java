@@ -38,8 +38,8 @@ public class ArticleController {
 
     @RequestMapping(value = "", method = RequestMethod.GET)
     public Page<Article> get(@RequestParam(defaultValue = "0") int page,
-                             @RequestParam(defaultValue = "20") int count) {
-        PageRequest pageRequest = new PageRequest(page, count, Sort.Direction.DESC, "timestamp");
+                             @RequestParam(defaultValue = "20") int size) {
+        PageRequest pageRequest = new PageRequest(page, size, Sort.Direction.DESC, "timestamp");
         return articleService.getAll(pageRequest);
     }
 
@@ -57,7 +57,7 @@ public class ArticleController {
 
     @RequestMapping(value = "", method = RequestMethod.PUT)
     public Article edit(@AuthenticationPrincipal User user, @RequestBody Article article) {
-
+        
         return null;
     }
 
