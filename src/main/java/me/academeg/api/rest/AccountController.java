@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -114,18 +115,14 @@ public class AccountController {
         if (!authUser.getId().equals(deletedUser.getId()) && !authUser.getAuthority().equals(Role.ROLE_ADMIN.name())) {
             throw new AccountPermissionException("You have not permission");
         }
-        if (deletedUser.getId().equals(authUser.getId())) {
-            removeToken(request);
-        }
+        removeToken(deletedUser);
         accountService.delete(deletedUser);
     }
 
-    private void removeToken(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null) {
-            String tokenValue = authHeader.replace("Bearer", "").trim();
-            OAuth2AccessToken accessToken = tokenStore.readAccessToken(tokenValue);
-            tokenStore.removeAccessToken(accessToken);
+    private void removeToken(Account account) {
+        Collection<OAuth2AccessToken> tokens = tokenStore.findTokensByClientIdAndUserName("web_app", account.getEmail());
+        for (OAuth2AccessToken token : tokens) {
+            tokenStore.removeAccessToken(token);
         }
     }
 }
