@@ -67,6 +67,10 @@ public class ArticleController {
             throw new ArticleNotExistException();
         }
 
+        if (article.getText() == null || article.getText().isEmpty()) {
+            throw new EmptyFieldException();
+        }
+
         Account author = articleFromDb.getAuthor();
         Account authAccount = accountService.getByEmail(user.getUsername());
         if (!authAccount.getId().equals(author.getId())) {
