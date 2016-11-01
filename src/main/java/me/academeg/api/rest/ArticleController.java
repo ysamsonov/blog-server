@@ -18,7 +18,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.UUID;
 
 /**
@@ -44,7 +45,7 @@ public class ArticleController {
     @RequestMapping(value = "", method = RequestMethod.GET)
     public Page<Article> get(@RequestParam(defaultValue = "0") int page,
                              @RequestParam(defaultValue = "20") int size) {
-        PageRequest pageRequest = new PageRequest(page, size, Sort.Direction.DESC, "timestamp");
+        PageRequest pageRequest = new PageRequest(page, size, Sort.Direction.DESC, "creationDate");
         return articleService.getAll(pageRequest);
     }
 
@@ -56,7 +57,7 @@ public class ArticleController {
 
         Account account = accountService.getByEmail(user.getUsername());
         article.setAuthor(account);
-        article.setTimestamp(new Timestamp(System.currentTimeMillis()));
+        article.setCreationDate(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime());
         return articleService.add(article);
     }
 
