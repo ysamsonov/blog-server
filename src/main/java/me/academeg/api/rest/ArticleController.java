@@ -42,9 +42,18 @@ public class ArticleController {
         this.accountService = accountService;
     }
 
+    @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
+    public Article getByUuid(@PathVariable UUID uuid) {
+        Article articleFromDb = articleService.getByUuid(uuid);
+        if (articleFromDb == null) {
+            throw new ArticleNotExistException();
+        }
+        return articleFromDb;
+    }
+
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public Page<Article> get(@RequestParam(defaultValue = "0") int page,
-                             @RequestParam(defaultValue = "20") int size) {
+    public Page<Article> getPage(@RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(defaultValue = "20") int size) {
         PageRequest pageRequest = new PageRequest(page, size, Sort.Direction.DESC, "creationDate");
         return articleService.getAll(pageRequest);
     }
