@@ -2,12 +2,14 @@ package me.academeg.api.rest;
 
 import me.academeg.entity.Account;
 import me.academeg.entity.Article;
+import me.academeg.entity.Tag;
 import me.academeg.exceptions.AccountPermissionException;
 import me.academeg.exceptions.ArticleNotExistException;
 import me.academeg.exceptions.EmptyFieldException;
 import me.academeg.security.Role;
 import me.academeg.service.AccountService;
 import me.academeg.service.ArticleService;
+import me.academeg.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,9 +20,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Calendar;
-import java.util.TimeZone;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * ArticleController Controller
@@ -35,11 +35,13 @@ public class ArticleController {
 
     private ArticleService articleService;
     private AccountService accountService;
+    private TagService tagService;
 
     @Autowired
-    public ArticleController(ArticleService articleService, AccountService accountService) {
+    public ArticleController(ArticleService articleService, AccountService accountService, TagService tagService) {
         this.articleService = articleService;
         this.accountService = accountService;
+        this.tagService = tagService;
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
@@ -65,10 +67,14 @@ public class ArticleController {
             throw new EmptyFieldException("Article cannot be empty");
         }
 
-        Account account = accountService.getByEmail(user.getUsername());
-        article.setAuthor(account);
-        article.setCreationDate(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime());
-        return articleService.add(article);
+        Article saveArticle = new Article();
+        saveArticle.setAuthor(accountService.getByEmail(user.getUsername()));
+        saveArticle.setTitle(article.getTitle());
+        saveArticle.setText(article.getText());
+        saveArticle.setCreationDate(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime());
+        saveArticle.setTags(new HashSet<>());
+        addTagsToArticle(article.getTags(), saveArticle);
+        return articleService.add(saveArticle);
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
@@ -90,6 +96,8 @@ public class ArticleController {
         }
         articleFromDb.setTitle(article.getTitle());
         articleFromDb.setText(article.getText());
+        articleFromDb.getTags().clear();
+        addTagsToArticle(article.getTags(), articleFromDb);
         return articleService.edit(articleFromDb);
     }
 
@@ -108,5 +116,18 @@ public class ArticleController {
             throw new AccountPermissionException();
         }
         articleService.delete(uuid);
+    }
+
+    private void addTagsToArticle(Collection<Tag> tags, Article article) {
+        if (tags == null) {
+            return;
+        }
+
+        for (Tag tag : tags) {
+            Tag tagFromDb = tagService.getByUuid(tag.getId());
+            if (tagFromDb != null) {
+                article.getTags().add(tagFromDb);
+            }
+        }
     }
 }

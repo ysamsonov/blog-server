@@ -7,6 +7,7 @@ import org.hibernate.annotations.Type;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -46,8 +47,11 @@ public class Article {
     @OneToMany(mappedBy = "article")
     private List<ArticleVideo> videos;
 
-    @ManyToMany(mappedBy = "articles")
-    private List<Tag> tags;
+    @ManyToMany
+    @JoinTable(name = "article_tag",
+            joinColumns = @JoinColumn(name = "article_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+    private Set<Tag> tags;
 
     public Article() {
     }
@@ -108,11 +112,11 @@ public class Article {
         this.videos = videos;
     }
 
-    public List<Tag> getTags() {
+    public Set<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(List<Tag> tags) {
+    public void setTags(Set<Tag> tags) {
         this.tags = tags;
     }
 }

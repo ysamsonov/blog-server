@@ -30,10 +30,7 @@ public class Tag {
     private String value;
 
     @JsonIgnore
-    @ManyToMany
-    @JoinTable(name = "article_tag",
-            joinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "article_id", referencedColumnName = "id"))
+    @ManyToMany(mappedBy = "tags")
     private List<Article> articles;
 
     public Tag() {
