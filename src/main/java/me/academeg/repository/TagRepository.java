@@ -1,7 +1,7 @@
 package me.academeg.repository;
 
 import me.academeg.entity.Tag;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.UUID;
 
@@ -11,5 +11,7 @@ import java.util.UUID;
  * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
  * @version 1.0
  */
-public interface TagRepository extends CrudRepository<Tag, UUID> {
+public interface TagRepository extends PagingAndSortingRepository<Tag, UUID> {
+
+    Tag getByValue(String value);
 }
