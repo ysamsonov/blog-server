@@ -99,6 +99,8 @@ public class TagController {
             throw new TagNotExistException();
         }
 
-        tagService.delete(uuid);
+        tagFromDb.setArticles(null);
+        tagService.edit(tagFromDb);
+        tagService.delete(tagFromDb.getId());
     }
 }

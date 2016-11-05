@@ -59,6 +59,10 @@ public class Tag {
         return articles;
     }
 
+    public void setArticles(List<Article> articles) {
+        this.articles = articles;
+    }
+
     @Override
     public String toString() {
         return "Tag{" +
