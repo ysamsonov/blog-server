@@ -1,5 +1,6 @@
 package me.academeg.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -16,7 +17,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "tag")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 public class Tag {
 
     @Id
@@ -28,10 +29,8 @@ public class Tag {
     @Column(nullable = false, unique = true)
     private String value;
 
-    @ManyToMany
-    @JoinTable(name = "article_tag",
-            joinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "article_id", referencedColumnName = "id"))
+    @JsonIgnore
+    @ManyToMany(mappedBy = "tags")
     private List<Article> articles;
 
     public Tag() {
@@ -55,5 +54,18 @@ public class Tag {
 
     public List<Article> getArticles() {
         return articles;
+    }
+
+    public void setArticles(List<Article> articles) {
+        this.articles = articles;
+    }
+
+    @Override
+    public String toString() {
+        return "Tag{" +
+                "id=" + id +
+                ", value='" + value + '\'' +
+                ", articles=" + articles +
+                '}';
     }
 }
