@@ -30,7 +30,10 @@ public class Article {
     @JoinColumn(name = "author_id", nullable = false)
     private Account author;
 
-    @Column(nullable = false, columnDefinition = "text")
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
     private String text;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -63,6 +66,14 @@ public class Article {
 
     public void setAuthor(Account author) {
         this.author = author;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getText() {

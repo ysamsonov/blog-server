@@ -51,7 +51,8 @@ public class ArticleController {
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public Article create(@RequestBody Article article, @AuthenticationPrincipal User user) {
-        if (article.getText() == null || article.getText().isEmpty()) {
+        if (article.getText() == null || article.getText().isEmpty()
+                || article.getTitle() == null || article.getTitle().isEmpty()) {
             throw new EmptyFieldException("Article cannot be empty");
         }
 
@@ -68,7 +69,8 @@ public class ArticleController {
             throw new ArticleNotExistException();
         }
 
-        if (article.getText() == null || article.getText().isEmpty()) {
+        if (article.getText() == null || article.getText().isEmpty()
+                || article.getTitle() == null || article.getTitle().isEmpty()) {
             throw new EmptyFieldException();
         }
 
@@ -77,6 +79,7 @@ public class ArticleController {
         if (!authAccount.getId().equals(author.getId())) {
             throw new AccountPermissionException("You cannot to edit this article");
         }
+        articleFromDb.setTitle(article.getTitle());
         articleFromDb.setText(article.getText());
         return articleService.edit(articleFromDb);
     }
