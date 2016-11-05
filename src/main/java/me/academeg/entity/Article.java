@@ -5,7 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,11 +30,15 @@ public class Article {
     @JoinColumn(name = "author_id", nullable = false)
     private Account author;
 
-    @Column(nullable = false, columnDefinition = "text")
-    private String text;
+    @Column(nullable = false)
+    private String title;
 
     @Column(nullable = false)
-    private Timestamp timestamp;
+    private String text;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
+    private Date creationDate;
 
     @OneToMany(mappedBy = "article")
     private List<ArticlePhoto> photos;
@@ -64,6 +68,14 @@ public class Article {
         this.author = author;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public String getText() {
         return text;
     }
@@ -72,12 +84,12 @@ public class Article {
         this.text = text;
     }
 
-    public Timestamp getTimestamp() {
-        return timestamp;
+    public Date getCreationDate() {
+        return creationDate;
     }
 
-    public void setTimestamp(Timestamp timestamp) {
-        this.timestamp = timestamp;
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
     }
 
     public List<ArticlePhoto> getPhotos() {
