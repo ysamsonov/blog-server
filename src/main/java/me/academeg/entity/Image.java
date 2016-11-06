@@ -1,6 +1,7 @@
 package me.academeg.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
@@ -8,15 +9,15 @@ import javax.persistence.*;
 import java.util.UUID;
 
 /**
- * ArticlePhoto Entity
+ * Image Entity
  *
  * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
  * @version 1.0
  */
 @Entity
-@Table(name = "article_photo")
+@Table(name = "image")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArticlePhoto {
+public class Image {
 
     @Id
     @GenericGenerator(name = "uuid-gen", strategy = "uuid2")
@@ -30,11 +31,12 @@ public class ArticlePhoto {
     @Column(nullable = false)
     private String thumbnailPath;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToOne
-    @JoinColumn(name = "article_id", nullable = false)
+    @JoinColumn(name = "article_id")
     private Article article;
 
-    public ArticlePhoto() {
+    public Image() {
     }
 
     public UUID getId() {
