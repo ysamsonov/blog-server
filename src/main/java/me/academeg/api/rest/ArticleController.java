@@ -2,6 +2,7 @@ package me.academeg.api.rest;
 
 import me.academeg.entity.Account;
 import me.academeg.entity.Article;
+import me.academeg.entity.Image;
 import me.academeg.entity.Tag;
 import me.academeg.exceptions.AccountPermissionException;
 import me.academeg.exceptions.ArticleNotExistException;
@@ -9,6 +10,7 @@ import me.academeg.exceptions.EmptyFieldException;
 import me.academeg.security.Role;
 import me.academeg.service.AccountService;
 import me.academeg.service.ArticleService;
+import me.academeg.service.ImageService;
 import me.academeg.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,6 +22,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -35,12 +38,17 @@ public class ArticleController {
 
     private ArticleService articleService;
     private AccountService accountService;
+    private ImageService imageService;
     private TagService tagService;
 
     @Autowired
-    public ArticleController(ArticleService articleService, AccountService accountService, TagService tagService) {
+    public ArticleController(ArticleService articleService,
+                             AccountService accountService,
+                             ImageService imageService,
+                             TagService tagService) {
         this.articleService = articleService;
         this.accountService = accountService;
+        this.imageService = imageService;
         this.tagService = tagService;
     }
 
@@ -74,7 +82,11 @@ public class ArticleController {
         saveArticle.setCreationDate(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime());
         saveArticle.setTags(new HashSet<>());
         addTagsToArticle(article.getTags(), saveArticle);
-        return articleService.add(saveArticle);
+
+        Article articleFromDb = articleService.add(saveArticle);
+        articleFromDb.setImages(new HashSet<>());
+        addImageToArticle(article, articleFromDb);
+        return articleFromDb;
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
@@ -98,6 +110,7 @@ public class ArticleController {
         articleFromDb.setText(article.getText());
         articleFromDb.getTags().clear();
         addTagsToArticle(article.getTags(), articleFromDb);
+        addImageToArticle(article, articleFromDb);
         return articleService.edit(articleFromDb);
     }
 
@@ -115,7 +128,26 @@ public class ArticleController {
                 && !authAccount.getId().equals(articleFromDb.getAuthor().getId())) {
             throw new AccountPermissionException();
         }
+
+        for (Image image : articleFromDb.getImages()) {
+            new File(image.getOriginalPath()).delete();
+            new File(image.getThumbnailPath()).delete();
+            imageService.delete(image);
+        }
         articleService.delete(uuid);
+    }
+
+    private void addImageToArticle(Article article, Article articleFromDb) {
+        if (article.getImages() != null) {
+            for (Image image : article.getImages()) {
+                Image imageFromDb = imageService.getByUuid(image.getId());
+                if (imageFromDb != null && imageFromDb.getArticle() == null) {
+                    imageFromDb.setArticle(articleFromDb);
+                    imageService.edit(imageFromDb);
+                    articleFromDb.getImages().add(imageFromDb);
+                }
+            }
+        }
     }
 
     private void addTagsToArticle(Collection<Tag> tags, Article article) {

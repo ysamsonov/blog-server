@@ -42,7 +42,7 @@ public class Article {
     private Date creationDate;
 
     @OneToMany(mappedBy = "article")
-    private List<ArticlePhoto> photos;
+    private Set<Image> images;
 
     @OneToMany(mappedBy = "article")
     private List<ArticleVideo> videos;
@@ -96,12 +96,12 @@ public class Article {
         this.creationDate = creationDate;
     }
 
-    public List<ArticlePhoto> getPhotos() {
-        return photos;
+    public Set<Image> getImages() {
+        return images;
     }
 
-    public void setPhotos(List<ArticlePhoto> photos) {
-        this.photos = photos;
+    public void setImages(Set<Image> images) {
+        this.images = images;
     }
 
     public List<ArticleVideo> getVideos() {
