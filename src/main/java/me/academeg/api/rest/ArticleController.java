@@ -85,16 +85,7 @@ public class ArticleController {
 
         Article articleFromDb = articleService.add(saveArticle);
         articleFromDb.setImages(new HashSet<>());
-        if (article.getImages() != null) {
-            for (Image image : article.getImages()) {
-                Image imageFromDb = imageService.getByUuid(image.getId());
-                if (imageFromDb != null && imageFromDb.getArticle() == null) {
-                    imageFromDb.setArticle(articleFromDb);
-                    imageService.edit(imageFromDb);
-                    articleFromDb.getImages().add(imageFromDb);
-                }
-            }
-        }
+        addImageToArticle(article, articleFromDb);
         return articleFromDb;
     }
 
@@ -119,6 +110,7 @@ public class ArticleController {
         articleFromDb.setText(article.getText());
         articleFromDb.getTags().clear();
         addTagsToArticle(article.getTags(), articleFromDb);
+        addImageToArticle(article, articleFromDb);
         return articleService.edit(articleFromDb);
     }
 
@@ -143,6 +135,19 @@ public class ArticleController {
             imageService.delete(image);
         }
         articleService.delete(uuid);
+    }
+
+    private void addImageToArticle(Article article, Article articleFromDb) {
+        if (article.getImages() != null) {
+            for (Image image : article.getImages()) {
+                Image imageFromDb = imageService.getByUuid(image.getId());
+                if (imageFromDb != null && imageFromDb.getArticle() == null) {
+                    imageFromDb.setArticle(articleFromDb);
+                    imageService.edit(imageFromDb);
+                    articleFromDb.getImages().add(imageFromDb);
+                }
+            }
+        }
     }
 
     private void addTagsToArticle(Collection<Tag> tags, Article article) {
