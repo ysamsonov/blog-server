@@ -1,11 +1,12 @@
 package me.academeg.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -39,7 +40,8 @@ public class Article {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private Date creationDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Calendar creationDate;
 
     @OneToMany(mappedBy = "article")
     private Set<Image> images;
@@ -88,11 +90,11 @@ public class Article {
         this.text = text;
     }
 
-    public Date getCreationDate() {
+    public Calendar getCreationDate() {
         return creationDate;
     }
 
-    public void setCreationDate(Date creationDate) {
+    public void setCreationDate(Calendar creationDate) {
         this.creationDate = creationDate;
     }
 

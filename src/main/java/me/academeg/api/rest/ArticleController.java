@@ -23,7 +23,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.UUID;
 
 /**
  * ArticleController Controller
@@ -79,7 +82,7 @@ public class ArticleController {
         saveArticle.setAuthor(accountService.getByEmail(user.getUsername()));
         saveArticle.setTitle(article.getTitle());
         saveArticle.setText(article.getText());
-        saveArticle.setCreationDate(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime());
+        saveArticle.setCreationDate(Calendar.getInstance());
         saveArticle.setTags(new HashSet<>());
         addTagsToArticle(article.getTags(), saveArticle);
 
