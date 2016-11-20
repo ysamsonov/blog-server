@@ -1,12 +1,14 @@
 package me.academeg.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -44,6 +46,10 @@ public class Article {
 
     @OneToMany(mappedBy = "article")
     private Set<Image> images;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "article")
+    private List<Comment> comments;
 
     @ManyToMany
     @JoinTable(name = "article_tag",
@@ -100,6 +106,14 @@ public class Article {
 
     public void setImages(Set<Image> images) {
         this.images = images;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 
     public Set<Tag> getTags() {
