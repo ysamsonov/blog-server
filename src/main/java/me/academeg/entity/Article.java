@@ -7,7 +7,6 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -35,7 +34,7 @@ public class Article {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     private String text;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -45,9 +44,6 @@ public class Article {
 
     @OneToMany(mappedBy = "article")
     private Set<Image> images;
-
-    @OneToMany(mappedBy = "article")
-    private List<ArticleVideo> videos;
 
     @ManyToMany
     @JoinTable(name = "article_tag",
@@ -104,14 +100,6 @@ public class Article {
 
     public void setImages(Set<Image> images) {
         this.images = images;
-    }
-
-    public List<ArticleVideo> getVideos() {
-        return videos;
-    }
-
-    public void setVideos(List<ArticleVideo> videos) {
-        this.videos = videos;
     }
 
     public Set<Tag> getTags() {
