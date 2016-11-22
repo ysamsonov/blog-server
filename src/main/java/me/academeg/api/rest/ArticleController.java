@@ -80,6 +80,10 @@ public class ArticleController {
         saveArticle.setAuthor(accountService.getByEmail(user.getUsername()));
         saveArticle.setTitle(article.getTitle());
         saveArticle.setText(article.getText());
+        if (article.getStatus() > 1) {
+            article.setStatus(1);
+        }
+        saveArticle.setStatus(article.getStatus());
         saveArticle.setCreationDate(Calendar.getInstance());
         saveArticle.setTags(new HashSet<>());
         addTagsToArticle(article.getTags(), saveArticle);
@@ -109,6 +113,12 @@ public class ArticleController {
         }
         articleFromDb.setTitle(article.getTitle());
         articleFromDb.setText(article.getText());
+        if ((articleFromDb.getStatus() != 2)) {
+            if (article.getStatus() > 1) {
+                article.setStatus(1);
+            }
+            articleFromDb.setStatus(article.getStatus());
+        }
         articleFromDb.getTags().clear();
         addTagsToArticle(article.getTags(), articleFromDb);
         addImageToArticle(article, articleFromDb);

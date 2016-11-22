@@ -39,6 +39,9 @@ public class Article {
     @Column(nullable = false, columnDefinition = "text")
     private String text;
 
+    @Column(nullable = false)
+    private int status;
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -90,6 +93,14 @@ public class Article {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 
     public Calendar getCreationDate() {
