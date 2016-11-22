@@ -1,17 +1,11 @@
 package me.academeg.api.rest;
 
-import me.academeg.entity.Account;
-import me.academeg.entity.Article;
-import me.academeg.entity.Image;
-import me.academeg.entity.Tag;
+import me.academeg.entity.*;
 import me.academeg.exceptions.AccountPermissionException;
 import me.academeg.exceptions.ArticleNotExistException;
 import me.academeg.exceptions.EmptyFieldException;
 import me.academeg.security.Role;
-import me.academeg.service.AccountService;
-import me.academeg.service.ArticleService;
-import me.academeg.service.ImageService;
-import me.academeg.service.TagService;
+import me.academeg.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,16 +36,20 @@ public class ArticleController {
     private ArticleService articleService;
     private AccountService accountService;
     private ImageService imageService;
+    private CommentService commentService;
     private TagService tagService;
 
     @Autowired
     public ArticleController(ArticleService articleService,
                              AccountService accountService,
                              ImageService imageService,
+                             CommentService commentService,
                              TagService tagService) {
+
         this.articleService = articleService;
         this.accountService = accountService;
         this.imageService = imageService;
+        this.commentService = commentService;
         this.tagService = tagService;
     }
 
@@ -136,6 +134,10 @@ public class ArticleController {
             new File(image.getOriginalPath()).delete();
             new File(image.getThumbnailPath()).delete();
             imageService.delete(image);
+        }
+
+        for (Comment comment : articleFromDb.getComments()) {
+            commentService.delete(comment);
         }
         articleService.delete(uuid);
     }
