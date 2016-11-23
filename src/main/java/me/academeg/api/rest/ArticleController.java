@@ -54,12 +54,31 @@ public class ArticleController {
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
-    public Article getByUuid(@PathVariable UUID uuid) {
-        Article articleFromDb = articleService.getByUuid(uuid);
-        if (articleFromDb == null) {
+    public Article getByUuid(@AuthenticationPrincipal User user, @PathVariable UUID uuid) {
+        Article article = articleService.getByUuid(uuid);
+        if (article == null) {
             throw new ArticleNotExistException();
         }
-        return articleFromDb;
+
+        if (article.getStatus() == 0) {
+            return article;
+        }
+
+        if (user == null) {
+            throw new ArticleNotExistException();
+        }
+
+        Account account = accountService.getByEmail(user.getUsername());
+        if (article.getAuthor().getId().equals(account.getId())) {
+            return article;
+        }
+
+        if (article.getStatus() == 2 && (account.getAuthority().equals(Role.ROLE_MODERATOR.name())
+                || account.getAuthority().equals(Role.ROLE_ADMIN.name()))) {
+            return article;
+        }
+
+        throw new ArticleNotExistException();
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET)
