@@ -177,17 +177,31 @@ public class ArticleController {
                                      @RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "20") int size) {
 
-        Account account = accountService.getByEmail(user.getUsername());
         Article article = articleService.getByUuid(uuid);
-        if (article == null
-                || (article.getStatus() == 1 && !article.getAuthor().getId().equals(account.getId()))
-                || (article.getStatus() == 2 && !(account.getAuthority().equals(Role.ROLE_ADMIN.name())
-                || account.getAuthority().equals(Role.ROLE_MODERATOR.name())))) {
+        if (article == null) {
             throw new ArticleNotExistException();
         }
 
         PageRequest pageRequest = new PageRequest(page, size, Sort.Direction.ASC, "creationDate");
-        return commentService.findByArticle(pageRequest, article);
+        Page<Comment> comments = commentService.findByArticle(pageRequest, article);
+        if (article.getStatus() == 0) {
+            return comments;
+        }
+
+        if (user == null) {
+            throw new ArticleNotExistException();
+        }
+        Account account = accountService.getByEmail(user.getUsername());
+        if (article.getAuthor().getId().equals(account.getId())) {
+            return comments;
+        }
+
+        if (article.getStatus() == 2 && (account.getAuthority().equals(Role.ROLE_MODERATOR.name())
+                || account.getAuthority().equals(Role.ROLE_ADMIN.name()))) {
+            return comments;
+        }
+
+        throw new ArticleNotExistException();
     }
 
     @RequestMapping(value = "/{uuid}/block", method = RequestMethod.GET)

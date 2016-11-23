@@ -61,7 +61,7 @@ public class CommentController {
         }
 
         Article article = articleService.getByUuid(commentRequest.getArticle().getId());
-        if (article == null) {
+        if (article == null || article.getStatus() != 0) {
             throw new ArticleNotExistException();
         }
 
