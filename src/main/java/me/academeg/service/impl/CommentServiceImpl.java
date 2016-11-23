@@ -1,9 +1,12 @@
 package me.academeg.service.impl;
 
+import me.academeg.entity.Article;
 import me.academeg.entity.Comment;
 import me.academeg.repository.CommentRepository;
 import me.academeg.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -47,5 +50,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Comment edit(Comment comment) {
         return commentRepository.save(comment);
+    }
+
+    @Override
+    public Page<Comment> findByArticle(Pageable pageable, Article article) {
+        return commentRepository.findByArticleUuid(pageable, article.getId());
     }
 }

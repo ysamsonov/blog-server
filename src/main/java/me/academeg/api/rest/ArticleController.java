@@ -152,6 +152,25 @@ public class ArticleController {
         articleService.delete(uuid);
     }
 
+    @RequestMapping(value = "/{uuid}/comment", method = RequestMethod.GET)
+    public Page<Comment> getComments(@AuthenticationPrincipal User user,
+                                     @PathVariable UUID uuid,
+                                     @RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "20") int size) {
+
+        Account account = accountService.getByEmail(user.getUsername());
+        Article article = articleService.getByUuid(uuid);
+        if (article == null
+                || (article.getStatus() == 1 && !article.getAuthor().getId().equals(account.getId()))
+                || (article.getStatus() == 2 && !(account.getAuthority().equals(Role.ROLE_ADMIN.name())
+                || account.getAuthority().equals(Role.ROLE_MODERATOR.name())))) {
+            throw new ArticleNotExistException();
+        }
+
+        PageRequest pageRequest = new PageRequest(page, size, Sort.Direction.ASC, "creationDate");
+        return commentService.findByArticle(pageRequest, article);
+    }
+
     private void addImageToArticle(Article article, Article articleFromDb) {
         if (article.getImages() != null) {
             for (Image image : article.getImages()) {
