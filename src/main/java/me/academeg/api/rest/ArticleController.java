@@ -1,17 +1,11 @@
 package me.academeg.api.rest;
 
-import me.academeg.entity.Account;
-import me.academeg.entity.Article;
-import me.academeg.entity.Image;
-import me.academeg.entity.Tag;
+import me.academeg.entity.*;
 import me.academeg.exceptions.AccountPermissionException;
 import me.academeg.exceptions.ArticleNotExistException;
 import me.academeg.exceptions.EmptyFieldException;
 import me.academeg.security.Role;
-import me.academeg.service.AccountService;
-import me.academeg.service.ArticleService;
-import me.academeg.service.ImageService;
-import me.academeg.service.TagService;
+import me.academeg.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,26 +36,49 @@ public class ArticleController {
     private ArticleService articleService;
     private AccountService accountService;
     private ImageService imageService;
+    private CommentService commentService;
     private TagService tagService;
 
     @Autowired
     public ArticleController(ArticleService articleService,
                              AccountService accountService,
                              ImageService imageService,
+                             CommentService commentService,
                              TagService tagService) {
+
         this.articleService = articleService;
         this.accountService = accountService;
         this.imageService = imageService;
+        this.commentService = commentService;
         this.tagService = tagService;
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
-    public Article getByUuid(@PathVariable UUID uuid) {
-        Article articleFromDb = articleService.getByUuid(uuid);
-        if (articleFromDb == null) {
+    public Article getByUuid(@AuthenticationPrincipal User user, @PathVariable UUID uuid) {
+        Article article = articleService.getByUuid(uuid);
+        if (article == null) {
             throw new ArticleNotExistException();
         }
-        return articleFromDb;
+
+        if (article.getStatus() == 0) {
+            return article;
+        }
+
+        if (user == null) {
+            throw new ArticleNotExistException();
+        }
+
+        Account account = accountService.getByEmail(user.getUsername());
+        if (article.getAuthor().getId().equals(account.getId())) {
+            return article;
+        }
+
+        if (article.getStatus() == 2 && (account.getAuthority().equals(Role.ROLE_MODERATOR.name())
+                || account.getAuthority().equals(Role.ROLE_ADMIN.name()))) {
+            return article;
+        }
+
+        throw new ArticleNotExistException();
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET)
@@ -82,6 +99,10 @@ public class ArticleController {
         saveArticle.setAuthor(accountService.getByEmail(user.getUsername()));
         saveArticle.setTitle(article.getTitle());
         saveArticle.setText(article.getText());
+        if (article.getStatus() > 1) {
+            article.setStatus(1);
+        }
+        saveArticle.setStatus(article.getStatus());
         saveArticle.setCreationDate(Calendar.getInstance());
         saveArticle.setTags(new HashSet<>());
         addTagsToArticle(article.getTags(), saveArticle);
@@ -111,6 +132,12 @@ public class ArticleController {
         }
         articleFromDb.setTitle(article.getTitle());
         articleFromDb.setText(article.getText());
+        if ((articleFromDb.getStatus() != 2)) {
+            if (article.getStatus() > 1) {
+                article.setStatus(1);
+            }
+            articleFromDb.setStatus(article.getStatus());
+        }
         articleFromDb.getTags().clear();
         addTagsToArticle(article.getTags(), articleFromDb);
         addImageToArticle(article, articleFromDb);
@@ -137,7 +164,81 @@ public class ArticleController {
             new File(image.getThumbnailPath()).delete();
             imageService.delete(image);
         }
+
+        for (Comment comment : articleFromDb.getComments()) {
+            commentService.delete(comment);
+        }
         articleService.delete(uuid);
+    }
+
+    @RequestMapping(value = "/{uuid}/comment", method = RequestMethod.GET)
+    public Page<Comment> getComments(@AuthenticationPrincipal User user,
+                                     @PathVariable UUID uuid,
+                                     @RequestParam(defaultValue = "0") int page,
+                                     @RequestParam(defaultValue = "20") int size) {
+
+        Article article = articleService.getByUuid(uuid);
+        if (article == null) {
+            throw new ArticleNotExistException();
+        }
+
+        PageRequest pageRequest = new PageRequest(page, size, Sort.Direction.ASC, "creationDate");
+        Page<Comment> comments = commentService.findByArticle(pageRequest, article);
+        if (article.getStatus() == 0) {
+            return comments;
+        }
+
+        if (user == null) {
+            throw new ArticleNotExistException();
+        }
+        Account account = accountService.getByEmail(user.getUsername());
+        if (article.getAuthor().getId().equals(account.getId())) {
+            return comments;
+        }
+
+        if (article.getStatus() == 2 && (account.getAuthority().equals(Role.ROLE_MODERATOR.name())
+                || account.getAuthority().equals(Role.ROLE_ADMIN.name()))) {
+            return comments;
+        }
+
+        throw new ArticleNotExistException();
+    }
+
+    @RequestMapping(value = "/{uuid}/block", method = RequestMethod.GET)
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void blockArticle(@AuthenticationPrincipal User user, @PathVariable UUID uuid) {
+        Account account = accountService.getByEmail(user.getUsername());
+        if (!(account.getAuthority().equals(Role.ROLE_ADMIN.name())
+                || account.getAuthority().equals(Role.ROLE_MODERATOR.name()))) {
+            throw new AccountPermissionException();
+        }
+
+        Article article = articleService.getByUuid(uuid);
+        if (article == null || article.getStatus() == 1) {
+            throw new ArticleNotExistException();
+        }
+
+        article.setStatus(2);
+        articleService.edit(article);
+    }
+
+    @RequestMapping(value = "/{uuid}/unlock", method = RequestMethod.GET)
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void unlockArticle(@AuthenticationPrincipal User user, @PathVariable UUID uuid) {
+        Account account = accountService.getByEmail(user.getUsername());
+        if (!(account.getAuthority().equals(Role.ROLE_ADMIN.name())
+                || account.getAuthority().equals(Role.ROLE_MODERATOR.name()))) {
+            throw new AccountPermissionException();
+        }
+
+        Article article = articleService.getByUuid(uuid);
+        if (article == null || article.getStatus() == 1) {
+            throw new ArticleNotExistException();
+        }
+
+
+        article.setStatus(0);
+        articleService.edit(article);
     }
 
     private void addImageToArticle(Article article, Article articleFromDb) {

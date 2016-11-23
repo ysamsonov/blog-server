@@ -53,6 +53,10 @@ public class Account {
     private List<Article> articles;
 
     @JsonIgnore
+    @OneToMany(mappedBy = "author")
+    private List<Comment> comments;
+
+    @JsonIgnore
     private String authority;
 
     public Account() {
@@ -120,6 +124,14 @@ public class Account {
 
     public void setArticles(List<Article> articles) {
         this.articles = articles;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 
     public String getAuthority() {

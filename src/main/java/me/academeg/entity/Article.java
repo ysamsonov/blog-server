@@ -1,6 +1,7 @@
 package me.academeg.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -35,8 +36,11 @@ public class Article {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     private String text;
+
+    @Column(nullable = false)
+    private int status;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
@@ -46,8 +50,9 @@ public class Article {
     @OneToMany(mappedBy = "article")
     private Set<Image> images;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "article")
-    private List<ArticleVideo> videos;
+    private List<Comment> comments;
 
     @ManyToMany
     @JoinTable(name = "article_tag",
@@ -90,6 +95,14 @@ public class Article {
         this.text = text;
     }
 
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
     public Calendar getCreationDate() {
         return creationDate;
     }
@@ -106,12 +119,12 @@ public class Article {
         this.images = images;
     }
 
-    public List<ArticleVideo> getVideos() {
-        return videos;
+    public List<Comment> getComments() {
+        return comments;
     }
 
-    public void setVideos(List<ArticleVideo> videos) {
-        this.videos = videos;
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 
     public Set<Tag> getTags() {
