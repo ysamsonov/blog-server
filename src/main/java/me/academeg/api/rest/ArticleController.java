@@ -171,6 +171,43 @@ public class ArticleController {
         return commentService.findByArticle(pageRequest, article);
     }
 
+    @RequestMapping(value = "/{uuid}/block", method = RequestMethod.GET)
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void blockArticle(@AuthenticationPrincipal User user, @PathVariable UUID uuid) {
+        Account account = accountService.getByEmail(user.getUsername());
+        if (!(account.getAuthority().equals(Role.ROLE_ADMIN.name())
+                || account.getAuthority().equals(Role.ROLE_MODERATOR.name()))) {
+            throw new AccountPermissionException();
+        }
+
+        Article article = articleService.getByUuid(uuid);
+        if (article == null || article.getStatus() == 1) {
+            throw new ArticleNotExistException();
+        }
+
+        article.setStatus(2);
+        articleService.edit(article);
+    }
+
+    @RequestMapping(value = "/{uuid}/unlock", method = RequestMethod.GET)
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void unlockArticle(@AuthenticationPrincipal User user, @PathVariable UUID uuid) {
+        Account account = accountService.getByEmail(user.getUsername());
+        if (!(account.getAuthority().equals(Role.ROLE_ADMIN.name())
+                || account.getAuthority().equals(Role.ROLE_MODERATOR.name()))) {
+            throw new AccountPermissionException();
+        }
+
+        Article article = articleService.getByUuid(uuid);
+        if (article == null || article.getStatus() == 1) {
+            throw new ArticleNotExistException();
+        }
+
+
+        article.setStatus(0);
+        articleService.edit(article);
+    }
+
     private void addImageToArticle(Article article, Article articleFromDb) {
         if (article.getImages() != null) {
             for (Image image : article.getImages()) {
