@@ -1,2 +1,3 @@
 rootProject.name = 'SpringBlog'
 
+include 'blog-api'

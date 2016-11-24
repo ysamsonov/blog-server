@@ -1,44 +1,38 @@
-group 'me.academeg'
-
 buildscript {
     ext {
         springBootVersion = '1.4.1.RELEASE'
         hibernateVersion = '5.2.2.Final'
-        version = '1.0-SNAPSHOT'
+        springDataVersion = '1.12.4.RELEASE'
+        springSecurityVersion = '2.0.11.RELEASE'
+        mysqlConnectorVersion = '6.0.4'
     }
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
 }
 
-apply plugin: 'java'
-apply plugin: 'spring-boot'
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'idea'
+    apply plugin: 'spring-boot'
+    apply plugin: 'maven'
 
-jar {
-    baseName = rootProject.name
-    version = { $version }
-}
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
-repositories {
-    mavenCentral()
-}
+    group 'me.academeg'
+    version = '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
 
-dependencies {
-//    Spring
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootVersion
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-thymeleaf', version: springBootVersion
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springBootVersion
-    compile group: 'org.springframework.data', name: 'spring-data-commons', version: '1.12.4.RELEASE'
-
-//    Spring Security
-    compile group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.0.11.RELEASE'
-
-//    MySql connector
-    compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.4'
+    configurations {
+        oneJar
+    }
 }
