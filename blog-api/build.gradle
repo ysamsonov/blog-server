@@ -10,4 +10,7 @@ dependencies {
 
     // MySql connector
     compile "mysql:mysql-connector-java:${mysqlConnectorVersion}"
+
+    // Lombok for create getter/setter and other cool features
+    compile "org.projectlombok:lombok:${lombokVersion}"
 }

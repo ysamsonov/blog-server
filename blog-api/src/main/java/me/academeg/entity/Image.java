@@ -2,6 +2,8 @@ package me.academeg.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
@@ -14,6 +16,9 @@ import java.util.UUID;
  * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
  * @version 1.0
  */
+@Setter
+@Getter
+
 @Entity
 @Table(name = "image")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -39,35 +44,7 @@ public class Image {
     public Image() {
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getOriginalPath() {
-        return originalPath;
-    }
-
-    public void setOriginalPath(String originalPath) {
-        this.originalPath = originalPath;
-    }
-
-    public String getThumbnailPath() {
-        return thumbnailPath;
-    }
-
-    public void setThumbnailPath(String thumbnailPath) {
-        this.thumbnailPath = thumbnailPath;
-    }
-
-    public Article getArticle() {
-        return article;
-    }
-
-    public void setArticle(Article article) {
-        this.article = article;
+    public Image(UUID uuid) {
+        this.id = uuid;
     }
 }

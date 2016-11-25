@@ -3,6 +3,8 @@ package me.academeg.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
@@ -11,11 +13,14 @@ import java.util.Calendar;
 import java.util.UUID;
 
 /**
- * Comment
+ * Comment Entity
  *
  * @author Yuriy A. Samsonov <y.samsonov@erpscan.com>
  * @version 1.0
  */
+@Setter
+@Getter
+
 @Entity
 @Table(name = "comment")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -47,43 +52,7 @@ public class Comment {
     public Comment() {
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public Calendar getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(Calendar creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public Account getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(Account author) {
-        this.author = author;
-    }
-
-    public Article getArticle() {
-        return article;
-    }
-
-    public void setArticle(Article article) {
-        this.article = article;
+    public Comment(UUID uuid) {
+        this.id = uuid;
     }
 }
