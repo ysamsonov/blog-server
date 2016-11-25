@@ -27,10 +27,10 @@ import java.io.File;
 @Validated
 public class AvatarController {
 
-    private static String AVATAR_PATH = "avatar/";
+    private final static String AVATAR_PATH = "avatar/";
 
-    private AvatarService avatarService;
-    private AccountService accountService;
+    private final AvatarService avatarService;
+    private final AccountService accountService;
 
     @Autowired
     public AvatarController(AvatarService avatarService, AccountService accountService) {
@@ -39,7 +39,7 @@ public class AvatarController {
     }
 
     @RequestMapping(value = "/account/avatar", method = RequestMethod.POST)
-    public Avatar setAvatar(@AuthenticationPrincipal User user, @RequestParam MultipartFile image) {
+    public Avatar setAvatar(@AuthenticationPrincipal final User user, @RequestParam final MultipartFile image) {
         if (!image.getContentType().startsWith("image/")) {
             throw new FileFormatException("You can upload only images");
         }
@@ -62,7 +62,7 @@ public class AvatarController {
 
     @RequestMapping(value = "/account/avatar", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void deleteAvatar(@AuthenticationPrincipal User user) {
+    public void deleteAvatar(@AuthenticationPrincipal final User user) {
         Account account = accountService.getByEmail(user.getUsername());
         if (account.getAvatar() != null) {
             deleteAvatarFromStorage(account.getAvatar());
@@ -71,7 +71,7 @@ public class AvatarController {
     }
 
     @RequestMapping(value = "/avatar/{name}", method = RequestMethod.GET, produces = "image/jpg")
-    public byte[] getAvatar(@PathVariable String name) {
+    public byte[] getAvatar(@PathVariable final String name) {
         return ImageUtils.toByteArray(new File(AVATAR_PATH + name));
     }
 

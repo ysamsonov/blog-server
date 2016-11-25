@@ -32,19 +32,23 @@ import java.util.UUID;
 @Validated
 public class CommentController {
 
-    private CommentService commentService;
-    private ArticleService articleService;
-    private AccountService accountService;
+    private final CommentService commentService;
+    private final ArticleService articleService;
+    private final AccountService accountService;
 
     @Autowired
-    public CommentController(CommentService commentService, ArticleService articleService, AccountService accountService) {
+    public CommentController(
+            CommentService commentService,
+            ArticleService articleService,
+            AccountService accountService
+    ) {
         this.commentService = commentService;
         this.articleService = articleService;
         this.accountService = accountService;
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
-    public Comment getByUuid(@PathVariable UUID uuid) {
+    public Comment getByUuid(@PathVariable final UUID uuid) {
         Comment comment = commentService.getByUuid(uuid);
         if (comment == null) {
             throw new CommentNotExistException();
@@ -53,10 +57,13 @@ public class CommentController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public Comment create(@RequestBody Comment commentRequest,
-                          @AuthenticationPrincipal User user) {
-        System.out.println(commentRequest);
-        if (commentRequest.getArticle() == null || commentRequest.getArticle().getId() == null || commentRequest.getText() == null) {
+    public Comment create(
+            @RequestBody final Comment commentRequest,
+            @AuthenticationPrincipal final User user
+    ) {
+        if (commentRequest.getArticle() == null
+                || commentRequest.getArticle().getId() == null
+                || commentRequest.getText() == null) {
             throw new EmptyFieldException();
         }
 
@@ -74,10 +81,11 @@ public class CommentController {
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
-    public Comment edit(@PathVariable UUID uuid,
-                        @RequestBody Comment commentRequest,
-                        @AuthenticationPrincipal User user) {
-
+    public Comment edit(
+            @PathVariable final UUID uuid,
+            @RequestBody final Comment commentRequest,
+            @AuthenticationPrincipal final User user
+    ) {
         if (commentRequest.getText() == null) {
             throw new EmptyFieldException();
         }
@@ -99,9 +107,10 @@ public class CommentController {
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID uuid,
-                       @AuthenticationPrincipal User user) {
-
+    public void delete(
+            @PathVariable final UUID uuid,
+            @AuthenticationPrincipal final User user
+    ) {
         Comment commentFromDb = commentService.getByUuid(uuid);
         if (commentFromDb == null) {
             throw new CommentNotExistException();
