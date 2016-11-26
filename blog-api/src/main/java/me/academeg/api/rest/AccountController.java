@@ -4,9 +4,9 @@ import me.academeg.entity.Account;
 import me.academeg.exceptions.*;
 import me.academeg.security.Role;
 import me.academeg.service.AccountService;
+import me.academeg.utils.ApiUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -16,7 +16,6 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.UUID;
@@ -32,19 +31,23 @@ import java.util.UUID;
 @Validated
 public class AccountController {
 
-    private PasswordEncoder passwordEncoder;
-    private AccountService accountService;
-    private TokenStore tokenStore;
+    private final PasswordEncoder passwordEncoder;
+    private final AccountService accountService;
+    private final TokenStore tokenStore;
 
     @Autowired
-    public AccountController(PasswordEncoder passwordEncoder, AccountService accountService, TokenStore tokenStore) {
+    public AccountController(
+            PasswordEncoder passwordEncoder,
+            AccountService accountService,
+            TokenStore tokenStore
+    ) {
         this.passwordEncoder = passwordEncoder;
         this.accountService = accountService;
         this.tokenStore = tokenStore;
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public Account createAccount(@Valid @RequestBody Account acc) {
+    public Account createAccount(@Valid @RequestBody final Account acc) {
         if (acc.getEmail() == null || acc.getLogin() == null || acc.getPassword() == null) {
             throw new EmptyFieldException("Email, login and password cannot be null");
         }
@@ -65,16 +68,18 @@ public class AccountController {
         return accountService.add(accountDb);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public Account updateAccount(@AuthenticationPrincipal User user, @PathVariable UUID id,
-                                 @Valid @RequestBody Account acc) {
-
+    @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
+    public Account updateAccount(
+            @AuthenticationPrincipal final User user,
+            @PathVariable final UUID uuid,
+            @Valid @RequestBody final Account acc
+    ) {
         if (acc.getLogin() == null) {
             throw new EmptyFieldException("Login cannot be null");
         }
 
         Account authUser = accountService.getByEmail(user.getUsername());
-        if (!authUser.getId().equals(id)) {
+        if (!authUser.getId().equals(uuid)) {
             throw new AccountNotExistException("Account not exist");
         }
         if (!authUser.getLogin().equals(acc.getLogin()) && accountService.getByLogin(acc.getLogin()) != null) {
@@ -87,9 +92,9 @@ public class AccountController {
         return accountService.add(authUser);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public Account getAccount(@PathVariable UUID id) {
-        Account account = accountService.getById(id);
+    @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
+    public Account getAccount(@PathVariable final UUID uuid) {
+        Account account = accountService.getById(uuid);
         if (account == null) {
             throw new AccountNotExistException("Account not exist");
         }
@@ -97,16 +102,20 @@ public class AccountController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public Page<Account> getAllAccounts(@RequestParam(defaultValue = "0") int page,
-                                        @RequestParam(defaultValue = "20") int size) {
-        PageRequest pageRequest = new PageRequest(page, size);
-        return accountService.getAll(pageRequest);
+    public Page<Account> getAllAccounts(
+            @RequestParam(required = false) final Integer page,
+            @RequestParam(required = false) final Integer size
+    ) {
+        return accountService.getAll(ApiUtils.createPageRequest(size, page, null));
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void deleteAccount(@PathVariable UUID id, @AuthenticationPrincipal User user, HttpServletRequest request) {
-        Account deletedUser = accountService.getById(id);
+    public void deleteAccount(
+            @PathVariable final UUID uuid,
+            @AuthenticationPrincipal final User user
+    ) {
+        Account deletedUser = accountService.getById(uuid);
         if (deletedUser == null) {
             throw new AccountNotExistException("Account not exist");
         }
@@ -120,7 +129,9 @@ public class AccountController {
     }
 
     private void removeToken(Account account) {
-        Collection<OAuth2AccessToken> tokens = tokenStore.findTokensByClientIdAndUserName("web_app", account.getEmail());
+        Collection<OAuth2AccessToken> tokens
+                = tokenStore.findTokensByClientIdAndUserName("web_app", account.getEmail());
+
         for (OAuth2AccessToken token : tokens) {
             tokenStore.removeAccessToken(token);
         }

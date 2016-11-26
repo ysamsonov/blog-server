@@ -9,9 +9,9 @@ import me.academeg.exceptions.TagNotExistException;
 import me.academeg.security.Role;
 import me.academeg.service.AccountService;
 import me.academeg.service.TagService;
+import me.academeg.utils.ApiUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -31,8 +31,8 @@ import java.util.UUID;
 @Validated
 public class TagController {
 
-    private TagService tagService;
-    private AccountService accountService;
+    private final TagService tagService;
+    private final AccountService accountService;
 
     @Autowired
     public TagController(TagService tagService, AccountService accountService) {
@@ -41,14 +41,15 @@ public class TagController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public Page<Tag> get(@RequestParam(defaultValue = "0") int page,
-                         @RequestParam(defaultValue = "20") int size) {
-        PageRequest pageRequest = new PageRequest(page, size);
-        return tagService.getPerPage(pageRequest);
+    public Page<Tag> get(
+            @RequestParam(required = false) final Integer page,
+            @RequestParam(required = false) final Integer size
+    ) {
+        return tagService.getPerPage(ApiUtils.createPageRequest(size, page, null));
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public Tag create(@RequestBody Tag tag) {
+    public Tag create(@RequestBody final Tag tag) {
         if (tag.getValue() == null || tag.getValue().isEmpty()) {
             throw new EmptyFieldException();
         }
@@ -64,7 +65,11 @@ public class TagController {
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
-    public Tag edit(@AuthenticationPrincipal User user, @PathVariable UUID uuid, @RequestBody Tag tag) {
+    public Tag edit(
+            @AuthenticationPrincipal final User user,
+            @PathVariable final UUID uuid,
+            @RequestBody final Tag tag
+    ) {
         Account authAccount = accountService.getByEmail(user.getUsername());
         if (!authAccount.getAuthority().equals(Role.ROLE_MODERATOR.name())
                 && !authAccount.getAuthority().equals(Role.ROLE_ADMIN.name())) {
@@ -87,7 +92,7 @@ public class TagController {
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void delete(@AuthenticationPrincipal User user, @PathVariable UUID uuid) {
+    public void delete(@AuthenticationPrincipal final User user, final @PathVariable UUID uuid) {
         Account authAccount = accountService.getByEmail(user.getUsername());
         if (!authAccount.getAuthority().equals(Role.ROLE_MODERATOR.name())
                 && !authAccount.getAuthority().equals(Role.ROLE_ADMIN.name())) {
