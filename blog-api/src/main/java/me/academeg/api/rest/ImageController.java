@@ -30,10 +30,10 @@ import java.util.UUID;
 @Validated
 public class ImageController {
 
-    private static String IMAGE_PATH = "image/";
+    private final static String IMAGE_PATH = "image/";
 
-    private ImageService imageService;
-    private AccountService accountService;
+    private final ImageService imageService;
+    private final AccountService accountService;
 
     @Autowired
     public ImageController(ImageService imageService, AccountService accountService) {
@@ -42,7 +42,7 @@ public class ImageController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public Image upload(@RequestParam(name = "image") MultipartFile file) {
+    public Image upload(@RequestParam(name = "image") final MultipartFile file) {
         if (!file.getContentType().startsWith("image/")) {
             throw new FileFormatException("You can upload only images");
         }
@@ -63,7 +63,7 @@ public class ImageController {
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void delete(@AuthenticationPrincipal User user, @PathVariable UUID uuid) {
+    public void delete(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
         Image imageFromDb = imageService.getByUuid(uuid);
         if (imageFromDb == null) {
             throw new ImageNotExistException();
@@ -83,7 +83,7 @@ public class ImageController {
     }
 
     @RequestMapping(value = "/{name}", method = RequestMethod.GET, produces = "image/jpg")
-    public byte[] get(@PathVariable String name) {
+    public byte[] get(@PathVariable final String name) {
         return ImageUtils.toByteArray(new File(IMAGE_PATH + name));
     }
 

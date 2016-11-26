@@ -6,10 +6,9 @@ import me.academeg.exceptions.ArticleNotExistException;
 import me.academeg.exceptions.EmptyFieldException;
 import me.academeg.security.Role;
 import me.academeg.service.*;
+import me.academeg.utils.ApiUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -33,19 +32,20 @@ import java.util.UUID;
 @Validated
 public class ArticleController {
 
-    private ArticleService articleService;
-    private AccountService accountService;
-    private ImageService imageService;
-    private CommentService commentService;
-    private TagService tagService;
+    private final ArticleService articleService;
+    private final AccountService accountService;
+    private final ImageService imageService;
+    private final CommentService commentService;
+    private final TagService tagService;
 
     @Autowired
-    public ArticleController(ArticleService articleService,
-                             AccountService accountService,
-                             ImageService imageService,
-                             CommentService commentService,
-                             TagService tagService) {
-
+    public ArticleController(
+            ArticleService articleService,
+            AccountService accountService,
+            ImageService imageService,
+            CommentService commentService,
+            TagService tagService
+    ) {
         this.articleService = articleService;
         this.accountService = accountService;
         this.imageService = imageService;
@@ -54,7 +54,7 @@ public class ArticleController {
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
-    public Article getByUuid(@AuthenticationPrincipal User user, @PathVariable UUID uuid) {
+    public Article getByUuid(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
         Article article = articleService.getByUuid(uuid);
         if (article == null) {
             throw new ArticleNotExistException();
@@ -82,14 +82,15 @@ public class ArticleController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public Page<Article> getPage(@RequestParam(defaultValue = "0") int page,
-                                 @RequestParam(defaultValue = "20") int size) {
-        PageRequest pageRequest = new PageRequest(page, size, Sort.Direction.DESC, "creationDate");
-        return articleService.getAll(pageRequest);
+    public Page<Article> getPage(
+            @RequestParam(required = false) final Integer page,
+            @RequestParam(required = false) final Integer size
+    ) {
+        return articleService.getAll(ApiUtils.createPageRequest(size, page, "creationDate:desc"));
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public Article create(@RequestBody Article article, @AuthenticationPrincipal User user) {
+    public Article create(@RequestBody final Article article, @AuthenticationPrincipal final User user) {
         if (article.getText() == null || article.getText().isEmpty()
                 || article.getTitle() == null || article.getTitle().isEmpty()) {
             throw new EmptyFieldException("Article cannot be empty");
@@ -114,7 +115,11 @@ public class ArticleController {
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
-    public Article edit(@AuthenticationPrincipal User user, @PathVariable UUID uuid, @RequestBody Article article) {
+    public Article edit(
+            @AuthenticationPrincipal final User user,
+            @PathVariable final UUID uuid,
+            @RequestBody final Article article
+    ) {
         Article articleFromDb = articleService.getByUuid(uuid);
         if (articleFromDb == null) {
             throw new ArticleNotExistException();
@@ -146,7 +151,7 @@ public class ArticleController {
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void delete(@AuthenticationPrincipal User user, @PathVariable UUID uuid) {
+    public void delete(@AuthenticationPrincipal final User user, final @PathVariable UUID uuid) {
         Article articleFromDb = articleService.getByUuid(uuid);
         if (articleFromDb == null) {
             throw new ArticleNotExistException("Wrong UUID");
@@ -172,18 +177,19 @@ public class ArticleController {
     }
 
     @RequestMapping(value = "/{uuid}/comment", method = RequestMethod.GET)
-    public Page<Comment> getComments(@AuthenticationPrincipal User user,
-                                     @PathVariable UUID uuid,
-                                     @RequestParam(defaultValue = "0") int page,
-                                     @RequestParam(defaultValue = "20") int size) {
-
+    public Page<Comment> getComments(
+            @AuthenticationPrincipal final User user,
+            @PathVariable final UUID uuid,
+            @RequestParam(required = false) final Integer page,
+            @RequestParam(required = false) final Integer size
+    ) {
         Article article = articleService.getByUuid(uuid);
         if (article == null) {
             throw new ArticleNotExistException();
         }
 
-        PageRequest pageRequest = new PageRequest(page, size, Sort.Direction.ASC, "creationDate");
-        Page<Comment> comments = commentService.findByArticle(pageRequest, article);
+        Page<Comment> comments = commentService.findByArticle(
+                ApiUtils.createPageRequest(size, page, "creationDate:asc"), article);
         if (article.getStatus() == 0) {
             return comments;
         }
@@ -206,7 +212,7 @@ public class ArticleController {
 
     @RequestMapping(value = "/{uuid}/block", method = RequestMethod.GET)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void blockArticle(@AuthenticationPrincipal User user, @PathVariable UUID uuid) {
+    public void blockArticle(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(Role.ROLE_ADMIN.name())
                 || account.getAuthority().equals(Role.ROLE_MODERATOR.name()))) {
@@ -224,7 +230,7 @@ public class ArticleController {
 
     @RequestMapping(value = "/{uuid}/unlock", method = RequestMethod.GET)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void unlockArticle(@AuthenticationPrincipal User user, @PathVariable UUID uuid) {
+    public void unlockArticle(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(Role.ROLE_ADMIN.name())
                 || account.getAuthority().equals(Role.ROLE_MODERATOR.name()))) {
