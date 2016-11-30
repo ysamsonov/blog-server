@@ -1,5 +1,6 @@
 package me.academeg.api.rest;
 
+import me.academeg.common.ApiResult;
 import me.academeg.entity.Account;
 import me.academeg.entity.Avatar;
 import me.academeg.exceptions.FileFormatException;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+
+import static me.academeg.utils.ApiUtils.singleResult;
 
 /**
  * AvatarController Controller
@@ -39,9 +42,9 @@ public class AvatarController {
     }
 
     @RequestMapping(value = "/account/avatar", method = RequestMethod.POST)
-    public Avatar setAvatar(@AuthenticationPrincipal final User user, @RequestParam final MultipartFile image) {
+    public ApiResult create(@AuthenticationPrincipal final User user, @RequestParam final MultipartFile image) {
         if (!image.getContentType().startsWith("image/")) {
-            throw new FileFormatException("You can upload only images");
+            throw new FileFormatException("You can create only images");
         }
 
         File avatarsDir = new File(AVATAR_PATH);
@@ -57,12 +60,12 @@ public class AvatarController {
 
         Account account = accountService.getByEmail(user.getUsername());
         deleteAvatarFromStorage(account.getAvatar());
-        return avatarService.set(avatar, account);
+        return singleResult(avatarService.set(avatar, account));
     }
 
     @RequestMapping(value = "/account/avatar", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void deleteAvatar(@AuthenticationPrincipal final User user) {
+    public void delete(@AuthenticationPrincipal final User user) {
         Account account = accountService.getByEmail(user.getUsername());
         if (account.getAvatar() != null) {
             deleteAvatarFromStorage(account.getAvatar());
@@ -71,7 +74,7 @@ public class AvatarController {
     }
 
     @RequestMapping(value = "/avatar/{name}", method = RequestMethod.GET, produces = "image/jpg")
-    public byte[] getAvatar(@PathVariable final String name) {
+    public byte[] getByName(@PathVariable final String name) {
         return ImageUtils.toByteArray(new File(AVATAR_PATH + name));
     }
 

@@ -1,5 +1,6 @@
 package me.academeg.api.rest;
 
+import me.academeg.common.ApiResult;
 import me.academeg.entity.Account;
 import me.academeg.entity.Image;
 import me.academeg.exceptions.AccountPermissionException;
@@ -18,6 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.UUID;
+
+import static me.academeg.utils.ApiUtils.singleResult;
 
 /**
  * ImageController Controller
@@ -42,7 +45,7 @@ public class ImageController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public Image upload(@RequestParam(name = "image") final MultipartFile file) {
+    public ApiResult create(@RequestParam(name = "image") final MultipartFile file) {
         if (!file.getContentType().startsWith("image/")) {
             throw new FileFormatException("You can upload only images");
         }
@@ -58,7 +61,7 @@ public class ImageController {
         String thumbnailImageName = ImageUtils.compressImage(new File(imagesDir, originalImageName), imagesDir);
         image.setThumbnailPath(IMAGE_PATH + thumbnailImageName);
 
-        return imageService.add(image);
+        return singleResult(imageService.add(image));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
@@ -83,7 +86,7 @@ public class ImageController {
     }
 
     @RequestMapping(value = "/{name}", method = RequestMethod.GET, produces = "image/jpg")
-    public byte[] get(@PathVariable final String name) {
+    public byte[] getByName(@PathVariable final String name) {
         return ImageUtils.toByteArray(new File(IMAGE_PATH + name));
     }
 

@@ -1,5 +1,6 @@
 package me.academeg.api.rest;
 
+import me.academeg.common.ApiResult;
 import me.academeg.entity.*;
 import me.academeg.exceptions.AccountPermissionException;
 import me.academeg.exceptions.ArticleNotExistException;
@@ -20,6 +21,9 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.UUID;
+
+import static me.academeg.utils.ApiUtils.listResult;
+import static me.academeg.utils.ApiUtils.singleResult;
 
 /**
  * ArticleController Controller
@@ -54,14 +58,14 @@ public class ArticleController {
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
-    public Article getByUuid(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
+    public ApiResult getById(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
         Article article = articleService.getByUuid(uuid);
         if (article == null) {
             throw new ArticleNotExistException();
         }
 
         if (article.getStatus() == 0) {
-            return article;
+            return singleResult(article);
         }
 
         if (user == null) {
@@ -70,27 +74,24 @@ public class ArticleController {
 
         Account account = accountService.getByEmail(user.getUsername());
         if (article.getAuthor().getId().equals(account.getId())) {
-            return article;
+            return singleResult(article);
         }
 
         if (article.getStatus() == 2 && (account.getAuthority().equals(Role.ROLE_MODERATOR.name())
                 || account.getAuthority().equals(Role.ROLE_ADMIN.name()))) {
-            return article;
+            return singleResult(article);
         }
 
         throw new ArticleNotExistException();
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public Page<Article> getPage(
-            @RequestParam(required = false) final Integer page,
-            @RequestParam(required = false) final Integer size
-    ) {
-        return articleService.getAll(ApiUtils.createPageRequest(size, page, "creationDate:desc"));
+    public ApiResult getList(final Integer page, final Integer limit) {
+        return listResult(articleService.getAll(ApiUtils.createPageRequest(limit, page, "creationDate:desc")));
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public Article create(@RequestBody final Article article, @AuthenticationPrincipal final User user) {
+    public ApiResult create(@RequestBody final Article article, @AuthenticationPrincipal final User user) {
         if (article.getText() == null || article.getText().isEmpty()
                 || article.getTitle() == null || article.getTitle().isEmpty()) {
             throw new EmptyFieldException("Article cannot be empty");
@@ -110,12 +111,12 @@ public class ArticleController {
 
         Article articleFromDb = articleService.add(saveArticle);
         articleFromDb.setImages(new HashSet<>());
-        addImageToArticle(article, articleFromDb);
-        return articleFromDb;
+        addImagesToArticle(article, articleFromDb);
+        return singleResult(articleFromDb);
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
-    public Article edit(
+    public ApiResult update(
             @AuthenticationPrincipal final User user,
             @PathVariable final UUID uuid,
             @RequestBody final Article article
@@ -133,7 +134,7 @@ public class ArticleController {
         Account author = articleFromDb.getAuthor();
         Account authAccount = accountService.getByEmail(user.getUsername());
         if (!authAccount.getId().equals(author.getId())) {
-            throw new AccountPermissionException("You cannot to edit this article");
+            throw new AccountPermissionException("You cannot to update this article");
         }
         articleFromDb.setTitle(article.getTitle());
         articleFromDb.setText(article.getText());
@@ -145,8 +146,8 @@ public class ArticleController {
         }
         articleFromDb.getTags().clear();
         addTagsToArticle(article.getTags(), articleFromDb);
-        addImageToArticle(article, articleFromDb);
-        return articleService.edit(articleFromDb);
+        addImagesToArticle(article, articleFromDb);
+        return singleResult(articleService.edit(articleFromDb));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
@@ -177,11 +178,11 @@ public class ArticleController {
     }
 
     @RequestMapping(value = "/{uuid}/comment", method = RequestMethod.GET)
-    public Page<Comment> getComments(
+    public ApiResult getCommentList(
             @AuthenticationPrincipal final User user,
             @PathVariable final UUID uuid,
-            @RequestParam(required = false) final Integer page,
-            @RequestParam(required = false) final Integer size
+            final Integer page,
+            final Integer limit
     ) {
         Article article = articleService.getByUuid(uuid);
         if (article == null) {
@@ -189,9 +190,9 @@ public class ArticleController {
         }
 
         Page<Comment> comments = commentService.findByArticle(
-                ApiUtils.createPageRequest(size, page, "creationDate:asc"), article);
+                ApiUtils.createPageRequest(limit, page, "creationDate:asc"), article);
         if (article.getStatus() == 0) {
-            return comments;
+            return listResult(comments);
         }
 
         if (user == null) {
@@ -199,12 +200,12 @@ public class ArticleController {
         }
         Account account = accountService.getByEmail(user.getUsername());
         if (article.getAuthor().getId().equals(account.getId())) {
-            return comments;
+            return listResult(comments);
         }
 
         if (article.getStatus() == 2 && (account.getAuthority().equals(Role.ROLE_MODERATOR.name())
                 || account.getAuthority().equals(Role.ROLE_ADMIN.name()))) {
-            return comments;
+            return listResult(comments);
         }
 
         throw new ArticleNotExistException();
@@ -212,7 +213,7 @@ public class ArticleController {
 
     @RequestMapping(value = "/{uuid}/block", method = RequestMethod.GET)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void blockArticle(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
+    public void block(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(Role.ROLE_ADMIN.name())
                 || account.getAuthority().equals(Role.ROLE_MODERATOR.name()))) {
@@ -230,7 +231,7 @@ public class ArticleController {
 
     @RequestMapping(value = "/{uuid}/unlock", method = RequestMethod.GET)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void unlockArticle(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
+    public void unlock(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(Role.ROLE_ADMIN.name())
                 || account.getAuthority().equals(Role.ROLE_MODERATOR.name()))) {
@@ -247,7 +248,7 @@ public class ArticleController {
         articleService.edit(article);
     }
 
-    private void addImageToArticle(Article article, Article articleFromDb) {
+    private void addImagesToArticle(Article article, Article articleFromDb) {
         if (article.getImages() != null) {
             for (Image image : article.getImages()) {
                 Image imageFromDb = imageService.getByUuid(image.getId());

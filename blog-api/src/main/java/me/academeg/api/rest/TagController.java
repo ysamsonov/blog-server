@@ -1,5 +1,6 @@
 package me.academeg.api.rest;
 
+import me.academeg.common.ApiResult;
 import me.academeg.entity.Account;
 import me.academeg.entity.Tag;
 import me.academeg.exceptions.AccountPermissionException;
@@ -11,7 +12,6 @@ import me.academeg.service.AccountService;
 import me.academeg.service.TagService;
 import me.academeg.utils.ApiUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -19,6 +19,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+
+import static me.academeg.utils.ApiUtils.listResult;
+import static me.academeg.utils.ApiUtils.singleResult;
 
 /**
  * TagController Controller
@@ -41,31 +44,28 @@ public class TagController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public Page<Tag> get(
-            @RequestParam(required = false) final Integer page,
-            @RequestParam(required = false) final Integer size
-    ) {
-        return tagService.getPerPage(ApiUtils.createPageRequest(size, page, null));
+    public ApiResult getList(final Integer page, final Integer limit) {
+        return listResult(tagService.getPerPage(ApiUtils.createPageRequest(limit, page, null)));
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public Tag create(@RequestBody final Tag tag) {
+    public ApiResult create(@RequestBody final Tag tag) {
         if (tag.getValue() == null || tag.getValue().isEmpty()) {
             throw new EmptyFieldException();
         }
 
         Tag tagFromDb = tagService.getByValue(tag.getValue());
         if (tagFromDb != null) {
-            return tagFromDb;
+            return singleResult(tagFromDb);
         }
 
         Tag dbTag = new Tag();
         dbTag.setValue(tag.getValue());
-        return tagService.add(dbTag);
+        return singleResult(tagService.add(dbTag));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
-    public Tag edit(
+    public ApiResult update(
             @AuthenticationPrincipal final User user,
             @PathVariable final UUID uuid,
             @RequestBody final Tag tag
@@ -87,7 +87,7 @@ public class TagController {
         }
 
         tagFromDbUuid.setValue(tag.getValue());
-        return tagService.edit(tagFromDbUuid);
+        return singleResult(tagService.edit(tagFromDbUuid));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)

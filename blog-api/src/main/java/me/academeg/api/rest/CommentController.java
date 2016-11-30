@@ -1,5 +1,6 @@
 package me.academeg.api.rest;
 
+import me.academeg.common.ApiResult;
 import me.academeg.entity.Account;
 import me.academeg.entity.Article;
 import me.academeg.entity.Comment;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Calendar;
 import java.util.UUID;
+
+import static me.academeg.utils.ApiUtils.singleResult;
 
 /**
  * CommentController
@@ -48,16 +51,16 @@ public class CommentController {
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
-    public Comment getByUuid(@PathVariable final UUID uuid) {
+    public ApiResult getById(@PathVariable final UUID uuid) {
         Comment comment = commentService.getByUuid(uuid);
         if (comment == null) {
             throw new CommentNotExistException();
         }
-        return comment;
+        return singleResult(comment);
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public Comment create(
+    public ApiResult create(
             @RequestBody final Comment commentRequest,
             @AuthenticationPrincipal final User user
     ) {
@@ -77,11 +80,11 @@ public class CommentController {
         comment.setCreationDate(Calendar.getInstance());
         comment.setAuthor(accountService.getByEmail(user.getUsername()));
         comment.setArticle(article);
-        return commentService.add(comment);
+        return singleResult(commentService.add(comment));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
-    public Comment edit(
+    public ApiResult update(
             @PathVariable final UUID uuid,
             @RequestBody final Comment commentRequest,
             @AuthenticationPrincipal final User user
@@ -102,7 +105,7 @@ public class CommentController {
         }
 
         commentFromDb.setText(commentRequest.getText());
-        return commentService.edit(commentFromDb);
+        return singleResult(commentService.edit(commentFromDb));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)

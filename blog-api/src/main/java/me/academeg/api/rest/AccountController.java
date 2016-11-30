@@ -1,12 +1,12 @@
 package me.academeg.api.rest;
 
+import me.academeg.common.ApiResult;
 import me.academeg.entity.Account;
 import me.academeg.exceptions.*;
 import me.academeg.security.Role;
 import me.academeg.service.AccountService;
 import me.academeg.utils.ApiUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.UUID;
+
+import static me.academeg.utils.ApiUtils.listResult;
+import static me.academeg.utils.ApiUtils.singleResult;
 
 /**
  * AccountController Controller
@@ -47,7 +50,7 @@ public class AccountController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public Account createAccount(@Valid @RequestBody final Account acc) {
+    public ApiResult create(@Valid @RequestBody final Account acc) {
         if (acc.getEmail() == null || acc.getLogin() == null || acc.getPassword() == null) {
             throw new EmptyFieldException("Email, login and password cannot be null");
         }
@@ -65,11 +68,11 @@ public class AccountController {
         accountDb.setEmail(acc.getEmail());
         accountDb.setPassword(passwordEncoder.encode(acc.getPassword()));
         accountDb.setAuthority(Role.ROLE_USER.name());
-        return accountService.add(accountDb);
+        return singleResult(accountService.add(accountDb));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
-    public Account updateAccount(
+    public ApiResult update(
             @AuthenticationPrincipal final User user,
             @PathVariable final UUID uuid,
             @Valid @RequestBody final Account acc
@@ -89,29 +92,26 @@ public class AccountController {
         authUser.setSurname(acc.getSurname());
         authUser.setName(acc.getName());
         authUser.setLogin(acc.getLogin());
-        return accountService.add(authUser);
+        return singleResult(accountService.add(authUser));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
-    public Account getAccount(@PathVariable final UUID uuid) {
+    public ApiResult getById(@PathVariable final UUID uuid) {
         Account account = accountService.getById(uuid);
         if (account == null) {
             throw new AccountNotExistException("Account not exist");
         }
-        return account;
+        return singleResult(account);
     }
 
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public Page<Account> getAllAccounts(
-            @RequestParam(required = false) final Integer page,
-            @RequestParam(required = false) final Integer size
-    ) {
-        return accountService.getAll(ApiUtils.createPageRequest(size, page, null));
+    public ApiResult getList(final Integer page, final Integer limit) {
+        return listResult(accountService.getAll(ApiUtils.createPageRequest(limit, page, null)));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void deleteAccount(
+    public void delete(
             @PathVariable final UUID uuid,
             @AuthenticationPrincipal final User user
     ) {
@@ -124,11 +124,11 @@ public class AccountController {
         if (!authUser.getId().equals(deletedUser.getId()) && !authUser.getAuthority().equals(Role.ROLE_ADMIN.name())) {
             throw new AccountPermissionException("You have not permission");
         }
-        removeToken(deletedUser);
+        removeTokens(deletedUser);
         accountService.delete(deletedUser);
     }
 
-    private void removeToken(Account account) {
+    private void removeTokens(final Account account) {
         Collection<OAuth2AccessToken> tokens
                 = tokenStore.findTokensByClientIdAndUserName("web_app", account.getEmail());
 
