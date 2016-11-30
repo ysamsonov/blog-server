@@ -37,3 +37,7 @@ subprojects {
         oneJar
     }
 }
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.10'
+}

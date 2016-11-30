@@ -13,4 +13,6 @@ dependencies {
 
     // Lombok for create getter/setter and other cool features
     compile "org.projectlombok:lombok:${lombokVersion}"
+
+    compile project(':blog-frontend')
 }
