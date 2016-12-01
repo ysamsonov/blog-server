@@ -16,10 +16,13 @@ buildscript {
     }
 }
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.10'
+}
+
 subprojects {
     apply plugin: 'java'
     apply plugin: 'idea'
-    apply plugin: 'spring-boot'
     apply plugin: 'maven'
 
     sourceCompatibility = 1.8
@@ -38,6 +41,32 @@ subprojects {
     }
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.10'
+project(':blog-api') {
+    apply plugin: 'spring-boot'
+
+    dependencies {
+        // Spring
+        compile "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+        compile "org.springframework.boot:spring-boot-starter-thymeleaf:${springBootVersion}"
+        compile "org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}"
+        compile "org.springframework.data:spring-data-commons:${springDataVersion}"
+
+        // Spring Security
+        compile "org.springframework.security.oauth:spring-security-oauth2:${springSecurityVersion}"
+
+        // MySql connector
+        compile "mysql:mysql-connector-java:${mysqlConnectorVersion}"
+
+        // Lombok for create getter/setter and other cool features
+        compile "org.projectlombok:lombok:${lombokVersion}"
+
+        compile project(':blog-frontend')
+    }
+}
+
+project(':blog-frontend') {
+    dependencies {
+        // Spring
+        compile "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+    }
 }
