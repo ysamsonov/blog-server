@@ -1,21 +1,21 @@
-package me.academeg.api.exceptions;
+package me.academeg.api.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * LoginExistException
+ * CommentNotExistException
  *
  * @author Yuriy A. Samsonov <y.samsonov@erpscan.com>
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class LoginExistException extends RuntimeException {
+public class CommentNotExistException extends RuntimeException {
 
-    public LoginExistException() {
+    public CommentNotExistException() {
     }
 
-    public LoginExistException(String message) {
+    public CommentNotExistException(String message) {
         super(message);
     }
 }

@@ -1,7 +1,7 @@
 package me.academeg.api.controller;
 
 import me.academeg.api.entity.Account;
-import me.academeg.api.exceptions.*;
+import me.academeg.api.exception.*;
 import me.academeg.api.security.Role;
 import me.academeg.api.common.ApiResult;
 import me.academeg.api.service.AccountService;

@@ -1,21 +1,21 @@
-package me.academeg.api.exceptions;
+package me.academeg.api.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * ArticleNotExistException
+ * TagNotExistException
  *
  * @author Yuriy A. Samsonov <y.samsonov@erpscan.com>
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class ArticleNotExistException extends RuntimeException {
+public class TagNotExistException extends RuntimeException {
 
-    public ArticleNotExistException() {
+    public TagNotExistException() {
     }
 
-    public ArticleNotExistException(String message) {
+    public TagNotExistException(String message) {
         super(message);
     }
 }
