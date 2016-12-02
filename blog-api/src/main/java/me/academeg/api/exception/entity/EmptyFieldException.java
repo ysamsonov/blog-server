@@ -1,22 +1,21 @@
-package me.academeg.api.exception;
+package me.academeg.api.exception.entity;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * LoginExistException
+ * EmptyFieldException
  *
  * @author Yuriy A. Samsonov <y.samsonov@erpscan.com>
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class LoginExistException extends ExistException {
+public class EmptyFieldException extends RuntimeException {
 
-    public LoginExistException() {
-        super("Login is already exist");
+    public EmptyFieldException() {
     }
 
-    public LoginExistException(String message) {
+    public EmptyFieldException(String message) {
         super(message);
     }
 }

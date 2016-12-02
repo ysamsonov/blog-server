@@ -1,4 +1,4 @@
-package me.academeg.api.exception;
+package me.academeg.api.exception.entity;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

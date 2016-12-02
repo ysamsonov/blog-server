@@ -1,21 +1,21 @@
-package me.academeg.api.exception;
+package me.academeg.api.exception.entity;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * EmptyFieldException
+ * FileFormatException
  *
  * @author Yuriy A. Samsonov <y.samsonov@erpscan.com>
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class EmptyFieldException extends RuntimeException {
+public class FileFormatException extends RuntimeException {
 
-    public EmptyFieldException() {
+    public FileFormatException() {
     }
 
-    public EmptyFieldException(String message) {
+    public FileFormatException(String message) {
         super(message);
     }
 }

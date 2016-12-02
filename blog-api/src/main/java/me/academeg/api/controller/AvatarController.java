@@ -3,7 +3,7 @@ package me.academeg.api.controller;
 import me.academeg.api.common.ApiResult;
 import me.academeg.api.entity.Account;
 import me.academeg.api.entity.Avatar;
-import me.academeg.api.exception.FileFormatException;
+import me.academeg.api.exception.entity.FileFormatException;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.AvatarService;
 import me.academeg.api.utils.ImageUtils;

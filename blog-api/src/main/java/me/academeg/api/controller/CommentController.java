@@ -2,10 +2,10 @@ package me.academeg.api.controller;
 
 import me.academeg.api.entity.Account;
 import me.academeg.api.entity.Comment;
-import me.academeg.api.exception.AccountPermissionException;
-import me.academeg.api.exception.ArticleNotExistException;
-import me.academeg.api.exception.CommentNotExistException;
-import me.academeg.api.exception.EmptyFieldException;
+import me.academeg.api.exception.entity.AccountPermissionException;
+import me.academeg.api.exception.entity.ArticleNotExistException;
+import me.academeg.api.exception.entity.CommentNotExistException;
+import me.academeg.api.exception.entity.EmptyFieldException;
 import me.academeg.api.security.Role;
 import me.academeg.api.service.ArticleService;
 import me.academeg.api.service.CommentService;

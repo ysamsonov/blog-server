@@ -1,11 +1,11 @@
 package me.academeg.api.controller;
 
 import me.academeg.api.entity.*;
-import me.academeg.api.exception.EmptyFieldException;
+import me.academeg.api.exception.entity.EmptyFieldException;
 import me.academeg.api.common.ApiResult;
 import me.academeg.api.service.*;
-import me.academeg.api.exception.AccountPermissionException;
-import me.academeg.api.exception.ArticleNotExistException;
+import me.academeg.api.exception.entity.AccountPermissionException;
+import me.academeg.api.exception.entity.ArticleNotExistException;
 import me.academeg.api.security.Role;
 import me.academeg.api.utils.ApiUtils;
 import org.springframework.beans.factory.annotation.Autowired;

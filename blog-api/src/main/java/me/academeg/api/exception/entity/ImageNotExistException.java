@@ -1,5 +1,6 @@
-package me.academeg.api.exception;
+package me.academeg.api.exception.entity;
 
+import me.academeg.api.exception.EntityNotExistException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class ImageNotExistException extends NotExistException {
+public class ImageNotExistException extends EntityNotExistException {
 
     public ImageNotExistException() {
         super("Image not exist");
