@@ -83,7 +83,7 @@ public class AccountController {
 
         Account authUser = accountService.getByEmail(user.getUsername());
         if (!authUser.getId().equals(uuid)) {
-            throw new AccountNotExistException("Account not exist");
+            throw new AccountNotExistException();
         }
         if (!authUser.getLogin().equals(acc.getLogin()) && accountService.getByLogin(acc.getLogin()) != null) {
             throw new LoginExistException("Login is already used");
@@ -99,7 +99,7 @@ public class AccountController {
     public ApiResult getById(@PathVariable final UUID uuid) {
         Account account = accountService.getById(uuid);
         if (account == null) {
-            throw new AccountNotExistException("Account not exist");
+            throw new AccountNotExistException();
         }
         return singleResult(account);
     }
@@ -117,7 +117,7 @@ public class AccountController {
     ) {
         Account deletedUser = accountService.getById(uuid);
         if (deletedUser == null) {
-            throw new AccountNotExistException("Account not exist");
+            throw new AccountNotExistException();
         }
 
         Account authUser = accountService.getByEmail(user.getUsername());
