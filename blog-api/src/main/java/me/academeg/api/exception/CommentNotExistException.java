@@ -10,9 +10,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class CommentNotExistException extends RuntimeException {
+public class CommentNotExistException extends NotExistException {
 
     public CommentNotExistException() {
+        super("Comment not exist exception");
     }
 
     public CommentNotExistException(String message) {

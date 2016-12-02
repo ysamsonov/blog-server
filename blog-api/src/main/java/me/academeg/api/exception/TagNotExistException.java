@@ -10,9 +10,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class TagNotExistException extends RuntimeException {
+public class TagNotExistException extends NotExistException {
 
     public TagNotExistException() {
+        super("Tag not exist");
     }
 
     public TagNotExistException(String message) {

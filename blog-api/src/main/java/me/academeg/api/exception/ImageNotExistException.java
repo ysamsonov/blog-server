@@ -10,9 +10,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class ImageNotExistException extends RuntimeException {
+public class ImageNotExistException extends NotExistException {
 
     public ImageNotExistException() {
+        super("Image not exist");
     }
 
     public ImageNotExistException(String message) {

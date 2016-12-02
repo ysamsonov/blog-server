@@ -1,5 +1,13 @@
 package me.academeg.api.exception.config;
 
+import me.academeg.api.common.ApiResult;
+import me.academeg.api.common.ApiResultImpl;
+import me.academeg.api.common.ApiResultWithData;
+import me.academeg.api.common.CollectionResult;
+import me.academeg.api.exception.AccountNotExistException;
+import me.academeg.api.exception.AccountPermissionException;
+import me.academeg.api.exception.ExistException;
+import me.academeg.api.exception.NotExistException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
@@ -11,8 +19,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import java.util.Collections;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -26,27 +32,62 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler
-    @ResponseBody
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map handle(MethodArgumentNotValidException exception) {
-        return error(exception.getBindingResult().getFieldErrors()
-                .stream()
-                .map(FieldError::getDefaultMessage)
-                .collect(Collectors.toList()));
+    public ApiResult handle(AccountNotExistException ex) {
+        return new ApiResultImpl(1000, ex.getMessage());
     }
 
+    @ExceptionHandler
+    public ApiResult handle(AccountPermissionException ex) {
+        return new ApiResultImpl(2000, ex.getMessage());
+    }
+
+    @ExceptionHandler
+    public ApiResult handle(ExistException ex) {
+        return new ApiResultImpl(3000, ex.getMessage());
+    }
+
+    @ExceptionHandler
+    public ApiResult handle(NotExistException ex) {
+        return new ApiResultImpl(3000, ex.getMessage());
+    }
 
     @ExceptionHandler
     @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map handle(ConstraintViolationException exception) {
-        return error(exception.getConstraintViolations()
-                .stream()
-                .map(ConstraintViolation::getMessage)
-                .collect(Collectors.toList()));
+    public ApiResult handle(MethodArgumentNotValidException ex) {
+        return new ApiResultWithData(
+                4000,
+                "Argument not valid",
+                new CollectionResult<>(
+                        ex
+                                .getBindingResult()
+                                .getFieldErrors()
+                                .stream()
+                                .map(FieldError::getDefaultMessage)
+                                .collect(Collectors.toList()))
+        );
     }
 
-    private Map error(Object message) {
-        return Collections.singletonMap("error", message);
+    @ExceptionHandler
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiResult handle(ConstraintViolationException ex) {
+        return new ApiResultWithData(
+                5000,
+                "Constraint exception",
+                new CollectionResult<>(
+                        ex.
+                                getConstraintViolations()
+                                .stream()
+                                .map(ConstraintViolation::getMessage)
+                                .collect(Collectors.toList()))
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiResult handle(Exception ex) {
+        return new ApiResultImpl(6000, "Internal Server Exception");
     }
 }

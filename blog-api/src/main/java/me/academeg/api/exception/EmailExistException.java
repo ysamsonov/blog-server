@@ -10,9 +10,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class EmailExistException extends RuntimeException {
+public class EmailExistException extends ExistException {
 
     public EmailExistException() {
+        super("Email is already exist");
     }
 
     public EmailExistException(String message) {

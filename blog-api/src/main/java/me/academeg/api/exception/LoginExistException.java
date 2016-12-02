@@ -10,9 +10,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class LoginExistException extends RuntimeException {
+public class LoginExistException extends ExistException {
 
     public LoginExistException() {
+        super("Login is already exist");
     }
 
     public LoginExistException(String message) {

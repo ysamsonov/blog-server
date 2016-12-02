@@ -1,6 +1,7 @@
 package me.academeg.api.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
@@ -10,9 +11,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.NOT_FOUND)
-public class AccountNotExistException extends RuntimeException {
+public class AccountNotExistException extends UsernameNotFoundException {
 
     public AccountNotExistException() {
+        super("Account not exist");
     }
 
     public AccountNotExistException(String message) {

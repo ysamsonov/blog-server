@@ -10,9 +10,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class ArticleNotExistException extends RuntimeException {
+public class ArticleNotExistException extends NotExistException {
 
     public ArticleNotExistException() {
+        super("Article not exist");
     }
 
     public ArticleNotExistException(String message) {

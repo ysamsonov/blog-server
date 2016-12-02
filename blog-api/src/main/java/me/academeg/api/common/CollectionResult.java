@@ -16,6 +16,12 @@ public class CollectionResult<T> extends ArbitraryResult<Collection<T>> {
     private final long total;
     private final int count;
 
+    public CollectionResult(final Collection<T> result) {
+        super(result);
+        this.total = result.size();
+        this.count = result.size();
+    }
+
     public CollectionResult(final Collection<T> result, final long total) {
         super(result);
         this.total = total;
