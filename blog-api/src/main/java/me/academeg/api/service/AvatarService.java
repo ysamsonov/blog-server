@@ -15,6 +15,8 @@ public interface AvatarService {
 
     Avatar set(Avatar avatar, Account account);
 
+    Avatar get(UUID uuid);
+
     void delete(Avatar avatar);
 
     void delete(UUID id);
