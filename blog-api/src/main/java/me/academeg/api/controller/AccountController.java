@@ -121,6 +121,7 @@ public class AccountController {
         @PathVariable final UUID uuid,
         @AuthenticationPrincipal final User user
     ) {
+        //@TODO delete user but not his content
         Account deletedUser = accountService.getById(uuid);
         if (deletedUser == null) {
             throw new AccountNotExistException();
