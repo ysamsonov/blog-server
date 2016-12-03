@@ -1,9 +1,12 @@
 package me.academeg.api.controller;
 
-import me.academeg.api.entity.Account;
-import me.academeg.api.exception.entity.*;
-import me.academeg.api.security.Role;
 import me.academeg.api.common.ApiResult;
+import me.academeg.api.entity.Account;
+import me.academeg.api.exception.entity.AccountNotExistException;
+import me.academeg.api.exception.entity.AccountPermissionException;
+import me.academeg.api.exception.entity.EmailExistException;
+import me.academeg.api.exception.entity.LoginExistException;
+import me.academeg.api.security.Role;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.utils.ApiUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +19,12 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.Validator;
 import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
 
 import static me.academeg.api.utils.ApiUtils.listResult;
@@ -31,18 +38,19 @@ import static me.academeg.api.utils.ApiUtils.singleResult;
  */
 @RestController
 @RequestMapping("/api/account")
-@Validated
 public class AccountController {
 
     private final PasswordEncoder passwordEncoder;
     private final AccountService accountService;
     private final TokenStore tokenStore;
 
+    private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
     @Autowired
     public AccountController(
-            PasswordEncoder passwordEncoder,
-            AccountService accountService,
-            TokenStore tokenStore
+        PasswordEncoder passwordEncoder,
+        AccountService accountService,
+        TokenStore tokenStore
     ) {
         this.passwordEncoder = passwordEncoder;
         this.accountService = accountService;
@@ -50,10 +58,7 @@ public class AccountController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public ApiResult create(@Valid @RequestBody final Account acc) {
-        if (acc.getEmail() == null || acc.getLogin() == null || acc.getPassword() == null) {
-            throw new EmptyFieldException("Email, login and password cannot be null");
-        }
+    public ApiResult create(@Validated @RequestBody final Account acc) {
         if (accountService.getByEmail(acc.getEmail()) != null) {
             throw new EmailExistException("Email is already exist");
         }
@@ -73,12 +78,13 @@ public class AccountController {
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
     public ApiResult update(
-            @AuthenticationPrincipal final User user,
-            @PathVariable final UUID uuid,
-            @Valid @RequestBody final Account acc
+        @AuthenticationPrincipal final User user,
+        @PathVariable final UUID uuid,
+        @RequestBody final Account acc
     ) {
-        if (acc.getLogin() == null) {
-            throw new EmptyFieldException("Login cannot be null");
+        Set<ConstraintViolation<Account>> validated = validator.validateProperty(acc, "login");
+        if (validated.size() > 0) {
+            throw new ConstraintViolationException(validated);
         }
 
         Account authUser = accountService.getByEmail(user.getUsername());
@@ -86,7 +92,7 @@ public class AccountController {
             throw new AccountNotExistException();
         }
         if (!authUser.getLogin().equals(acc.getLogin()) && accountService.getByLogin(acc.getLogin()) != null) {
-            throw new LoginExistException("Login is already used");
+            throw new LoginExistException();
         }
 
         authUser.setSurname(acc.getSurname());
@@ -104,7 +110,7 @@ public class AccountController {
         return singleResult(account);
     }
 
-    @RequestMapping(value = "", method = RequestMethod.GET)
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ApiResult getList(final Integer page, final Integer limit) {
         return listResult(accountService.getAll(ApiUtils.createPageRequest(limit, page, null)));
     }
@@ -112,8 +118,8 @@ public class AccountController {
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void delete(
-            @PathVariable final UUID uuid,
-            @AuthenticationPrincipal final User user
+        @PathVariable final UUID uuid,
+        @AuthenticationPrincipal final User user
     ) {
         Account deletedUser = accountService.getById(uuid);
         if (deletedUser == null) {
@@ -130,7 +136,7 @@ public class AccountController {
 
     private void removeTokens(final Account account) {
         Collection<OAuth2AccessToken> tokens
-                = tokenStore.findTokensByClientIdAndUserName("web_app", account.getEmail());
+            = tokenStore.findTokensByClientIdAndUserName("web_app", account.getEmail());
 
         for (OAuth2AccessToken token : tokens) {
             tokenStore.removeAccessToken(token);
