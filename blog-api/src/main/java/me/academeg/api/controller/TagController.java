@@ -42,7 +42,7 @@ public class TagController {
         this.accountService = accountService;
     }
 
-    @RequestMapping(value = "", method = RequestMethod.GET)
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ApiResult getList(final Integer page, final Integer limit) {
         return ApiUtils.listResult(tagService.getPerPage(ApiUtils.createPageRequest(limit, page, null)));
     }

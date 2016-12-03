@@ -35,12 +35,18 @@ public class OAuth2Config {
         @Override
         public void configure(HttpSecurity http) throws Exception {
             http
-                    .exceptionHandling()
-                    .and()
-                    .authorizeRequests()
-                    .antMatchers(HttpMethod.POST, "/api/account").permitAll()
-                    .antMatchers(HttpMethod.GET, "/").permitAll()
-                    .anyRequest().authenticated();
+                .exceptionHandling()
+                .and()
+                .authorizeRequests()
+                .antMatchers(HttpMethod.GET, "/").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/account/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/account").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/article/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/comment/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/tag/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/avatar/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/image/**").permitAll()
+                .anyRequest().authenticated();
         }
     }
 
@@ -58,25 +64,25 @@ public class OAuth2Config {
         @Override
         public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
             oauthServer
-                    .tokenKeyAccess("permitAll()")
-                    .checkTokenAccess("isAuthenticated()");
+                .tokenKeyAccess("permitAll()")
+                .checkTokenAccess("isAuthenticated()");
         }
 
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
             clients.inMemory()
-                    .withClient("web_app")
-                    .secret("secret_key")
-                    .authorizedGrantTypes("password", "refresh_token")
-                    .scopes("read", "write")
-                    .autoApprove(true);
+                .withClient("web_app")
+                .secret("secret_key")
+                .authorizedGrantTypes("password", "refresh_token")
+                .scopes("read", "write")
+                .autoApprove(true);
         }
 
         @Override
         public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
             endpoints
-                    .tokenStore(tokenStoreBean())
-                    .authenticationManager(authenticationManager);
+                .tokenStore(tokenStoreBean())
+                .authenticationManager(authenticationManager);
         }
 
         @Bean
