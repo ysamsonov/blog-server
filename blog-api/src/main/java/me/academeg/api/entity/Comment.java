@@ -7,8 +7,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Calendar;
 import java.util.UUID;
 
@@ -33,6 +35,7 @@ public class Comment {
     private UUID id;
 
     @Column(nullable = false, columnDefinition = "text")
+    @NotEmpty
     private String text;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -47,6 +50,7 @@ public class Comment {
     @ManyToOne
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @JoinColumn(name = "article_id", nullable = false)
+    @NotNull
     private Article article;
 
     public Comment() {

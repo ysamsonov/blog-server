@@ -35,6 +35,11 @@ public class AvatarServiceImpl implements AvatarService {
     }
 
     @Override
+    public Avatar get(UUID uuid) {
+        return avatarRepository.findOne(uuid);
+    }
+
+    @Override
     public void delete(Avatar avatar) {
         avatarRepository.delete(avatar);
     }

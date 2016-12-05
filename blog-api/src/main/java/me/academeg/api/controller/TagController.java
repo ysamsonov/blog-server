@@ -20,8 +20,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-import static me.academeg.api.utils.ApiUtils.listResult;
-
 /**
  * TagController Controller
  *
@@ -42,7 +40,7 @@ public class TagController {
         this.accountService = accountService;
     }
 
-    @RequestMapping(value = "", method = RequestMethod.GET)
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ApiResult getList(final Integer page, final Integer limit) {
         return ApiUtils.listResult(tagService.getPerPage(ApiUtils.createPageRequest(limit, page, null)));
     }
@@ -65,13 +63,13 @@ public class TagController {
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
     public ApiResult update(
-            @AuthenticationPrincipal final User user,
-            @PathVariable final UUID uuid,
-            @RequestBody final Tag tag
+        @AuthenticationPrincipal final User user,
+        @PathVariable final UUID uuid,
+        @RequestBody final Tag tag
     ) {
         Account authAccount = accountService.getByEmail(user.getUsername());
         if (!authAccount.getAuthority().equals(Role.ROLE_MODERATOR.name())
-                && !authAccount.getAuthority().equals(Role.ROLE_ADMIN.name())) {
+            && !authAccount.getAuthority().equals(Role.ROLE_ADMIN.name())) {
             throw new AccountPermissionException();
         }
 
@@ -94,7 +92,7 @@ public class TagController {
     public void delete(@AuthenticationPrincipal final User user, final @PathVariable UUID uuid) {
         Account authAccount = accountService.getByEmail(user.getUsername());
         if (!authAccount.getAuthority().equals(Role.ROLE_MODERATOR.name())
-                && !authAccount.getAuthority().equals(Role.ROLE_ADMIN.name())) {
+            && !authAccount.getAuthority().equals(Role.ROLE_ADMIN.name())) {
             throw new AccountPermissionException();
         }
 

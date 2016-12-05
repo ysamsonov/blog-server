@@ -1,15 +1,17 @@
 package me.academeg.api.controller;
 
+import me.academeg.api.Constants;
 import me.academeg.api.common.ApiResult;
 import me.academeg.api.entity.Account;
 import me.academeg.api.entity.Image;
+import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.exception.entity.AccountPermissionException;
 import me.academeg.api.exception.entity.FileFormatException;
+import me.academeg.api.exception.entity.ImageNotExistException;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.ImageService;
 import me.academeg.api.utils.ApiUtils;
 import me.academeg.api.utils.ImageUtils;
-import me.academeg.api.exception.entity.ImageNotExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,8 +34,6 @@ import java.util.UUID;
 @Validated
 public class ImageController {
 
-    private final static String IMAGE_PATH = "image/";
-
     private final ImageService imageService;
     private final AccountService accountService;
 
@@ -49,18 +49,27 @@ public class ImageController {
             throw new FileFormatException("You can upload only images");
         }
 
-        File imagesDir = new File(IMAGE_PATH);
+        File imagesDir = new File(Constants.IMAGE_PATH);
         if (!imagesDir.exists()) {
             imagesDir.mkdir();
         }
 
         Image image = new Image();
         String originalImageName = ImageUtils.saveImage(imagesDir, file);
-        image.setOriginalPath(IMAGE_PATH + originalImageName);
+        image.setOriginalPath(Constants.IMAGE_PATH + originalImageName);
         String thumbnailImageName = ImageUtils.compressImage(new File(imagesDir, originalImageName), imagesDir);
-        image.setThumbnailPath(IMAGE_PATH + thumbnailImageName);
+        image.setThumbnailPath(Constants.IMAGE_PATH + thumbnailImageName);
 
         return ApiUtils.singleResult(imageService.add(image));
+    }
+
+    @RequestMapping(value = "{uuid}", method = RequestMethod.GET)
+    public ApiResult getById(@PathVariable final UUID uuid) {
+        Image imageFromDb = imageService.getByUuid(uuid);
+        if (imageFromDb == null) {
+            throw new EntityNotExistException("Image not exist");
+        }
+        return ApiUtils.singleResult(imageFromDb);
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
@@ -84,9 +93,9 @@ public class ImageController {
         imageService.delete(imageFromDb);
     }
 
-    @RequestMapping(value = "/{name}", method = RequestMethod.GET, produces = "image/jpg")
+    @RequestMapping(value = "/file/{name}", method = RequestMethod.GET, produces = "image/jpg")
     public byte[] getByName(@PathVariable final String name) {
-        return ImageUtils.toByteArray(new File(IMAGE_PATH + name));
+        return ImageUtils.toByteArray(new File(Constants.IMAGE_PATH + name));
     }
 
     private void deleteImageFromStorage(Image image) {

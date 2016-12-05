@@ -7,8 +7,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
@@ -35,13 +37,16 @@ public class Article {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "author_id", nullable = false)
+    @JoinColumn(name = "author_id")
     private Account author;
 
     @Column(nullable = false)
+    @NotBlank
+    @Size(min = 4, max = 255)
     private String title;
 
     @Column(nullable = false, columnDefinition = "text")
+    @NotBlank
     private String text;
 
     @Column(nullable = false)
@@ -60,9 +65,11 @@ public class Article {
     private List<Comment> comments;
 
     @ManyToMany
-    @JoinTable(name = "article_tag",
-            joinColumns = @JoinColumn(name = "article_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id"))
+    @JoinTable(
+        name = "article_tag",
+        joinColumns = @JoinColumn(name = "article_id", referencedColumnName = "id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id")
+    )
     private Set<Tag> tags;
 
     public Article() {

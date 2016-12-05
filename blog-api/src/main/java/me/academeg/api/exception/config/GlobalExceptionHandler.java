@@ -1,15 +1,12 @@
 package me.academeg.api.exception.config;
 
-import me.academeg.api.common.ApiResult;
-import me.academeg.api.common.ApiResultImpl;
-import me.academeg.api.common.ApiResultWithData;
-import me.academeg.api.common.CollectionResult;
+import me.academeg.api.common.*;
 import me.academeg.api.exception.EntityExistException;
 import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.exception.entity.AccountNotExistException;
 import me.academeg.api.exception.entity.AccountPermissionException;
+import me.academeg.api.exception.entity.EmptyFieldException;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -55,19 +52,24 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler
+    public ApiResult handle(EmptyFieldException ex) {
+        return new ApiResultWithData(4000, "Argument not valid", new ArbitraryResult<>(ex.getMessage()));
+    }
+
+    @ExceptionHandler
     @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResult handle(MethodArgumentNotValidException ex) {
         return new ApiResultWithData(
-                4000,
-                "Argument not valid",
-                new CollectionResult<>(
-                        ex
-                                .getBindingResult()
-                                .getFieldErrors()
-                                .stream()
-                                .map(FieldError::getDefaultMessage)
-                                .collect(Collectors.toList()))
+            4000,
+            "Argument not valid",
+            new CollectionResult<>(
+                ex
+                    .getBindingResult()
+                    .getFieldErrors()
+                    .stream()
+                    .map(FieldError::getDefaultMessage)
+                    .collect(Collectors.toList()))
         );
     }
 
@@ -76,21 +78,21 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResult handle(ConstraintViolationException ex) {
         return new ApiResultWithData(
-                4010,
-                "Constraint exception",
-                new CollectionResult<>(
-                        ex.
-                                getConstraintViolations()
-                                .stream()
-                                .map(ConstraintViolation::getMessage)
-                                .collect(Collectors.toList()))
+            4010,
+            "Constraint exception",
+            new CollectionResult<>(
+                ex.
+                    getConstraintViolations()
+                    .stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.toList()))
         );
     }
 
-    @ExceptionHandler
-    @ResponseBody
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ApiResult handle(Exception ex) {
-        return new ApiResultImpl(6000, "Internal Server Exception");
-    }
+//    @ExceptionHandler
+//    @ResponseBody
+//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+//    public ApiResult handle(Exception ex) {
+//        return new ApiResultImpl(6000, "Internal Server Exception");
+//    }
 }
