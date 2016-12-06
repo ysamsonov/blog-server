@@ -50,7 +50,7 @@ public class Article {
     private String text;
 
     @Column(nullable = false)
-    private int status;
+    private ArticleStatus status;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)

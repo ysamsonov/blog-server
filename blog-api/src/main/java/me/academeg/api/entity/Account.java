@@ -67,7 +67,7 @@ public class Account {
     private List<Comment> comments;
 
     @JsonIgnore
-    private String authority;
+    private AccountRole authority;
 
     public Account() {
     }

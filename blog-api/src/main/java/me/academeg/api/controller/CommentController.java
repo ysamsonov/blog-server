@@ -1,13 +1,10 @@
 package me.academeg.api.controller;
 
 import me.academeg.api.common.ApiResult;
-import me.academeg.api.entity.Account;
-import me.academeg.api.entity.Article;
-import me.academeg.api.entity.Comment;
+import me.academeg.api.entity.*;
 import me.academeg.api.exception.entity.AccountPermissionException;
 import me.academeg.api.exception.entity.ArticleNotExistException;
 import me.academeg.api.exception.entity.CommentNotExistException;
-import me.academeg.api.security.Role;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.ArticleService;
 import me.academeg.api.service.CommentService;
@@ -77,7 +74,7 @@ public class CommentController {
         }
 
         Article article = articleService.getByUuid(commentRequest.getArticle().getId());
-        if (article == null || article.getStatus() != 0) {
+        if (article == null || !article.getStatus().equals(ArticleStatus.PUBLISHED)) {
             throw new ArticleNotExistException();
         }
 
@@ -128,7 +125,7 @@ public class CommentController {
 
         Page<Comment> comments = commentService
             .findByArticle(ApiUtils.createPageRequest(limit, page, "creationDate:desc"), article);
-        if (article.getStatus() == 0) {
+        if (article.getStatus().equals(ArticleStatus.PUBLISHED)) {
             return listResult(comments);
         }
 
@@ -140,8 +137,8 @@ public class CommentController {
             return listResult(comments);
         }
 
-        if (article.getStatus() == 2 && (account.getAuthority().equals(Role.ROLE_MODERATOR.name())
-            || account.getAuthority().equals(Role.ROLE_ADMIN.name()))) {
+        if (article.getStatus().equals(ArticleStatus.LOCK) && (account.getAuthority().equals(AccountRole.MODERATOR)
+            || account.getAuthority().equals(AccountRole.ADMIN))) {
             return listResult(comments);
         }
 
@@ -162,8 +159,8 @@ public class CommentController {
         Account account = accountService.getByEmail(user.getUsername());
 
         if (!(commentFromDb.getAuthor().getId().equals(account.getId())
-            || account.getAuthority().equals(Role.ROLE_MODERATOR.name())
-            || account.getAuthority().equals(Role.ROLE_ADMIN.name()))) {
+            || account.getAuthority().equals(AccountRole.MODERATOR))
+            || account.getAuthority().equals(AccountRole.ADMIN)) {
             throw new AccountPermissionException();
         }
 

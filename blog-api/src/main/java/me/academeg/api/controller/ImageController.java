@@ -49,17 +49,11 @@ public class ImageController {
             throw new FileFormatException("You can upload only images");
         }
 
-        File imagesDir = new File(Constants.IMAGE_PATH);
-        if (!imagesDir.exists()) {
-            imagesDir.mkdir();
-        }
-
         Image image = new Image();
-        String originalImageName = ImageUtils.saveImage(imagesDir, file);
-        image.setOriginalPath(Constants.IMAGE_PATH + originalImageName);
-        String thumbnailImageName = ImageUtils.compressImage(new File(imagesDir, originalImageName), imagesDir);
-        image.setThumbnailPath(Constants.IMAGE_PATH + thumbnailImageName);
-
+        String originalImageName = ImageUtils.saveImage(Constants.IMAGE_PATH, file);
+        image.setOriginalPath(originalImageName);
+        String thumbnailImageName = ImageUtils.compressImage(originalImageName, Constants.IMAGE_PATH);
+        image.setThumbnailPath(thumbnailImageName);
         return ApiUtils.singleResult(imageService.add(image));
     }
 
@@ -102,7 +96,7 @@ public class ImageController {
         if (image == null) {
             return;
         }
-        new File(image.getOriginalPath()).delete();
-        new File(image.getThumbnailPath()).delete();
+
+        ImageUtils.deleteImages(Constants.AVATAR_PATH, image.getOriginalPath(), image.getThumbnailPath());
     }
 }

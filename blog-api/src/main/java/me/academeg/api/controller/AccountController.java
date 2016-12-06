@@ -2,11 +2,11 @@ package me.academeg.api.controller;
 
 import me.academeg.api.common.ApiResult;
 import me.academeg.api.entity.Account;
+import me.academeg.api.entity.AccountRole;
 import me.academeg.api.exception.entity.AccountNotExistException;
 import me.academeg.api.exception.entity.AccountPermissionException;
 import me.academeg.api.exception.entity.EmailExistException;
 import me.academeg.api.exception.entity.LoginExistException;
-import me.academeg.api.security.Role;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.utils.ApiUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +72,7 @@ public class AccountController {
         accountDb.setSurname(acc.getSurname());
         accountDb.setEmail(acc.getEmail());
         accountDb.setPassword(passwordEncoder.encode(acc.getPassword()));
-        accountDb.setAuthority(Role.ROLE_USER.name());
+        accountDb.setAuthority(AccountRole.USER);
         return singleResult(accountService.add(accountDb));
     }
 
@@ -127,8 +127,9 @@ public class AccountController {
             throw new AccountNotExistException();
         }
 
+        //@TODO не нужно получать юзера из базы для получения его прав
         Account authUser = accountService.getByEmail(user.getUsername());
-        if (!authUser.getId().equals(deletedUser.getId()) && !authUser.getAuthority().equals(Role.ROLE_ADMIN.name())) {
+        if (!authUser.getId().equals(deletedUser.getId()) && !authUser.getAuthority().equals(AccountRole.ADMIN)) {
             throw new AccountPermissionException("You have not permission");
         }
         removeTokens(deletedUser);
