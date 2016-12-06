@@ -102,7 +102,7 @@ public class ArticleController {
         saveArticle.setTitle(article.getTitle());
         saveArticle.setText(article.getText());
         if (!article.getStatus().equals(ArticleStatus.PUBLISHED) || !article.getStatus().equals(ArticleStatus.DRAFT)) {
-            article.setStatus(ArticleStatus.DRAFT);
+            article.setStatus(ArticleStatus.PUBLISHED);
         }
         saveArticle.setStatus(article.getStatus());
         saveArticle.setCreationDate(Calendar.getInstance());
@@ -134,8 +134,7 @@ public class ArticleController {
         articleFromDb.setTitle(article.getTitle());
         articleFromDb.setText(article.getText());
         if (!articleFromDb.getStatus().equals(ArticleStatus.LOCK)) {
-            if (!article.getStatus().equals(ArticleStatus.PUBLISHED)
-                || !article.getStatus().equals(ArticleStatus.DRAFT)) {
+            if (article.getStatus().equals(ArticleStatus.LOCK)) {
                 article.setStatus(ArticleStatus.DRAFT);
             }
             articleFromDb.setStatus(article.getStatus());
