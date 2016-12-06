@@ -55,16 +55,11 @@ public class AvatarController {
             throw new FileFormatException("You can upload only images");
         }
 
-        File avatarsDir = new File(Constants.AVATAR_PATH);
-        if (!avatarsDir.exists()) {
-            avatarsDir.mkdir();
-        }
-
         Avatar avatar = new Avatar();
-        String originalImageName = ImageUtils.saveImage(avatarsDir, image);
-        avatar.setOriginalPath(Constants.AVATAR_PATH + originalImageName);
-        String thumbnailImageName = ImageUtils.compressImage(new File(avatarsDir, originalImageName), avatarsDir);
-        avatar.setThumbnailPath(Constants.AVATAR_PATH + thumbnailImageName);
+        String originalImageName = ImageUtils.saveImage(Constants.AVATAR_PATH, image);
+        avatar.setOriginalPath(originalImageName);
+        String thumbnailImageName = ImageUtils.compressImage(originalImageName, Constants.AVATAR_PATH);
+        avatar.setThumbnailPath(thumbnailImageName);
 
         Account account = accountService.getByEmail(user.getUsername());
         deleteAvatarFromStorage(account.getAvatar());
@@ -99,7 +94,7 @@ public class AvatarController {
         if (avatar == null) {
             return;
         }
-        new File(avatar.getOriginalPath()).delete();
-        new File(avatar.getThumbnailPath()).delete();
+
+        ImageUtils.deleteImages(Constants.AVATAR_PATH, avatar.getOriginalPath(), avatar.getThumbnailPath());
     }
 }

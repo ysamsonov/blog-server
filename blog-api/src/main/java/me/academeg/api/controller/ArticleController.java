@@ -4,7 +4,6 @@ import me.academeg.api.common.ApiResult;
 import me.academeg.api.entity.*;
 import me.academeg.api.exception.entity.AccountPermissionException;
 import me.academeg.api.exception.entity.ArticleNotExistException;
-import me.academeg.api.security.Role;
 import me.academeg.api.service.*;
 import me.academeg.api.utils.ApiUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +64,7 @@ public class ArticleController {
             throw new ArticleNotExistException();
         }
 
-        if (article.getStatus() == 0) {
+        if (article.getStatus().equals(ArticleStatus.PUBLISHED)) {
             return singleResult(article);
         }
 
@@ -78,8 +77,9 @@ public class ArticleController {
             return singleResult(article);
         }
 
-        if (article.getStatus() == 2 && (account.getAuthority().equals(Role.ROLE_MODERATOR.name())
-            || account.getAuthority().equals(Role.ROLE_ADMIN.name()))) {
+        if (article.getStatus().equals(ArticleStatus.LOCK)
+            && (account.getAuthority().equals(AccountRole.MODERATOR)
+            || account.getAuthority().equals(AccountRole.ADMIN))) {
             return singleResult(article);
         }
 
@@ -101,8 +101,8 @@ public class ArticleController {
         saveArticle.setAuthor(accountService.getByEmail(user.getUsername()));
         saveArticle.setTitle(article.getTitle());
         saveArticle.setText(article.getText());
-        if (article.getStatus() > 1) {
-            article.setStatus(1);
+        if (!article.getStatus().equals(ArticleStatus.PUBLISHED) || !article.getStatus().equals(ArticleStatus.DRAFT)) {
+            article.setStatus(ArticleStatus.PUBLISHED);
         }
         saveArticle.setStatus(article.getStatus());
         saveArticle.setCreationDate(Calendar.getInstance());
@@ -133,9 +133,9 @@ public class ArticleController {
         }
         articleFromDb.setTitle(article.getTitle());
         articleFromDb.setText(article.getText());
-        if ((articleFromDb.getStatus() != 2)) {
-            if (article.getStatus() > 1) {
-                article.setStatus(1);
+        if (!articleFromDb.getStatus().equals(ArticleStatus.LOCK)) {
+            if (article.getStatus().equals(ArticleStatus.LOCK)) {
+                article.setStatus(ArticleStatus.DRAFT);
             }
             articleFromDb.setStatus(article.getStatus());
         }
@@ -154,8 +154,8 @@ public class ArticleController {
         }
 
         Account authAccount = accountService.getByEmail(user.getUsername());
-        if (!authAccount.getAuthority().equals(Role.ROLE_MODERATOR.name())
-            && !authAccount.getAuthority().equals(Role.ROLE_ADMIN.name())
+        if (!authAccount.getAuthority().equals(AccountRole.MODERATOR)
+            && !authAccount.getAuthority().equals(AccountRole.ADMIN)
             && !authAccount.getId().equals(articleFromDb.getAuthor().getId())) {
             throw new AccountPermissionException();
         }
@@ -176,17 +176,17 @@ public class ArticleController {
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void block(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
         Account account = accountService.getByEmail(user.getUsername());
-        if (!(account.getAuthority().equals(Role.ROLE_ADMIN.name())
-            || account.getAuthority().equals(Role.ROLE_MODERATOR.name()))) {
+        if (!(account.getAuthority().equals(AccountRole.ADMIN)
+            || account.getAuthority().equals(AccountRole.MODERATOR))) {
             throw new AccountPermissionException();
         }
 
         Article article = articleService.getByUuid(uuid);
-        if (article == null || article.getStatus() == 1) {
+        if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
             throw new ArticleNotExistException();
         }
 
-        article.setStatus(2);
+        article.setStatus(ArticleStatus.LOCK);
         articleService.edit(article);
     }
 
@@ -194,18 +194,18 @@ public class ArticleController {
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void unlock(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
         Account account = accountService.getByEmail(user.getUsername());
-        if (!(account.getAuthority().equals(Role.ROLE_ADMIN.name())
-            || account.getAuthority().equals(Role.ROLE_MODERATOR.name()))) {
+        if (!(account.getAuthority().equals(AccountRole.ADMIN))
+            || account.getAuthority().equals(AccountRole.MODERATOR)) {
             throw new AccountPermissionException();
         }
 
         Article article = articleService.getByUuid(uuid);
-        if (article == null || article.getStatus() == 1) {
+        if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
             throw new ArticleNotExistException();
         }
 
 
-        article.setStatus(0);
+        article.setStatus(ArticleStatus.PUBLISHED);
         articleService.edit(article);
     }
 

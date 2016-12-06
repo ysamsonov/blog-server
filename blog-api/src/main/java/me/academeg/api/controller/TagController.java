@@ -2,12 +2,12 @@ package me.academeg.api.controller;
 
 import me.academeg.api.common.ApiResult;
 import me.academeg.api.entity.Account;
+import me.academeg.api.entity.AccountRole;
 import me.academeg.api.entity.Tag;
 import me.academeg.api.exception.entity.AccountPermissionException;
 import me.academeg.api.exception.entity.EmptyFieldException;
 import me.academeg.api.exception.entity.TagExistException;
 import me.academeg.api.exception.entity.TagNotExistException;
-import me.academeg.api.security.Role;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.TagService;
 import me.academeg.api.utils.ApiUtils;
@@ -68,8 +68,8 @@ public class TagController {
         @RequestBody final Tag tag
     ) {
         Account authAccount = accountService.getByEmail(user.getUsername());
-        if (!authAccount.getAuthority().equals(Role.ROLE_MODERATOR.name())
-            && !authAccount.getAuthority().equals(Role.ROLE_ADMIN.name())) {
+        if (!authAccount.getAuthority().equals(AccountRole.MODERATOR)
+            && !authAccount.getAuthority().equals(AccountRole.ADMIN)) {
             throw new AccountPermissionException();
         }
 
@@ -91,8 +91,8 @@ public class TagController {
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void delete(@AuthenticationPrincipal final User user, final @PathVariable UUID uuid) {
         Account authAccount = accountService.getByEmail(user.getUsername());
-        if (!authAccount.getAuthority().equals(Role.ROLE_MODERATOR.name())
-            && !authAccount.getAuthority().equals(Role.ROLE_ADMIN.name())) {
+        if (!authAccount.getAuthority().equals(AccountRole.MODERATOR)
+            && !authAccount.getAuthority().equals(AccountRole.ADMIN)) {
             throw new AccountPermissionException();
         }
 

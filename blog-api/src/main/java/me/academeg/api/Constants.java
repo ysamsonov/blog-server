@@ -12,4 +12,5 @@ final public class Constants {
 
     public static final String AVATAR_PATH = "avatar/";
     public static final String IMAGE_PATH = "image/";
+    public static final int MAX_THUMBNAIL_SIZE = 200;
 }

@@ -34,12 +34,13 @@ public class CustomUserDetailsServiceImpl implements org.springframework.securit
         }
 
         Collection<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(accountFromDb.getAuthority());
+        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(accountFromDb.getAuthority().name());
         grantedAuthorities.add(grantedAuthority);
 
         return new org.springframework.security.core.userdetails.User(
-                accountFromDb.getEmail(),
-                accountFromDb.getPassword(),
-                grantedAuthorities);
+            accountFromDb.getEmail(),
+            accountFromDb.getPassword(),
+            grantedAuthorities
+        );
     }
 }
