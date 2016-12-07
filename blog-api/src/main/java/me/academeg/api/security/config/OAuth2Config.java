@@ -1,5 +1,6 @@
 package me.academeg.api.security.config;
 
+import me.academeg.api.security.CustomTokenEnhancer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +15,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 
@@ -82,12 +84,18 @@ public class OAuth2Config {
         public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
             endpoints
                 .tokenStore(tokenStoreBean())
+                .tokenEnhancer(tokenEnhancer())
                 .authenticationManager(authenticationManager);
         }
 
         @Bean
         public TokenStore tokenStoreBean() {
             return new JdbcTokenStore(dataSource);
+        }
+
+        @Bean
+        public TokenEnhancer tokenEnhancer() {
+            return new CustomTokenEnhancer();
         }
     }
 }
