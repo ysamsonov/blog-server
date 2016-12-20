@@ -38,7 +38,7 @@ public class Avatar {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToOne
-    @JoinColumn(name = "account_id", unique = true)
+    @JoinColumn(name = "account_id", unique = true, nullable = false)
     private Account account;
 
     public Avatar() {

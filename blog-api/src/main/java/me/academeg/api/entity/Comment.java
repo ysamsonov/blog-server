@@ -44,7 +44,7 @@ public class Comment {
     private Calendar creationDate;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "author_id", nullable = false)
+    @JoinColumn(name = "author_id")
     private Account author;
 
     @ManyToOne

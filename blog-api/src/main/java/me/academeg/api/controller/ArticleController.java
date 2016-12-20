@@ -164,17 +164,9 @@ public class ArticleController {
         }
 
         for (Image image : articleFromDb.getImages()) {
-            ImageUtils.deleteImages(
-                Constants.IMAGE_PATH,
-                image.getThumbnailPath(),
-                image.getOriginalPath()
-            );
-            imageService.delete(image);
+            ImageUtils.deleteImages(Constants.IMAGE_PATH, image.getThumbnailPath(), image.getOriginalPath());
         }
 
-        for (Comment comment : articleFromDb.getComments()) {
-            commentService.delete(comment);
-        }
         articleService.delete(uuid);
     }
 

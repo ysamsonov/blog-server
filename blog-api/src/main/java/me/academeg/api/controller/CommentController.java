@@ -159,11 +159,10 @@ public class CommentController {
         Account account = accountService.getByEmail(user.getUsername());
 
         if (!(commentFromDb.getAuthor().getId().equals(account.getId())
-            || account.getAuthority().equals(AccountRole.MODERATOR))
-            || account.getAuthority().equals(AccountRole.ADMIN)) {
+            || account.getAuthority().equals(AccountRole.MODERATOR)
+            || account.getAuthority().equals(AccountRole.ADMIN))) {
             throw new AccountPermissionException();
         }
-
         commentService.delete(commentFromDb);
     }
 }

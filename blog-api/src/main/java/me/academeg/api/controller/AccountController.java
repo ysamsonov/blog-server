@@ -121,19 +121,18 @@ public class AccountController {
         @PathVariable final UUID uuid,
         @AuthenticationPrincipal final User user
     ) {
-        //@TODO delete user but not his content
+        //@TODO обсудить удаление пользователя, а именно его контент
         Account deletedUser = accountService.getById(uuid);
         if (deletedUser == null) {
             throw new AccountNotExistException();
         }
 
-        //@TODO не нужно получать юзера из базы для получения его прав
         Account authUser = accountService.getByEmail(user.getUsername());
         if (!authUser.getId().equals(deletedUser.getId()) && !authUser.getAuthority().equals(AccountRole.ADMIN)) {
             throw new AccountPermissionException("You have not permission");
         }
-        removeTokens(deletedUser);
-        accountService.delete(deletedUser);
+//        removeTokens(deletedUser);
+//        accountService.delete(deletedUser);
     }
 
     private void removeTokens(final Account account) {
