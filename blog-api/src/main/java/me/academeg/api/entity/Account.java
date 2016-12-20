@@ -66,7 +66,6 @@ public class Account {
     @OneToMany(mappedBy = "author")
     private List<Comment> comments;
 
-    @JsonIgnore
     @Enumerated(EnumType.STRING)
     private AccountRole authority;
 
