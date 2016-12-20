@@ -58,14 +58,14 @@ public class Article {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Calendar creationDate;
 
-    @OneToMany(mappedBy = "article")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "article")
     private Set<Image> images;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "article")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "article")
     private List<Comment> comments;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
         name = "article_tag",
         joinColumns = @JoinColumn(name = "article_id", referencedColumnName = "id"),
