@@ -9,5 +9,5 @@ package me.academeg.api.entity;
 public enum ArticleStatus {
     PUBLISHED,
     DRAFT,
-    LOCK, // lock article by admin or moderator
+    LOCKED, // lock article by admin or moderator
 }

@@ -1,11 +1,13 @@
 package me.academeg.api.controller;
 
+import me.academeg.api.Constants;
 import me.academeg.api.common.ApiResult;
 import me.academeg.api.entity.*;
 import me.academeg.api.exception.entity.AccountPermissionException;
 import me.academeg.api.exception.entity.ArticleNotExistException;
 import me.academeg.api.service.*;
 import me.academeg.api.utils.ApiUtils;
+import me.academeg.api.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,7 +15,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashSet;
@@ -77,7 +78,7 @@ public class ArticleController {
             return singleResult(article);
         }
 
-        if (article.getStatus().equals(ArticleStatus.LOCK)
+        if (article.getStatus().equals(ArticleStatus.LOCKED)
             && (account.getAuthority().equals(AccountRole.MODERATOR)
             || account.getAuthority().equals(AccountRole.ADMIN))) {
             return singleResult(article);
@@ -133,11 +134,13 @@ public class ArticleController {
         }
         articleFromDb.setTitle(article.getTitle());
         articleFromDb.setText(article.getText());
-        if (!articleFromDb.getStatus().equals(ArticleStatus.LOCK)) {
-            if (article.getStatus().equals(ArticleStatus.LOCK)) {
-                article.setStatus(ArticleStatus.DRAFT);
+        if (!articleFromDb.getStatus().equals(ArticleStatus.LOCKED)) {
+            if (article.getStatus() != null) {
+                if (article.getStatus().equals(ArticleStatus.LOCKED)) {
+                    article.setStatus(ArticleStatus.DRAFT);
+                }
+                articleFromDb.setStatus(article.getStatus());
             }
-            articleFromDb.setStatus(article.getStatus());
         }
         articleFromDb.getTags().clear();
         addTagsToArticle(article.getTags(), articleFromDb);
@@ -161,8 +164,11 @@ public class ArticleController {
         }
 
         for (Image image : articleFromDb.getImages()) {
-            new File(image.getOriginalPath()).delete();
-            new File(image.getThumbnailPath()).delete();
+            ImageUtils.deleteImages(
+                Constants.IMAGE_PATH,
+                image.getThumbnailPath(),
+                image.getOriginalPath()
+            );
             imageService.delete(image);
         }
 
@@ -174,7 +180,7 @@ public class ArticleController {
 
     @RequestMapping(value = "/{uuid}/block", method = RequestMethod.GET)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void block(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
+    public void lock(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(AccountRole.ADMIN)
             || account.getAuthority().equals(AccountRole.MODERATOR))) {
@@ -186,7 +192,7 @@ public class ArticleController {
             throw new ArticleNotExistException();
         }
 
-        article.setStatus(ArticleStatus.LOCK);
+        article.setStatus(ArticleStatus.LOCKED);
         articleService.edit(article);
     }
 

@@ -67,6 +67,7 @@ public class Account {
     private List<Comment> comments;
 
     @JsonIgnore
+    @Enumerated(EnumType.STRING)
     private AccountRole authority;
 
     public Account() {
