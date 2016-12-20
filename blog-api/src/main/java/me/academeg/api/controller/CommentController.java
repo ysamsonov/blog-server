@@ -137,7 +137,7 @@ public class CommentController {
             return listResult(comments);
         }
 
-        if (article.getStatus().equals(ArticleStatus.LOCK) && (account.getAuthority().equals(AccountRole.MODERATOR)
+        if (article.getStatus().equals(ArticleStatus.LOCKED) && (account.getAuthority().equals(AccountRole.MODERATOR)
             || account.getAuthority().equals(AccountRole.ADMIN))) {
             return listResult(comments);
         }

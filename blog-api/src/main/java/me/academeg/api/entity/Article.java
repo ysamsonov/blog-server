@@ -50,6 +50,7 @@ public class Article {
     private String text;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private ArticleStatus status;
 
     @Temporal(TemporalType.TIMESTAMP)
