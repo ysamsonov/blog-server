@@ -67,6 +67,7 @@ public class Account {
     private List<Comment> comments;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private AccountRole authority;
 
     public Account() {
