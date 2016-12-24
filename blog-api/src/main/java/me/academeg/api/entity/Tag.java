@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
 import java.util.List;
@@ -31,11 +32,12 @@ public class Tag {
     @Type(type = "uuid-char")
     private UUID id;
 
+    @NotBlank
     @Column(nullable = false, unique = true)
     private String value;
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "tags")
+    @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
     private List<Article> articles;
 
     public Tag() {

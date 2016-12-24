@@ -12,13 +12,11 @@ import java.util.UUID;
  */
 public interface ImageService {
 
-    Image add(Image image);
+    Image create(Image image);
 
-    Image edit(Image image);
+    void delete(UUID id);
 
-    Image getByUuid(UUID uuid);
+    Image getByUuid(UUID id);
 
-    void delete(Image image);
-
-    void delete(UUID uuid);
+    Image update(Image image);
 }

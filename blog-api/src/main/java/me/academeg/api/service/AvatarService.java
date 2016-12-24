@@ -13,11 +13,9 @@ import java.util.UUID;
  */
 public interface AvatarService {
 
-    Avatar set(Avatar avatar, Account account);
+    Avatar create(Avatar avatar, Account account);
 
-    Avatar get(UUID uuid);
-
-    void delete(Avatar avatar);
+    Avatar getById(UUID id);
 
     void delete(UUID id);
 }

@@ -57,7 +57,7 @@ public class CommentController {
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
     public ApiResult getById(@PathVariable final UUID uuid) {
-        Comment comment = commentService.getByUuid(uuid);
+        Comment comment = commentService.getById(uuid);
         if (comment == null) {
             throw new CommentNotExistException();
         }
@@ -73,7 +73,7 @@ public class CommentController {
             throw new ArticleNotExistException();
         }
 
-        Article article = articleService.getByUuid(commentRequest.getArticle().getId());
+        Article article = articleService.getById(commentRequest.getArticle().getId());
         if (article == null || !article.getStatus().equals(ArticleStatus.PUBLISHED)) {
             throw new ArticleNotExistException();
         }
@@ -83,7 +83,7 @@ public class CommentController {
         comment.setCreationDate(new Date());
         comment.setAuthor(accountService.getByEmail(user.getUsername()));
         comment.setArticle(article);
-        return ApiUtils.singleResult(commentService.add(comment));
+        return ApiUtils.singleResult(commentService.create(comment));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
@@ -97,7 +97,7 @@ public class CommentController {
             throw new ConstraintViolationException(validated);
         }
 
-        Comment commentFromDb = commentService.getByUuid(uuid);
+        Comment commentFromDb = commentService.getById(uuid);
         if (commentFromDb == null) {
             throw new CommentNotExistException();
         }
@@ -108,7 +108,7 @@ public class CommentController {
         }
 
         commentFromDb.setText(commentRequest.getText());
-        return ApiUtils.singleResult(commentService.edit(commentFromDb));
+        return ApiUtils.singleResult(commentService.update(commentFromDb));
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
@@ -118,13 +118,13 @@ public class CommentController {
         final Integer page,
         final Integer limit
     ) {
-        Article article = articleService.getByUuid(articleId);
+        Article article = articleService.getById(articleId);
         if (article == null) {
             throw new ArticleNotExistException();
         }
 
         Page<Comment> comments = commentService
-            .findByArticle(ApiUtils.createPageRequest(limit, page, "creationDate:desc"), article);
+            .getPageByArticle(ApiUtils.createPageRequest(limit, page, "creationDate:desc"), article);
         if (article.getStatus().equals(ArticleStatus.PUBLISHED)) {
             return listResult(comments);
         }
@@ -151,7 +151,7 @@ public class CommentController {
         @PathVariable final UUID uuid,
         @AuthenticationPrincipal final User user
     ) {
-        Comment commentFromDb = commentService.getByUuid(uuid);
+        Comment commentFromDb = commentService.getById(uuid);
         if (commentFromDb == null) {
             throw new CommentNotExistException();
         }
@@ -163,6 +163,6 @@ public class CommentController {
             || account.getAuthority().equals(AccountRole.ADMIN))) {
             throw new AccountPermissionException();
         }
-        commentService.delete(commentFromDb);
+        commentService.delete(commentFromDb.getId());
     }
 }

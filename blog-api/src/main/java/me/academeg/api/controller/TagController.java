@@ -5,7 +5,6 @@ import me.academeg.api.entity.Account;
 import me.academeg.api.entity.AccountRole;
 import me.academeg.api.entity.Tag;
 import me.academeg.api.exception.entity.AccountPermissionException;
-import me.academeg.api.exception.entity.EmptyFieldException;
 import me.academeg.api.exception.entity.TagExistException;
 import me.academeg.api.exception.entity.TagNotExistException;
 import me.academeg.api.service.AccountService;
@@ -40,40 +39,25 @@ public class TagController {
         this.accountService = accountService;
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
-    public ApiResult getById(@PathVariable final UUID uuid) {
-        Tag tag = tagService.getByUuid(uuid);
-        if (tag == null) {
-            throw new TagNotExistException();
-        }
-        return ApiUtils.singleResult(tag);
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    public ApiResult getById(@PathVariable final UUID id) {
+        return ApiUtils.singleResult(tagService.getById(id));
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ApiResult getList(final Integer page, final Integer limit) {
-        return ApiUtils.listResult(tagService.getPerPage(ApiUtils.createPageRequest(limit, page, null)));
+        return ApiUtils.listResult(tagService.getPage(ApiUtils.createPageRequest(limit, page, null)));
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public ApiResult create(@RequestBody final Tag tag) {
-        if (tag.getValue() == null || tag.getValue().isEmpty()) {
-            throw new EmptyFieldException();
-        }
-
-        Tag tagFromDb = tagService.getByValue(tag.getValue());
-        if (tagFromDb != null) {
-            return ApiUtils.singleResult(tagFromDb);
-        }
-
-        Tag dbTag = new Tag();
-        dbTag.setValue(tag.getValue());
-        return ApiUtils.singleResult(tagService.add(dbTag));
+    public ApiResult create(@Validated @RequestBody final Tag tag) {
+        return ApiUtils.singleResult(tagService.create(tag));
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public ApiResult update(
         @AuthenticationPrincipal final User user,
-        @PathVariable final UUID uuid,
+        @PathVariable final UUID id,
         @RequestBody final Tag tag
     ) {
         Account authAccount = accountService.getByEmail(user.getUsername());
@@ -82,36 +66,29 @@ public class TagController {
             throw new AccountPermissionException();
         }
 
-        Tag tagFromDbUuid = tagService.getByUuid(uuid);
-        if (tagService.getByUuid(uuid) == null) {
+        Tag tagFromDbUuid = tagService.getById(id);
+        if (tagService.getById(id) == null) {
             throw new TagNotExistException();
         }
 
         Tag tagFromDbValue = tagService.getByValue(tag.getValue());
-        if (tagFromDbValue != null && !tagFromDbValue.getId().equals(uuid)) {
+        if (tagFromDbValue != null && !tagFromDbValue.getId().equals(id)) {
             throw new TagExistException();
         }
 
         tagFromDbUuid.setValue(tag.getValue());
-        return ApiUtils.singleResult(tagService.edit(tagFromDbUuid));
+        return ApiUtils.singleResult(tagService.update(tagFromDbUuid));
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void delete(@AuthenticationPrincipal final User user, final @PathVariable UUID uuid) {
+    public void delete(@AuthenticationPrincipal final User user, final @PathVariable UUID id) {
         Account authAccount = accountService.getByEmail(user.getUsername());
         if (!authAccount.getAuthority().equals(AccountRole.MODERATOR)
             && !authAccount.getAuthority().equals(AccountRole.ADMIN)) {
             throw new AccountPermissionException();
         }
 
-        Tag tagFromDb = tagService.getByUuid(uuid);
-        if (tagFromDb == null) {
-            throw new TagNotExistException();
-        }
-
-        tagFromDb.setArticles(null);
-        tagService.edit(tagFromDb);
-        tagService.delete(tagFromDb.getId());
+        tagService.delete(id);
     }
 }

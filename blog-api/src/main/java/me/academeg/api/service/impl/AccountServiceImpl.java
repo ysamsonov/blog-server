@@ -27,7 +27,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account add(Account account) {
+    public Account create(Account account) {
         return accountRepository.save(account);
     }
 
@@ -52,12 +52,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Page<Account> getAll(Pageable pageable) {
+    public Page<Account> getPage(Pageable pageable) {
         return accountRepository.findAll(pageable);
     }
 
     @Override
-    public Account edit(Account account) {
+    public Account update(Account account) {
         return accountRepository.save(account);
     }
 }

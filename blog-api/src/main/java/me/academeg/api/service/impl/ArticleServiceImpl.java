@@ -27,27 +27,27 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public Article add(Article article) {
+    public Article create(Article article) {
         return articleRepository.save(article);
     }
 
     @Override
-    public void delete(UUID uuid) {
-        articleRepository.delete(uuid);
+    public void delete(UUID id) {
+        articleRepository.delete(id);
     }
 
     @Override
-    public Article getByUuid(UUID uuid) {
-        return articleRepository.findOne(uuid);
+    public Article getById(UUID id) {
+        return articleRepository.findOne(id);
     }
 
     @Override
-    public Page<Article> getAll(Pageable pageable) {
+    public Page<Article> getPage(Pageable pageable) {
         return articleRepository.findAll(pageable);
     }
 
     @Override
-    public Article edit(Article article) {
+    public Article update(Article article) {
         return articleRepository.save(article);
     }
 }

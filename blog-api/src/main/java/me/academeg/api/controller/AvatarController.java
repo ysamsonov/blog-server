@@ -63,12 +63,12 @@ public class AvatarController {
 
         Account account = accountService.getByEmail(user.getUsername());
         deleteAvatarFromStorage(account.getAvatar());
-        return singleResult(avatarService.set(avatar, account));
+        return singleResult(avatarService.create(avatar, account));
     }
 
     @RequestMapping(value = "{uuid}", method = RequestMethod.GET)
     public ApiResult getById(@PathVariable final UUID uuid) {
-        Avatar avatarFromDb = avatarService.get(uuid);
+        Avatar avatarFromDb = avatarService.getById(uuid);
         if (avatarFromDb == null) {
             throw new EntityNotExistException("Avatar not exist");
         }
@@ -81,7 +81,7 @@ public class AvatarController {
         Account account = accountService.getByEmail(user.getUsername());
         if (account.getAvatar() != null) {
             deleteAvatarFromStorage(account.getAvatar());
-            avatarService.delete(account.getAvatar());
+            avatarService.delete(account.getAvatar().getId());
         }
     }
 

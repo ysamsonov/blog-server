@@ -54,7 +54,7 @@ public class ImageController {
         image.setOriginalPath(originalImageName);
         String thumbnailImageName = ImageUtils.compressImage(originalImageName, Constants.IMAGE_PATH);
         image.setThumbnailPath(thumbnailImageName);
-        return ApiUtils.singleResult(imageService.add(image));
+        return ApiUtils.singleResult(imageService.create(image));
     }
 
     @RequestMapping(value = "{uuid}", method = RequestMethod.GET)
@@ -84,7 +84,7 @@ public class ImageController {
         }
 
         deleteImageFromStorage(imageFromDb);
-        imageService.delete(imageFromDb);
+        imageService.delete(imageFromDb.getId());
     }
 
     @RequestMapping(value = "/file/{name}", method = RequestMethod.GET, produces = "image/jpg")

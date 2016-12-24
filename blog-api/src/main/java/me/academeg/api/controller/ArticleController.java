@@ -5,7 +5,10 @@ import me.academeg.api.common.ApiResult;
 import me.academeg.api.entity.*;
 import me.academeg.api.exception.entity.AccountPermissionException;
 import me.academeg.api.exception.entity.ArticleNotExistException;
-import me.academeg.api.service.*;
+import me.academeg.api.service.AccountService;
+import me.academeg.api.service.ArticleService;
+import me.academeg.api.service.ImageService;
+import me.academeg.api.service.TagService;
 import me.academeg.api.utils.ApiUtils;
 import me.academeg.api.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +40,6 @@ public class ArticleController {
     private final AccountService accountService;
     private final ArticleService articleService;
     private final ImageService imageService;
-    private final CommentService commentService;
     private final TagService tagService;
 
     @Autowired
@@ -45,13 +47,11 @@ public class ArticleController {
         ArticleService articleService,
         AccountService accountService,
         ImageService imageService,
-        CommentService commentService,
         TagService tagService
     ) {
         this.articleService = articleService;
         this.accountService = accountService;
         this.imageService = imageService;
-        this.commentService = commentService;
         this.tagService = tagService;
     }
 
@@ -60,7 +60,7 @@ public class ArticleController {
         @AuthenticationPrincipal final User user,
         @PathVariable final UUID uuid
     ) {
-        Article article = articleService.getByUuid(uuid);
+        Article article = articleService.getById(uuid);
         if (article == null) {
             throw new ArticleNotExistException();
         }
@@ -90,7 +90,7 @@ public class ArticleController {
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ApiResult getList(final Integer page, final Integer limit) {
         //@TODO return not only publish article, add opportunity to filter article by status
-        return listResult(articleService.getAll(ApiUtils.createPageRequest(limit, page, "creationDate:desc")));
+        return listResult(articleService.getPage(ApiUtils.createPageRequest(limit, page, "creationDate:desc")));
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
@@ -110,7 +110,7 @@ public class ArticleController {
         saveArticle.setTags(new HashSet<>());
         addTagsToArticle(article.getTags(), saveArticle);
 
-        Article articleFromDb = articleService.add(saveArticle);
+        Article articleFromDb = articleService.create(saveArticle);
         articleFromDb.setImages(new HashSet<>());
         addImagesToArticle(article, articleFromDb);
         return singleResult(articleFromDb);
@@ -122,7 +122,7 @@ public class ArticleController {
         @PathVariable final UUID uuid,
         @Validated @RequestBody final Article article
     ) {
-        Article articleFromDb = articleService.getByUuid(uuid);
+        Article articleFromDb = articleService.getById(uuid);
         if (articleFromDb == null) {
             throw new ArticleNotExistException();
         }
@@ -145,13 +145,13 @@ public class ArticleController {
         articleFromDb.getTags().clear();
         addTagsToArticle(article.getTags(), articleFromDb);
         addImagesToArticle(article, articleFromDb);
-        return singleResult(articleService.edit(articleFromDb));
+        return singleResult(articleService.update(articleFromDb));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void delete(@AuthenticationPrincipal final User user, final @PathVariable UUID uuid) {
-        Article articleFromDb = articleService.getByUuid(uuid);
+        Article articleFromDb = articleService.getById(uuid);
         if (articleFromDb == null) {
             throw new ArticleNotExistException("Wrong UUID");
         }
@@ -179,13 +179,13 @@ public class ArticleController {
             throw new AccountPermissionException();
         }
 
-        Article article = articleService.getByUuid(uuid);
+        Article article = articleService.getById(uuid);
         if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
             throw new ArticleNotExistException();
         }
 
         article.setStatus(ArticleStatus.LOCKED);
-        articleService.edit(article);
+        articleService.update(article);
     }
 
     @RequestMapping(value = "/{uuid}/unlock", method = RequestMethod.GET)
@@ -197,14 +197,14 @@ public class ArticleController {
             throw new AccountPermissionException();
         }
 
-        Article article = articleService.getByUuid(uuid);
+        Article article = articleService.getById(uuid);
         if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
             throw new ArticleNotExistException();
         }
 
 
         article.setStatus(ArticleStatus.PUBLISHED);
-        articleService.edit(article);
+        articleService.update(article);
     }
 
     private void addImagesToArticle(Article article, Article articleFromDb) {
@@ -213,7 +213,7 @@ public class ArticleController {
                 Image imageFromDb = imageService.getByUuid(image.getId());
                 if (imageFromDb != null && imageFromDb.getArticle() == null) {
                     imageFromDb.setArticle(articleFromDb);
-                    imageService.edit(imageFromDb);
+                    imageService.update(imageFromDb);
                     articleFromDb.getImages().add(imageFromDb);
                 }
             }
@@ -226,7 +226,7 @@ public class ArticleController {
         }
 
         for (Tag tag : tags) {
-            Tag tagFromDb = tagService.getByUuid(tag.getId());
+            Tag tagFromDb = tagService.getById(tag.getId());
             if (tagFromDb != null) {
                 article.getTags().add(tagFromDb);
             }

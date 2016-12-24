@@ -26,7 +26,7 @@ public class AvatarServiceImpl implements AvatarService {
     }
 
     @Override
-    public Avatar set(Avatar avatar, Account account) {
+    public Avatar create(Avatar avatar, Account account) {
         avatar.setAccount(account);
         if (account.getAvatar() != null) {
             avatarRepository.delete(account.getAvatar());
@@ -35,13 +35,8 @@ public class AvatarServiceImpl implements AvatarService {
     }
 
     @Override
-    public Avatar get(UUID uuid) {
-        return avatarRepository.findOne(uuid);
-    }
-
-    @Override
-    public void delete(Avatar avatar) {
-        avatarRepository.delete(avatar);
+    public Avatar getById(UUID id) {
+        return avatarRepository.findOne(id);
     }
 
     @Override

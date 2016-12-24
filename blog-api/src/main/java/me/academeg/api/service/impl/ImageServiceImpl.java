@@ -25,27 +25,22 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public Image add(Image image) {
+    public Image create(Image image) {
         return imageRepository.save(image);
     }
 
     @Override
-    public Image edit(Image image) {
+    public Image update(Image image) {
         return imageRepository.save(image);
     }
 
     @Override
-    public Image getByUuid(UUID uuid) {
-        return imageRepository.findOne(uuid);
+    public Image getByUuid(UUID id) {
+        return imageRepository.findOne(id);
     }
 
     @Override
-    public void delete(Image image) {
-        imageRepository.delete(image);
-    }
-
-    @Override
-    public void delete(UUID uuid) {
-        imageRepository.delete(uuid);
+    public void delete(UUID id) {
+        imageRepository.delete(id);
     }
 }

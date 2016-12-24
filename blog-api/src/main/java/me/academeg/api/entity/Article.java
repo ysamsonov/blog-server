@@ -66,7 +66,7 @@ public class Article {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "article")
     private List<Comment> comments;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "article_tag",
         joinColumns = @JoinColumn(name = "article_id", referencedColumnName = "id"),

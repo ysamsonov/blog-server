@@ -73,7 +73,7 @@ public class AccountController {
         accountDb.setEmail(acc.getEmail());
         accountDb.setPassword(passwordEncoder.encode(acc.getPassword()));
         accountDb.setAuthority(AccountRole.USER);
-        return singleResult(accountService.add(accountDb));
+        return singleResult(accountService.create(accountDb));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
@@ -98,7 +98,7 @@ public class AccountController {
         authUser.setSurname(acc.getSurname());
         authUser.setName(acc.getName());
         authUser.setLogin(acc.getLogin());
-        return singleResult(accountService.add(authUser));
+        return singleResult(accountService.update(authUser));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
@@ -112,7 +112,7 @@ public class AccountController {
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ApiResult getList(final Integer page, final Integer limit) {
-        return listResult(accountService.getAll(ApiUtils.createPageRequest(limit, page, null)));
+        return listResult(accountService.getPage(ApiUtils.createPageRequest(limit, page, null)));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -27,19 +28,29 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public Tag add(Tag tag) {
-        tag.setValue(tag.getValue().toLowerCase());
-        return tagRepository.save(tag);
+    public Tag create(Tag tag) {
+        Tag newTag = getByValue(tag.getValue());
+        if (newTag != null) {
+            return newTag;
+        }
+
+        newTag = new Tag();
+        newTag.setValue(tag.getValue().toLowerCase());
+        return tagRepository.save(newTag);
+    }
+
+    @Transactional
+    @Override
+    public void delete(UUID id) {
+        Tag tag = getById(id);
+        tag.setArticles(null);
+        tag = tagRepository.save(tag);
+        tagRepository.delete(tag);
     }
 
     @Override
-    public void delete(UUID uuid) {
-        tagRepository.delete(uuid);
-    }
-
-    @Override
-    public Tag getByUuid(UUID uuid) {
-        return tagRepository.findOne(uuid);
+    public Tag getById(UUID id) {
+        return tagRepository.findOne(id);
     }
 
     @Override
@@ -48,12 +59,12 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public Page<Tag> getPerPage(Pageable pageable) {
+    public Page<Tag> getPage(Pageable pageable) {
         return tagRepository.findAll(pageable);
     }
 
     @Override
-    public Tag edit(Tag tag) {
+    public Tag update(Tag tag) {
         tag.setValue(tag.getValue().toLowerCase());
         return tagRepository.save(tag);
     }
