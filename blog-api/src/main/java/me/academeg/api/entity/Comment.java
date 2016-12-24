@@ -5,13 +5,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
+import me.academeg.api.Constants;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -40,8 +41,8 @@ public class Comment {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Calendar creationDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATE_FORMAT)
+    private Date creationDate;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id")

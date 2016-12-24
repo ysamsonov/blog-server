@@ -5,13 +5,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
+import me.academeg.api.Constants;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -55,8 +56,8 @@ public class Article {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Calendar creationDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATE_FORMAT)
+    private Date creationDate;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "article")
     private Set<Image> images;

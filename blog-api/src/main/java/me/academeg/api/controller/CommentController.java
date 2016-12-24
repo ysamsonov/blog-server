@@ -21,7 +21,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
@@ -80,7 +80,7 @@ public class CommentController {
 
         Comment comment = new Comment();
         comment.setText(commentRequest.getText());
-        comment.setCreationDate(Calendar.getInstance());
+        comment.setCreationDate(new Date());
         comment.setAuthor(accountService.getByEmail(user.getUsername()));
         comment.setArticle(article);
         return ApiUtils.singleResult(commentService.add(comment));

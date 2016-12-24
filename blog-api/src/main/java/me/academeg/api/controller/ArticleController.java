@@ -15,8 +15,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.UUID;
 
@@ -106,7 +106,7 @@ public class ArticleController {
             article.setStatus(ArticleStatus.PUBLISHED);
         }
         saveArticle.setStatus(article.getStatus());
-        saveArticle.setCreationDate(Calendar.getInstance());
+        saveArticle.setCreationDate(new Date());
         saveArticle.setTags(new HashSet<>());
         addTagsToArticle(article.getTags(), saveArticle);
 
