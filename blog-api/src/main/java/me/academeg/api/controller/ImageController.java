@@ -10,10 +10,8 @@ import me.academeg.api.exception.entity.FileFormatException;
 import me.academeg.api.exception.entity.ImageNotExistException;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.ImageService;
-import me.academeg.api.utils.ApiUtils;
 import me.academeg.api.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
@@ -22,6 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.UUID;
+
+import static me.academeg.api.utils.ApiUtils.okResult;
+import static me.academeg.api.utils.ApiUtils.singleResult;
 
 /**
  * ImageController Controller
@@ -44,59 +45,45 @@ public class ImageController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public ApiResult create(@RequestParam(name = "image") final MultipartFile file) {
-        if (!file.getContentType().startsWith("image/")) {
+    public ApiResult create(@RequestParam(name = "image") final MultipartFile image) {
+        if (!image.getContentType().startsWith("image/")) {
             throw new FileFormatException("You can upload only images");
         }
 
-        Image image = new Image();
-        String originalImageName = ImageUtils.saveImage(Constants.IMAGE_PATH, file);
-        image.setOriginalPath(originalImageName);
-        String thumbnailImageName = ImageUtils.compressImage(originalImageName, Constants.IMAGE_PATH);
-        image.setThumbnailPath(thumbnailImageName);
-        return ApiUtils.singleResult(imageService.create(image));
+        return singleResult(imageService.create(image));
     }
 
-    @RequestMapping(value = "{uuid}", method = RequestMethod.GET)
-    public ApiResult getById(@PathVariable final UUID uuid) {
-        Image imageFromDb = imageService.getByUuid(uuid);
+    @RequestMapping(value = "{id}", method = RequestMethod.GET)
+    public ApiResult getById(@PathVariable final UUID id) {
+        Image imageFromDb = imageService.getByUuid(id);
         if (imageFromDb == null) {
             throw new EntityNotExistException("Image not exist");
         }
-        return ApiUtils.singleResult(imageFromDb);
+        return singleResult(imageFromDb);
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
-    @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void delete(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
-        Image imageFromDb = imageService.getByUuid(uuid);
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public ApiResult delete(@AuthenticationPrincipal final User user, @PathVariable final UUID id) {
+        Image imageFromDb = imageService.getByUuid(id);
         if (imageFromDb == null) {
             throw new ImageNotExistException();
         }
 
         Account authAcc = accountService.getByEmail(user.getUsername());
         if (imageFromDb.getArticle() == null) {
-            return;
+            throw new ImageNotExistException();
         }
 
         if (!imageFromDb.getArticle().getAuthor().getId().equals(authAcc.getId())) {
             throw new AccountPermissionException();
         }
 
-        deleteImageFromStorage(imageFromDb);
         imageService.delete(imageFromDb.getId());
+        return okResult();
     }
 
     @RequestMapping(value = "/file/{name}", method = RequestMethod.GET, produces = "image/jpg")
     public byte[] getByName(@PathVariable final String name) {
         return ImageUtils.toByteArray(new File(Constants.IMAGE_PATH + name));
-    }
-
-    private void deleteImageFromStorage(Image image) {
-        if (image == null) {
-            return;
-        }
-
-        ImageUtils.deleteImages(Constants.AVATAR_PATH, image.getOriginalPath(), image.getThumbnailPath());
     }
 }
