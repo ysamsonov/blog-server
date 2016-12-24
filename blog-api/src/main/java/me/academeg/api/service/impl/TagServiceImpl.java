@@ -51,6 +51,9 @@ public class TagServiceImpl implements TagService {
     @Override
     public void delete(UUID id) {
         Tag tag = getById(id);
+        if (tag == null) {
+            throw new TagNotExistException();
+        }
         tag.getArticles().forEach(article -> {
             article.getTags().remove(tag);
             articleService.update(article);
