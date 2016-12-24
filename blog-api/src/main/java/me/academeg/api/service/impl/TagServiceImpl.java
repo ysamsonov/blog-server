@@ -1,7 +1,10 @@
 package me.academeg.api.service.impl;
 
 import me.academeg.api.entity.Tag;
+import me.academeg.api.exception.entity.TagExistException;
+import me.academeg.api.exception.entity.TagNotExistException;
 import me.academeg.api.repository.TagRepository;
+import me.academeg.api.service.ArticleService;
 import me.academeg.api.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,10 +24,15 @@ import java.util.UUID;
 public class TagServiceImpl implements TagService {
 
     private TagRepository tagRepository;
+    private ArticleService articleService;
 
     @Autowired
-    public TagServiceImpl(TagRepository tagRepository) {
+    public TagServiceImpl(
+        TagRepository tagRepository,
+        ArticleService articleService
+    ) {
         this.tagRepository = tagRepository;
+        this.articleService = articleService;
     }
 
     @Override
@@ -43,9 +51,12 @@ public class TagServiceImpl implements TagService {
     @Override
     public void delete(UUID id) {
         Tag tag = getById(id);
+        tag.getArticles().forEach(article -> {
+            article.getTags().remove(tag);
+            articleService.update(article);
+        });
         tag.setArticles(null);
-        tag = tagRepository.save(tag);
-        tagRepository.delete(tag);
+        tagRepository.delete(tagRepository.save(tag));
     }
 
     @Override
@@ -63,9 +74,17 @@ public class TagServiceImpl implements TagService {
         return tagRepository.findAll(pageable);
     }
 
+    @Transactional
     @Override
     public Tag update(Tag tag) {
         tag.setValue(tag.getValue().toLowerCase());
+        if (getById(tag.getId()) == null) {
+            throw new TagNotExistException();
+        }
+        Tag tagFromDb = getByValue(tag.getValue());
+        if (tagFromDb != null && !tagFromDb.getId().equals(tag.getId())) {
+            throw new TagExistException();
+        }
         return tagRepository.save(tag);
     }
 }
