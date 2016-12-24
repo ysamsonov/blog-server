@@ -30,7 +30,7 @@ import static me.academeg.api.utils.ApiUtils.singleResult;
  * @version 1.0
  */
 @RestController
-@RequestMapping("/api/avatar")
+@RequestMapping("/api/avatars")
 @Validated
 public class AvatarController {
 

@@ -34,7 +34,7 @@ import static me.academeg.api.utils.ApiUtils.listResult;
  * @version 1.0
  */
 @RestController
-@RequestMapping("/api/comment")
+@RequestMapping("/api/comments")
 @Validated
 public class CommentController {
 

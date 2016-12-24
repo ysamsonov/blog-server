@@ -30,7 +30,7 @@ import java.util.UUID;
  * @version 1.0
  */
 @RestController
-@RequestMapping("/api/image")
+@RequestMapping("/api/images")
 @Validated
 public class ImageController {
 

@@ -41,13 +41,13 @@ public class OAuth2Config {
                 .and()
                 .authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/account/**").permitAll()
-                .antMatchers(HttpMethod.POST, "/api/account").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/article/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/comment/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/tag/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/avatar/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/image/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/accounts/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/accounts").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/articles/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/tags/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/avatars/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/images/**").permitAll()
                 .anyRequest().authenticated();
         }
     }

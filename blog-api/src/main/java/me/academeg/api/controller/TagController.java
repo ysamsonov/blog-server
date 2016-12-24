@@ -27,7 +27,7 @@ import java.util.UUID;
  * @version 1.0
  */
 @RestController
-@RequestMapping("/api/tag")
+@RequestMapping("/api/tags")
 @Validated
 public class TagController {
 
@@ -38,6 +38,15 @@ public class TagController {
     public TagController(TagService tagService, AccountService accountService) {
         this.tagService = tagService;
         this.accountService = accountService;
+    }
+
+    @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
+    public ApiResult getById(@PathVariable final UUID uuid) {
+        Tag tag = tagService.getByUuid(uuid);
+        if (tag == null) {
+            throw new TagNotExistException();
+        }
+        return ApiUtils.singleResult(tag);
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)

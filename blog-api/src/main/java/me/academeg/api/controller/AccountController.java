@@ -37,7 +37,7 @@ import static me.academeg.api.utils.ApiUtils.singleResult;
  * @version 1.0
  */
 @RestController
-@RequestMapping("/api/account")
+@RequestMapping("/api/accounts")
 public class AccountController {
 
     private final PasswordEncoder passwordEncoder;
