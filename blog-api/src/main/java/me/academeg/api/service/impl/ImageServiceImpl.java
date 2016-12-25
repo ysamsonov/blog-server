@@ -7,7 +7,6 @@ import me.academeg.api.service.ImageService;
 import me.academeg.api.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
@@ -45,18 +44,18 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public Image getByUuid(UUID id) {
+    public Image getById(UUID id) {
         return imageRepository.findOne(id);
     }
 
-    @Transactional
     @Override
     public void delete(UUID id) {
         Image image = imageRepository.findOne(id);
         if (image == null || image.getArticle() == null) {
             throw new ImageNotExistException();
         }
-        ImageUtils.deleteImages(AVATAR_PATH, image.getOriginalPath(), image.getThumbnailPath());
+        image.getArticle().getImages().remove(image);
+        ImageUtils.deleteImages(IMAGE_PATH, image.getOriginalPath(), image.getThumbnailPath());
         imageRepository.delete(image);
     }
 }

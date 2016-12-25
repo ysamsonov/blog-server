@@ -35,23 +35,21 @@ public class Comment {
     @Type(type = "uuid-char")
     private UUID id;
 
-    @Column(nullable = false, columnDefinition = "text")
     @NotEmpty
+    @Column(nullable = false, columnDefinition = "text")
     private String text;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATE_FORMAT)
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATE_FORMAT)
     private Date creationDate;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "author_id")
     private Account author;
 
-    @ManyToOne
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @JoinColumn(name = "article_id", nullable = false)
     @NotNull
+    @ManyToOne
     private Article article;
 
     public Comment() {

@@ -17,7 +17,7 @@ public interface ImageService {
 
     void delete(UUID id);
 
-    Image getByUuid(UUID id);
+    Image getById(UUID id);
 
     Image update(Image image);
 }

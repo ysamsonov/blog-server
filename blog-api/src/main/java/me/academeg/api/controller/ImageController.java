@@ -55,7 +55,7 @@ public class ImageController {
 
     @RequestMapping(value = "{id}", method = RequestMethod.GET)
     public ApiResult getById(@PathVariable final UUID id) {
-        Image imageFromDb = imageService.getByUuid(id);
+        Image imageFromDb = imageService.getById(id);
         if (imageFromDb == null) {
             throw new EntityNotExistException("Image not exist");
         }
@@ -64,7 +64,7 @@ public class ImageController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public ApiResult delete(@AuthenticationPrincipal final User user, @PathVariable final UUID id) {
-        Image imageFromDb = imageService.getByUuid(id);
+        Image imageFromDb = imageService.getById(id);
         if (imageFromDb == null) {
             throw new ImageNotExistException();
         }

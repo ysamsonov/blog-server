@@ -59,11 +59,11 @@ public class Article {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATE_FORMAT)
     private Date creationDate;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "article")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "article", fetch = FetchType.EAGER)
     private Set<Image> images;
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "article")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "article", fetch = FetchType.LAZY)
     private List<Comment> comments;
 
     @ManyToMany(fetch = FetchType.EAGER)

@@ -8,7 +8,6 @@ import me.academeg.api.exception.entity.ArticleNotExistException;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.ArticleService;
 import me.academeg.api.service.ImageService;
-import me.academeg.api.service.TagService;
 import me.academeg.api.utils.ApiUtils;
 import me.academeg.api.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +17,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.UUID;
 
 import static me.academeg.api.utils.ApiUtils.listResult;
@@ -36,23 +32,19 @@ import static me.academeg.api.utils.ApiUtils.singleResult;
 @RequestMapping("/api/articles")
 @Validated
 public class ArticleController {
-
     private final AccountService accountService;
     private final ArticleService articleService;
     private final ImageService imageService;
-    private final TagService tagService;
 
     @Autowired
     public ArticleController(
         ArticleService articleService,
         AccountService accountService,
-        ImageService imageService,
-        TagService tagService
+        ImageService imageService
     ) {
         this.articleService = articleService;
         this.accountService = accountService;
         this.imageService = imageService;
-        this.tagService = tagService;
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
@@ -98,22 +90,8 @@ public class ArticleController {
         @Validated @RequestBody final Article article,
         @AuthenticationPrincipal final User user
     ) {
-        Article saveArticle = new Article();
-        saveArticle.setAuthor(accountService.getByEmail(user.getUsername()));
-        saveArticle.setTitle(article.getTitle());
-        saveArticle.setText(article.getText());
-        if (!article.getStatus().equals(ArticleStatus.PUBLISHED) || !article.getStatus().equals(ArticleStatus.DRAFT)) {
-            article.setStatus(ArticleStatus.PUBLISHED);
-        }
-        saveArticle.setStatus(article.getStatus());
-        saveArticle.setCreationDate(new Date());
-        saveArticle.setTags(new HashSet<>());
-        addTagsToArticle(article.getTags(), saveArticle);
-
-        Article articleFromDb = articleService.create(saveArticle);
-        articleFromDb.setImages(new HashSet<>());
-        addImagesToArticle(article, articleFromDb);
-        return singleResult(articleFromDb);
+        article.setAuthor(accountService.getByEmail(user.getUsername()));
+        return singleResult(articleService.create(article));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
@@ -143,8 +121,8 @@ public class ArticleController {
             }
         }
         articleFromDb.getTags().clear();
-        addTagsToArticle(article.getTags(), articleFromDb);
-        addImagesToArticle(article, articleFromDb);
+//        addTagsToArticle(article.getTags(), articleFromDb);
+//        addImagesToArticle(article, articleFromDb);
         return singleResult(articleService.update(articleFromDb));
     }
 
@@ -207,29 +185,32 @@ public class ArticleController {
         articleService.update(article);
     }
 
-    private void addImagesToArticle(Article article, Article articleFromDb) {
-        if (article.getImages() != null) {
-            for (Image image : article.getImages()) {
-                Image imageFromDb = imageService.getByUuid(image.getId());
-                if (imageFromDb != null && imageFromDb.getArticle() == null) {
-                    imageFromDb.setArticle(articleFromDb);
-                    imageService.update(imageFromDb);
-                    articleFromDb.getImages().add(imageFromDb);
-                }
-            }
-        }
-    }
-
-    private void addTagsToArticle(Collection<Tag> tags, Article article) {
-        if (tags == null) {
-            return;
-        }
-
-        for (Tag tag : tags) {
-            Tag tagFromDb = tagService.getById(tag.getId());
-            if (tagFromDb != null) {
-                article.getTags().add(tagFromDb);
-            }
-        }
-    }
+//    private void addImagesToArticle(Collection<Image> images, Article article) {
+//        article.setImages(new HashSet<>());
+//        if (images == null) {
+//            return;
+//        }
+//
+//        images.forEach(image -> {
+//            Image imageFromDb = imageService.getById(image.getId());
+//            if (imageFromDb != null && imageFromDb.getArticle() == null) {
+//                imageFromDb.setArticle(article);
+//                imageService.update(imageFromDb);
+//                article.getImages().add(imageFromDb);
+//            }
+//        });
+//    }
+//
+//    private void addTagsToArticle(Collection<Tag> tags, Article article) {
+//        if (tags == null) {
+//            return;
+//        }
+//
+//        for (Tag tag : tags) {
+//            Tag tagFromDb = tagService.getById(tag.getId());
+//            if (tagFromDb != null) {
+//                article.getTags().add(tagFromDb);
+//            }
+//        }
+//    }
 }

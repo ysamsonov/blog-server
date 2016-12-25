@@ -38,7 +38,6 @@ public class Image {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToOne
-    @JoinColumn(name = "article_id")
     private Article article;
 
     public Image() {
