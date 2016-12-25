@@ -1,11 +1,13 @@
 package me.academeg.api.service.impl;
 
+import me.academeg.api.Constants;
 import me.academeg.api.entity.Article;
 import me.academeg.api.entity.ArticleStatus;
 import me.academeg.api.entity.Image;
 import me.academeg.api.repository.ArticleRepository;
 import me.academeg.api.service.ArticleService;
 import me.academeg.api.service.ImageService;
+import me.academeg.api.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.UUID;
 
 /**
@@ -58,6 +59,13 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public void delete(UUID id) {
+        Article article = getById(id);
+        article.getImages().forEach(
+            image -> ImageUtils.deleteImages(
+                Constants.IMAGE_PATH,
+                image.getThumbnailPath(),
+                image.getOriginalPath())
+        );
         articleRepository.delete(id);
     }
 
@@ -73,11 +81,36 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public Article update(Article article) {
+        Article articleFromDb = getById(article.getId());
+        articleFromDb.setTitle(article.getTitle());
+        articleFromDb.setText(article.getText());
+        if (!articleFromDb.getStatus().equals(ArticleStatus.LOCKED)) {
+            if (article.getStatus() != null) {
+                if (article.getStatus().equals(ArticleStatus.LOCKED)) {
+                    article.setStatus(ArticleStatus.DRAFT);
+                }
+                articleFromDb.setStatus(article.getStatus());
+            }
+        }
+        articleFromDb.getTags().clear();
+        articleFromDb.getTags().addAll(article.getTags());
+        addImagesToArticle(article.getImages(), articleFromDb);
+        return articleRepository.save(articleFromDb);
+    }
+
+    @Override
+    public Article lock(Article article) {
+        article.setStatus(ArticleStatus.LOCKED);
+        return articleRepository.save(article);
+    }
+
+    @Override
+    public Article unlock(Article article) {
+        article.setStatus(ArticleStatus.PUBLISHED);
         return articleRepository.save(article);
     }
 
     private void addImagesToArticle(Collection<Image> images, Article article) {
-        article.setImages(new HashSet<>());
         if (images == null) {
             return;
         }

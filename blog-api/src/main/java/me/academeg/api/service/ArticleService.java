@@ -23,4 +23,8 @@ public interface ArticleService {
     Page<Article> getPage(Pageable pageable);
 
     Article update(Article article);
+
+    Article lock(Article article);
+
+    Article unlock(Article article);
 }

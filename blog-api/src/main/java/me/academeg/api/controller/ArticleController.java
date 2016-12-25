@@ -1,17 +1,16 @@
 package me.academeg.api.controller;
 
-import me.academeg.api.Constants;
 import me.academeg.api.common.ApiResult;
-import me.academeg.api.entity.*;
+import me.academeg.api.entity.Account;
+import me.academeg.api.entity.AccountRole;
+import me.academeg.api.entity.Article;
+import me.academeg.api.entity.ArticleStatus;
 import me.academeg.api.exception.entity.AccountPermissionException;
 import me.academeg.api.exception.entity.ArticleNotExistException;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.ArticleService;
-import me.academeg.api.service.ImageService;
 import me.academeg.api.utils.ApiUtils;
-import me.academeg.api.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
@@ -19,8 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-import static me.academeg.api.utils.ApiUtils.listResult;
-import static me.academeg.api.utils.ApiUtils.singleResult;
+import static me.academeg.api.utils.ApiUtils.*;
 
 /**
  * ArticleController Controller
@@ -34,17 +32,11 @@ import static me.academeg.api.utils.ApiUtils.singleResult;
 public class ArticleController {
     private final AccountService accountService;
     private final ArticleService articleService;
-    private final ImageService imageService;
 
     @Autowired
-    public ArticleController(
-        ArticleService articleService,
-        AccountService accountService,
-        ImageService imageService
-    ) {
+    public ArticleController(ArticleService articleService, AccountService accountService) {
         this.articleService = articleService;
         this.accountService = accountService;
-        this.imageService = imageService;
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
@@ -110,25 +102,12 @@ public class ArticleController {
         if (!authAccount.getId().equals(author.getId())) {
             throw new AccountPermissionException("You cannot to update this article");
         }
-        articleFromDb.setTitle(article.getTitle());
-        articleFromDb.setText(article.getText());
-        if (!articleFromDb.getStatus().equals(ArticleStatus.LOCKED)) {
-            if (article.getStatus() != null) {
-                if (article.getStatus().equals(ArticleStatus.LOCKED)) {
-                    article.setStatus(ArticleStatus.DRAFT);
-                }
-                articleFromDb.setStatus(article.getStatus());
-            }
-        }
-        articleFromDb.getTags().clear();
-//        addTagsToArticle(article.getTags(), articleFromDb);
-//        addImagesToArticle(article, articleFromDb);
-        return singleResult(articleService.update(articleFromDb));
+        article.setId(articleFromDb.getId());
+        return singleResult(articleService.update(article));
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
-    @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void delete(@AuthenticationPrincipal final User user, final @PathVariable UUID uuid) {
+    public ApiResult delete(@AuthenticationPrincipal final User user, final @PathVariable UUID uuid) {
         Article articleFromDb = articleService.getById(uuid);
         if (articleFromDb == null) {
             throw new ArticleNotExistException("Wrong UUID");
@@ -141,16 +120,12 @@ public class ArticleController {
             throw new AccountPermissionException();
         }
 
-        for (Image image : articleFromDb.getImages()) {
-            ImageUtils.deleteImages(Constants.IMAGE_PATH, image.getThumbnailPath(), image.getOriginalPath());
-        }
-
         articleService.delete(uuid);
+        return okResult();
     }
 
-    @RequestMapping(value = "/{uuid}/block", method = RequestMethod.GET)
-    @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void lock(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
+    @RequestMapping(value = "/{uuid}/lock", method = RequestMethod.GET)
+    public ApiResult lock(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(AccountRole.ADMIN)
             || account.getAuthority().equals(AccountRole.MODERATOR))) {
@@ -162,13 +137,12 @@ public class ArticleController {
             throw new ArticleNotExistException();
         }
 
-        article.setStatus(ArticleStatus.LOCKED);
-        articleService.update(article);
+        articleService.lock(article);
+        return okResult();
     }
 
     @RequestMapping(value = "/{uuid}/unlock", method = RequestMethod.GET)
-    @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void unlock(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
+    public ApiResult unlock(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(AccountRole.ADMIN))
             || account.getAuthority().equals(AccountRole.MODERATOR)) {
@@ -180,37 +154,7 @@ public class ArticleController {
             throw new ArticleNotExistException();
         }
 
-
-        article.setStatus(ArticleStatus.PUBLISHED);
-        articleService.update(article);
+        articleService.unlock(article);
+        return okResult();
     }
-
-//    private void addImagesToArticle(Collection<Image> images, Article article) {
-//        article.setImages(new HashSet<>());
-//        if (images == null) {
-//            return;
-//        }
-//
-//        images.forEach(image -> {
-//            Image imageFromDb = imageService.getById(image.getId());
-//            if (imageFromDb != null && imageFromDb.getArticle() == null) {
-//                imageFromDb.setArticle(article);
-//                imageService.update(imageFromDb);
-//                article.getImages().add(imageFromDb);
-//            }
-//        });
-//    }
-//
-//    private void addTagsToArticle(Collection<Tag> tags, Article article) {
-//        if (tags == null) {
-//            return;
-//        }
-//
-//        for (Tag tag : tags) {
-//            Tag tagFromDb = tagService.getById(tag.getId());
-//            if (tagFromDb != null) {
-//                article.getTags().add(tagFromDb);
-//            }
-//        }
-//    }
 }

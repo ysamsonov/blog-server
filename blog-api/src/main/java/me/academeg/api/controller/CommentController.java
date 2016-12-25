@@ -11,7 +11,6 @@ import me.academeg.api.service.CommentService;
 import me.academeg.api.utils.ApiUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
@@ -25,6 +24,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static me.academeg.api.utils.ApiUtils.listResult;
+import static me.academeg.api.utils.ApiUtils.okResult;
 
 /**
  * CommentController
@@ -137,8 +137,7 @@ public class CommentController {
     }
 
     @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
-    @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void delete(
+    public ApiResult delete(
         @PathVariable final UUID uuid,
         @AuthenticationPrincipal final User user
     ) {
@@ -155,5 +154,6 @@ public class CommentController {
             throw new AccountPermissionException();
         }
         commentService.delete(commentFromDb.getId());
+        return okResult();
     }
 }
