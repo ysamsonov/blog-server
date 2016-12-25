@@ -21,7 +21,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
@@ -55,34 +54,26 @@ public class CommentController {
         this.accountService = accountService;
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
-    public ApiResult getById(@PathVariable final UUID uuid) {
-        Comment comment = commentService.getById(uuid);
-        if (comment == null) {
-            throw new CommentNotExistException();
-        }
-        return ApiUtils.singleResult(comment);
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    public ApiResult getById(@PathVariable final UUID id) {
+        return ApiUtils.singleResult(commentService.getById(id));
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ApiResult create(
-        @RequestBody @Validated final Comment commentRequest,
+        @RequestBody @Validated final Comment comment,
         @AuthenticationPrincipal final User user
     ) {
-        if (commentRequest.getArticle().getId() == null) {
+        if (comment.getArticle().getId() == null) {
             throw new ArticleNotExistException();
         }
 
-        Article article = articleService.getById(commentRequest.getArticle().getId());
+        Article article = articleService.getById(comment.getArticle().getId());
         if (article == null || !article.getStatus().equals(ArticleStatus.PUBLISHED)) {
             throw new ArticleNotExistException();
         }
 
-        Comment comment = new Comment();
-        comment.setText(commentRequest.getText());
-        comment.setCreationDate(new Date());
         comment.setAuthor(accountService.getByEmail(user.getUsername()));
-        comment.setArticle(article);
         return ApiUtils.singleResult(commentService.create(comment));
     }
 

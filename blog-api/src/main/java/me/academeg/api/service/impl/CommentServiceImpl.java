@@ -3,12 +3,14 @@ package me.academeg.api.service.impl;
 import me.academeg.api.entity.Article;
 import me.academeg.api.entity.Comment;
 import me.academeg.api.repository.CommentRepository;
+import me.academeg.api.service.ArticleService;
 import me.academeg.api.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -29,6 +31,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Comment create(Comment comment) {
+        comment.setCreationDate(new Date());
         return commentRepository.save(comment);
     }
 
