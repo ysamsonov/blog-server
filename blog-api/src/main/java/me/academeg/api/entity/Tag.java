@@ -9,6 +9,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,7 +39,7 @@ public class Tag {
 
     @JsonIgnore
     @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
-    private List<Article> articles;
+    private List<Article> articles = new ArrayList<>();
 
     public Tag() {
     }

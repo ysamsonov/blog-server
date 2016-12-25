@@ -12,6 +12,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -60,11 +61,11 @@ public class Account {
 
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "author")
-    private List<Article> articles;
+    private List<Article> articles = new ArrayList<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "author")
-    private List<Comment> comments;
+    private List<Comment> comments = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
