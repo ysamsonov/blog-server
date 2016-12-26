@@ -4,7 +4,6 @@ import me.academeg.api.entity.Tag;
 import me.academeg.api.exception.entity.TagExistException;
 import me.academeg.api.exception.entity.TagNotExistException;
 import me.academeg.api.repository.TagRepository;
-import me.academeg.api.service.ArticleService;
 import me.academeg.api.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,17 +21,11 @@ import java.util.UUID;
  */
 @Service
 public class TagServiceImpl implements TagService {
-
     private TagRepository tagRepository;
-    private ArticleService articleService;
 
     @Autowired
-    public TagServiceImpl(
-        TagRepository tagRepository,
-        ArticleService articleService
-    ) {
+    public TagServiceImpl(TagRepository tagRepository) {
         this.tagRepository = tagRepository;
-        this.articleService = articleService;
     }
 
     @Override
@@ -54,10 +47,7 @@ public class TagServiceImpl implements TagService {
         if (tag == null) {
             throw new TagNotExistException();
         }
-        tag.getArticles().forEach(article -> {
-            article.getTags().remove(tag);
-            articleService.update(article);
-        });
+        tag.getArticles().forEach(article -> article.getTags().remove(tag));
         tag.setArticles(null);
         tagRepository.delete(tagRepository.save(tag));
     }
@@ -81,13 +71,15 @@ public class TagServiceImpl implements TagService {
     @Override
     public Tag update(Tag tag) {
         tag.setValue(tag.getValue().toLowerCase());
-        if (getById(tag.getId()) == null) {
+        Tag tagFromDb = getById(tag.getId());
+        if (tagFromDb == null) {
             throw new TagNotExistException();
         }
-        Tag tagFromDb = getByValue(tag.getValue());
-        if (tagFromDb != null && !tagFromDb.getId().equals(tag.getId())) {
+        Tag tagFromDbByValue = getByValue(tag.getValue());
+        if (tagFromDbByValue != null) {
             throw new TagExistException();
         }
-        return tagRepository.save(tag);
+        tagFromDb.setValue(tag.getValue());
+        return tagRepository.save(tagFromDb);
     }
 }

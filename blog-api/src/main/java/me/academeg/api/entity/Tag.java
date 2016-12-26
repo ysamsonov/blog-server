@@ -38,7 +38,7 @@ public class Tag {
     private String value;
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
+    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "tags", fetch = FetchType.LAZY)
     private List<Article> articles = new ArrayList<>();
 
     public Tag() {
