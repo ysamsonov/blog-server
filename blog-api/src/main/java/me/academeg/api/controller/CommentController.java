@@ -93,8 +93,8 @@ public class CommentController {
             throw new CommentNotExistException();
         }
 
-        Account account = accountService.getByEmail(user.getUsername());
-        if (!commentFromDb.getAuthor().getId().equals(account.getId())) {
+        Account authAccount = accountService.getByEmail(user.getUsername());
+        if (commentFromDb.getAuthor() == null || !authAccount.getId().equals(commentFromDb.getAuthor().getId())) {
             throw new AccountPermissionException();
         }
 
@@ -136,24 +136,30 @@ public class CommentController {
         throw new ArticleNotExistException();
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public ApiResult delete(
-        @PathVariable final UUID uuid,
+        @PathVariable final UUID id,
         @AuthenticationPrincipal final User user
     ) {
-        Comment commentFromDb = commentService.getById(uuid);
-        if (commentFromDb == null) {
+        Comment comment = commentService.getById(id);
+        if (comment == null) {
             throw new CommentNotExistException();
         }
 
         Account account = accountService.getByEmail(user.getUsername());
-
-        if (!(commentFromDb.getAuthor().getId().equals(account.getId())
-            || account.getAuthority().equals(AccountRole.MODERATOR)
-            || account.getAuthority().equals(AccountRole.ADMIN))) {
+        if (account.getAuthority().equals(AccountRole.ADMIN)
+            || account.getAuthority().equals(AccountRole.MODERATOR)) {
+            commentService.delete(comment.getId());
+            return okResult();
+        }
+        if (comment.getAuthor() == null) {
             throw new AccountPermissionException();
         }
-        commentService.delete(commentFromDb.getId());
-        return okResult();
+        if (comment.getAuthor().getId().equals(account.getId())) {
+            commentService.delete(comment.getId());
+            return okResult();
+        }
+
+        throw new AccountPermissionException();
     }
 }

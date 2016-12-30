@@ -56,15 +56,15 @@ public class Account {
     @NotBlank
     private String password;
 
-    @OneToOne(mappedBy = "account")
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "account")
     private Avatar avatar;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "author")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "author")
     private List<Article> articles = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "author")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "author")
     private List<Comment> comments = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

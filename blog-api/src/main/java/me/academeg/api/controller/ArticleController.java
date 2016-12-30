@@ -39,12 +39,12 @@ public class ArticleController {
         this.accountService = accountService;
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ApiResult getById(
         @AuthenticationPrincipal final User user,
-        @PathVariable final UUID uuid
+        @PathVariable final UUID id
     ) {
-        Article article = articleService.getById(uuid);
+        Article article = articleService.getById(id);
         if (article == null) {
             throw new ArticleNotExistException();
         }
@@ -86,53 +86,58 @@ public class ArticleController {
         return singleResult(articleService.create(article));
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public ApiResult update(
         @AuthenticationPrincipal final User user,
-        @PathVariable final UUID uuid,
+        @PathVariable final UUID id,
         @Validated @RequestBody final Article article
     ) {
-        Article articleFromDb = articleService.getById(uuid);
+        Article articleFromDb = articleService.getById(id);
         if (articleFromDb == null) {
             throw new ArticleNotExistException();
         }
 
-        Account author = articleFromDb.getAuthor();
         Account authAccount = accountService.getByEmail(user.getUsername());
-        if (!authAccount.getId().equals(author.getId())) {
+        if (articleFromDb.getAuthor() == null || !authAccount.getId().equals(articleFromDb.getAuthor().getId())) {
             throw new AccountPermissionException("You cannot to update this article");
         }
         article.setId(articleFromDb.getId());
         return singleResult(articleService.update(article));
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
-    public ApiResult delete(@AuthenticationPrincipal final User user, final @PathVariable UUID uuid) {
-        Article articleFromDb = articleService.getById(uuid);
-        if (articleFromDb == null) {
-            throw new ArticleNotExistException("Wrong UUID");
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public ApiResult delete(@AuthenticationPrincipal final User user, final @PathVariable UUID id) {
+        Article article = articleService.getById(id);
+        if (article == null) {
+            throw new ArticleNotExistException();
         }
 
-        Account authAccount = accountService.getByEmail(user.getUsername());
-        if (!authAccount.getAuthority().equals(AccountRole.MODERATOR)
-            && !authAccount.getAuthority().equals(AccountRole.ADMIN)
-            && !authAccount.getId().equals(articleFromDb.getAuthor().getId())) {
+        Account account = accountService.getByEmail(user.getUsername());
+        if (account.getAuthority().equals(AccountRole.ADMIN)
+            || account.getAuthority().equals(AccountRole.MODERATOR)) {
+            articleService.delete(article.getId());
+            return okResult();
+        }
+        if (article.getAuthor() == null) {
             throw new AccountPermissionException();
         }
+        if (article.getAuthor().getId().equals(account.getId())) {
+            articleService.delete(article.getId());
+            return okResult();
+        }
 
-        articleService.delete(uuid);
-        return okResult();
+        throw new AccountPermissionException();
     }
 
-    @RequestMapping(value = "/{uuid}/lock", method = RequestMethod.GET)
-    public ApiResult lock(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
+    @RequestMapping(value = "/{id}/lock", method = RequestMethod.GET)
+    public ApiResult lock(@AuthenticationPrincipal final User user, @PathVariable final UUID id) {
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(AccountRole.ADMIN)
             || account.getAuthority().equals(AccountRole.MODERATOR))) {
             throw new AccountPermissionException();
         }
 
-        Article article = articleService.getById(uuid);
+        Article article = articleService.getById(id);
         if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
             throw new ArticleNotExistException();
         }
@@ -141,15 +146,15 @@ public class ArticleController {
         return okResult();
     }
 
-    @RequestMapping(value = "/{uuid}/unlock", method = RequestMethod.GET)
-    public ApiResult unlock(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
+    @RequestMapping(value = "/{id}/unlock", method = RequestMethod.GET)
+    public ApiResult unlock(@AuthenticationPrincipal final User user, @PathVariable final UUID id) {
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(AccountRole.ADMIN))
             || account.getAuthority().equals(AccountRole.MODERATOR)) {
             throw new AccountPermissionException();
         }
 
-        Article article = articleService.getById(uuid);
+        Article article = articleService.getById(id);
         if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
             throw new ArticleNotExistException();
         }

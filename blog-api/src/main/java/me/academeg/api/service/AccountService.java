@@ -16,7 +16,7 @@ public interface AccountService {
 
     Account create(Account account);
 
-    void delete(Account account);
+    void delete(UUID id);
 
     Account getById(UUID id);
 
