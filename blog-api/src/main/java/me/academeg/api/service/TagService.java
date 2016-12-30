@@ -14,15 +14,15 @@ import java.util.UUID;
  */
 public interface TagService {
 
-    Tag add(Tag tag);
+    Tag create(Tag tag);
 
-    void delete(UUID uuid);
+    void delete(UUID id);
 
-    Tag getByUuid(UUID uuid);
+    Tag getById(UUID id);
 
     Tag getByValue(String value);
 
-    Page<Tag> getPerPage(Pageable pageable);
+    Page<Tag> getPage(Pageable pageable);
 
-    Tag edit(Tag tag);
+    Tag update(Tag tag);
 }

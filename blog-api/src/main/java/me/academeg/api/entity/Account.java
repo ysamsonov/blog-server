@@ -12,6 +12,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -55,16 +56,16 @@ public class Account {
     @NotBlank
     private String password;
 
-    @OneToOne(mappedBy = "account")
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "account")
     private Avatar avatar;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "author")
-    private List<Article> articles;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "author")
+    private List<Article> articles = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "author")
-    private List<Comment> comments;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "author")
+    private List<Comment> comments = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

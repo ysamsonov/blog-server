@@ -1,8 +1,8 @@
 package me.academeg.api.utils;
 
 import me.academeg.api.Constants;
-import me.academeg.api.common.ArbitraryResult;
 import me.academeg.api.common.ApiResult;
+import me.academeg.api.common.ArbitraryResult;
 import me.academeg.api.common.CollectionResult;
 import me.academeg.api.common.ResultFactory;
 import org.springframework.data.domain.Page;
@@ -34,9 +34,9 @@ final public class ApiUtils {
         Sort result = null;
 
         final List<String> segments = Arrays.stream(orderByExpr.split(","))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .collect(Collectors.toList());
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .collect(Collectors.toList());
 
         for (final String sorts : segments) {
             final String[] sortParts = sorts.split(":");
@@ -48,7 +48,10 @@ final public class ApiUtils {
                 throw new IllegalArgumentException();
             }
 
-            final Sort sort = new Sort(Sort.Direction.fromString(sortParts.length == 2 ? sortParts[1] : "asc"), sortParts[0]);
+            final Sort sort = new Sort(
+                Sort.Direction.fromString(sortParts.length == 2 ? sortParts[1] : "asc"),
+                sortParts[0]
+            );
             if (result == null) {
                 result = sort;
             } else {
@@ -63,6 +66,10 @@ final public class ApiUtils {
         final int page = ofNullable(pageNum).orElse(0);
         final Sort sort = parseSorts(orderBy);
         return new PageRequest(page, pageSize, sort);
+    }
+
+    public static ApiResult okResult() {
+        return ResultFactory.build().ok();
     }
 
     public static <T> ApiResult singleResult(final T result) {

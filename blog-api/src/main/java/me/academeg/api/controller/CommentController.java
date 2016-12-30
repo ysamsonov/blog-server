@@ -11,7 +11,6 @@ import me.academeg.api.service.CommentService;
 import me.academeg.api.utils.ApiUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
@@ -21,11 +20,11 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import java.util.Calendar;
 import java.util.Set;
 import java.util.UUID;
 
 import static me.academeg.api.utils.ApiUtils.listResult;
+import static me.academeg.api.utils.ApiUtils.okResult;
 
 /**
  * CommentController
@@ -34,10 +33,9 @@ import static me.academeg.api.utils.ApiUtils.listResult;
  * @version 1.0
  */
 @RestController
-@RequestMapping("/api/comment")
+@RequestMapping("/api/comments")
 @Validated
 public class CommentController {
-
     private final CommentService commentService;
     private final ArticleService articleService;
     private final AccountService accountService;
@@ -55,40 +53,32 @@ public class CommentController {
         this.accountService = accountService;
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
-    public ApiResult getById(@PathVariable final UUID uuid) {
-        Comment comment = commentService.getByUuid(uuid);
-        if (comment == null) {
-            throw new CommentNotExistException();
-        }
-        return ApiUtils.singleResult(comment);
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    public ApiResult getById(@PathVariable final UUID id) {
+        return ApiUtils.singleResult(commentService.getById(id));
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ApiResult create(
-        @RequestBody @Validated final Comment commentRequest,
+        @RequestBody @Validated final Comment comment,
         @AuthenticationPrincipal final User user
     ) {
-        if (commentRequest.getArticle().getId() == null) {
+        if (comment.getArticle().getId() == null) {
             throw new ArticleNotExistException();
         }
 
-        Article article = articleService.getByUuid(commentRequest.getArticle().getId());
+        Article article = articleService.getById(comment.getArticle().getId());
         if (article == null || !article.getStatus().equals(ArticleStatus.PUBLISHED)) {
             throw new ArticleNotExistException();
         }
 
-        Comment comment = new Comment();
-        comment.setText(commentRequest.getText());
-        comment.setCreationDate(Calendar.getInstance());
         comment.setAuthor(accountService.getByEmail(user.getUsername()));
-        comment.setArticle(article);
-        return ApiUtils.singleResult(commentService.add(comment));
+        return ApiUtils.singleResult(commentService.create(comment));
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public ApiResult update(
-        @PathVariable final UUID uuid,
+        @PathVariable final UUID id,
         @RequestBody final Comment commentRequest,
         @AuthenticationPrincipal final User user
     ) {
@@ -97,18 +87,18 @@ public class CommentController {
             throw new ConstraintViolationException(validated);
         }
 
-        Comment commentFromDb = commentService.getByUuid(uuid);
+        Comment commentFromDb = commentService.getById(id);
         if (commentFromDb == null) {
             throw new CommentNotExistException();
         }
 
-        Account account = accountService.getByEmail(user.getUsername());
-        if (!commentFromDb.getAuthor().getId().equals(account.getId())) {
+        Account authAccount = accountService.getByEmail(user.getUsername());
+        if (commentFromDb.getAuthor() == null || !authAccount.getId().equals(commentFromDb.getAuthor().getId())) {
             throw new AccountPermissionException();
         }
 
         commentFromDb.setText(commentRequest.getText());
-        return ApiUtils.singleResult(commentService.edit(commentFromDb));
+        return ApiUtils.singleResult(commentService.update(commentFromDb));
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
@@ -118,13 +108,13 @@ public class CommentController {
         final Integer page,
         final Integer limit
     ) {
-        Article article = articleService.getByUuid(articleId);
+        Article article = articleService.getById(articleId);
         if (article == null) {
             throw new ArticleNotExistException();
         }
 
         Page<Comment> comments = commentService
-            .findByArticle(ApiUtils.createPageRequest(limit, page, "creationDate:desc"), article);
+            .getPageByArticle(ApiUtils.createPageRequest(limit, page, "creationDate:desc"), article);
         if (article.getStatus().equals(ArticleStatus.PUBLISHED)) {
             return listResult(comments);
         }
@@ -145,24 +135,30 @@ public class CommentController {
         throw new ArticleNotExistException();
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
-    @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void delete(
-        @PathVariable final UUID uuid,
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public ApiResult delete(
+        @PathVariable final UUID id,
         @AuthenticationPrincipal final User user
     ) {
-        Comment commentFromDb = commentService.getByUuid(uuid);
-        if (commentFromDb == null) {
+        Comment comment = commentService.getById(id);
+        if (comment == null) {
             throw new CommentNotExistException();
         }
 
         Account account = accountService.getByEmail(user.getUsername());
-
-        if (!(commentFromDb.getAuthor().getId().equals(account.getId())
-            || account.getAuthority().equals(AccountRole.MODERATOR)
-            || account.getAuthority().equals(AccountRole.ADMIN))) {
+        if (account.getAuthority().equals(AccountRole.ADMIN)
+            || account.getAuthority().equals(AccountRole.MODERATOR)) {
+            commentService.delete(comment.getId());
+            return okResult();
+        }
+        if (comment.getAuthor() == null) {
             throw new AccountPermissionException();
         }
-        commentService.delete(commentFromDb);
+        if (comment.getAuthor().getId().equals(account.getId())) {
+            commentService.delete(comment.getId());
+            return okResult();
+        }
+
+        throw new AccountPermissionException();
     }
 }

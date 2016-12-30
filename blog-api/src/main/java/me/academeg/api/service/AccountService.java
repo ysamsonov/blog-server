@@ -14,9 +14,9 @@ import java.util.UUID;
  */
 public interface AccountService {
 
-    Account add(Account account);
+    Account create(Account account);
 
-    void delete(Account account);
+    void delete(UUID id);
 
     Account getById(UUID id);
 
@@ -24,7 +24,7 @@ public interface AccountService {
 
     Account getByEmail(String email);
 
-    Page<Account> getAll(Pageable pageable);
+    Page<Account> getPage(Pageable pageable);
 
-    Account edit(Account account);
+    Account update(Account account);
 }

@@ -28,7 +28,7 @@ public class CustomUserDetailsServiceImpl implements org.springframework.securit
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Account accountFromDb = accountRepository.getByEmail(username.toLowerCase());
+        Account accountFromDb = accountRepository.getByEmailIgnoreCase(username.toLowerCase());
         if (accountFromDb == null) {
             throw new UsernameNotFoundException("User " + username + " was not found in the database");
         }

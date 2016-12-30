@@ -5,16 +5,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
+import me.academeg.api.Constants;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Article Entity
@@ -55,23 +53,23 @@ public class Article {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Calendar creationDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATE_FORMAT)
+    private Date creationDate;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "article")
-    private Set<Image> images;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "article", orphanRemoval = true, fetch = FetchType.EAGER)
+    private Set<Image> images = new HashSet<>();
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "article")
-    private List<Comment> comments;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "article", orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Comment> comments = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "article_tag",
         joinColumns = @JoinColumn(name = "article_id", referencedColumnName = "id"),
         inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id")
     )
-    private Set<Tag> tags;
+    private Set<Tag> tags = new HashSet<>();
 
     public Article() {
     }

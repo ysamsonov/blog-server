@@ -1,7 +1,7 @@
 package me.academeg.api.service;
 
-import me.academeg.api.entity.Comment;
 import me.academeg.api.entity.Article;
+import me.academeg.api.entity.Comment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -15,15 +15,13 @@ import java.util.UUID;
  */
 public interface CommentService {
 
-    Comment add(Comment comment);
+    Comment create(Comment comment);
 
-    void delete(UUID uuid);
+    void delete(UUID id);
 
-    void delete(Comment comment);
+    Comment getById(UUID id);
 
-    Comment getByUuid(UUID uuid);
+    Page<Comment> getPageByArticle(Pageable pageable, Article article);
 
-    Comment edit(Comment comment);
-
-    Page<Comment> findByArticle(Pageable pageable, Article article);
+    Comment update(Comment comment);
 }

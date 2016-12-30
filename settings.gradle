@@ -1,4 +1,4 @@
-rootProject.name = 'SpringBlog'
+rootProject.name = 'blog-server'
 
 include 'blog-api'
 include 'blog-frontend'
