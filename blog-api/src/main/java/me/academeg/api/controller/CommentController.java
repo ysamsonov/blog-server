@@ -36,7 +36,6 @@ import static me.academeg.api.utils.ApiUtils.okResult;
 @RequestMapping("/api/comments")
 @Validated
 public class CommentController {
-
     private final CommentService commentService;
     private final ArticleService articleService;
     private final AccountService accountService;
@@ -77,9 +76,9 @@ public class CommentController {
         return ApiUtils.singleResult(commentService.create(comment));
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public ApiResult update(
-        @PathVariable final UUID uuid,
+        @PathVariable final UUID id,
         @RequestBody final Comment commentRequest,
         @AuthenticationPrincipal final User user
     ) {
@@ -88,7 +87,7 @@ public class CommentController {
             throw new ConstraintViolationException(validated);
         }
 
-        Comment commentFromDb = commentService.getById(uuid);
+        Comment commentFromDb = commentService.getById(id);
         if (commentFromDb == null) {
             throw new CommentNotExistException();
         }

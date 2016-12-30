@@ -55,9 +55,9 @@ public class AvatarController {
         return singleResult(avatarService.create(image, accountService.getByEmail(user.getUsername())));
     }
 
-    @RequestMapping(value = "{uuid}", method = RequestMethod.GET)
-    public ApiResult getById(@PathVariable final UUID uuid) {
-        return singleResult(avatarService.getById(uuid));
+    @RequestMapping(value = "{id}", method = RequestMethod.GET)
+    public ApiResult getById(@PathVariable final UUID id) {
+        return singleResult(avatarService.getById(id));
     }
 
     @RequestMapping(value = "", method = RequestMethod.DELETE)

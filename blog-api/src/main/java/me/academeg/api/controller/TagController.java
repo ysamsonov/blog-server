@@ -27,7 +27,6 @@ import static me.academeg.api.utils.ApiUtils.*;
 @RequestMapping("/api/tags")
 @Validated
 public class TagController {
-
     private final TagService tagService;
     private final AccountService accountService;
 

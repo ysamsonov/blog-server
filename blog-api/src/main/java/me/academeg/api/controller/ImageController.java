@@ -34,7 +34,6 @@ import static me.academeg.api.utils.ApiUtils.singleResult;
 @RequestMapping("/api/images")
 @Validated
 public class ImageController {
-
     private final ImageService imageService;
     private final AccountService accountService;
 
