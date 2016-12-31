@@ -1,29 +1,25 @@
 package me.academeg.api.controller;
 
-import me.academeg.api.entity.*;
-import me.academeg.api.exception.entity.EmptyFieldException;
 import me.academeg.api.common.ApiResult;
-import me.academeg.api.service.*;
-import me.academeg.api.exception.entity.AccountPermissionException;
-import me.academeg.api.exception.entity.ArticleNotExistException;
-import me.academeg.api.security.Role;
+import me.academeg.api.entity.Account;
+import me.academeg.api.entity.AccountRole;
+import me.academeg.api.entity.Article;
+import me.academeg.api.entity.ArticleStatus;
+import me.academeg.api.exception.EntityNotExistException;
+import me.academeg.api.exception.AccountPermissionException;
+import me.academeg.api.service.AccountService;
+import me.academeg.api.service.ArticleService;
 import me.academeg.api.utils.ApiUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.Optional;
 import java.util.UUID;
 
-import static me.academeg.api.utils.ApiUtils.listResult;
-import static me.academeg.api.utils.ApiUtils.singleResult;
+import static me.academeg.api.utils.ApiUtils.*;
 
 /**
  * ArticleController Controller
@@ -32,44 +28,33 @@ import static me.academeg.api.utils.ApiUtils.singleResult;
  * @version 1.0
  */
 @RestController
-@RequestMapping("/api/article")
+@RequestMapping("/api/articles")
 @Validated
 public class ArticleController {
-
-    private final ArticleService articleService;
     private final AccountService accountService;
-    private final ImageService imageService;
-    private final CommentService commentService;
-    private final TagService tagService;
+    private final ArticleService articleService;
 
     @Autowired
-    public ArticleController(
-            ArticleService articleService,
-            AccountService accountService,
-            ImageService imageService,
-            CommentService commentService,
-            TagService tagService
-    ) {
+    public ArticleController(ArticleService articleService, AccountService accountService) {
         this.articleService = articleService;
         this.accountService = accountService;
-        this.imageService = imageService;
-        this.commentService = commentService;
-        this.tagService = tagService;
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.GET)
-    public ApiResult getById(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
-        Article article = articleService.getByUuid(uuid);
-        if (article == null) {
-            throw new ArticleNotExistException();
-        }
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    public ApiResult getById(
+        @AuthenticationPrincipal final User user,
+        @PathVariable final UUID id
+    ) {
+        Article article = Optional
+            .ofNullable(articleService.getById(id))
+            .orElseThrow(() -> new EntityNotExistException("Article with id %s not exist", id));
 
-        if (article.getStatus() == 0) {
+        if (article.getStatus().equals(ArticleStatus.PUBLISHED)) {
             return singleResult(article);
         }
 
         if (user == null) {
-            throw new ArticleNotExistException();
+            throw new EntityNotExistException("Article with id %s not exist", id);
         }
 
         Account account = accountService.getByEmail(user.getUsername());
@@ -77,200 +62,104 @@ public class ArticleController {
             return singleResult(article);
         }
 
-        if (article.getStatus() == 2 && (account.getAuthority().equals(Role.ROLE_MODERATOR.name())
-                || account.getAuthority().equals(Role.ROLE_ADMIN.name()))) {
+        if (article.getStatus().equals(ArticleStatus.LOCKED)
+            && (account.getAuthority().equals(AccountRole.MODERATOR)
+            || account.getAuthority().equals(AccountRole.ADMIN))) {
             return singleResult(article);
         }
 
-        throw new ArticleNotExistException();
+        throw new EntityNotExistException("Article with id %s not exist", id);
     }
 
-    @RequestMapping(value = "", method = RequestMethod.GET)
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ApiResult getList(final Integer page, final Integer limit) {
-        return listResult(articleService.getAll(ApiUtils.createPageRequest(limit, page, "creationDate:desc")));
+        //@TODO return not only publish article, add opportunity to filter article by status
+        return listResult(articleService.getPage(ApiUtils.createPageRequest(limit, page, "creationDate:desc")));
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
-    public ApiResult create(@RequestBody final Article article, @AuthenticationPrincipal final User user) {
-        if (article.getText() == null || article.getText().isEmpty()
-                || article.getTitle() == null || article.getTitle().isEmpty()) {
-            throw new EmptyFieldException("Article cannot be empty");
-        }
-
-        Article saveArticle = new Article();
-        saveArticle.setAuthor(accountService.getByEmail(user.getUsername()));
-        saveArticle.setTitle(article.getTitle());
-        saveArticle.setText(article.getText());
-        if (article.getStatus() > 1) {
-            article.setStatus(1);
-        }
-        saveArticle.setStatus(article.getStatus());
-        saveArticle.setCreationDate(Calendar.getInstance());
-        saveArticle.setTags(new HashSet<>());
-        addTagsToArticle(article.getTags(), saveArticle);
-
-        Article articleFromDb = articleService.add(saveArticle);
-        articleFromDb.setImages(new HashSet<>());
-        addImagesToArticle(article, articleFromDb);
-        return singleResult(articleFromDb);
+    public ApiResult create(
+        @Validated @RequestBody final Article article,
+        @AuthenticationPrincipal final User user
+    ) {
+        article.setAuthor(accountService.getByEmail(user.getUsername()));
+        return singleResult(articleService.create(article));
     }
 
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public ApiResult update(
-            @AuthenticationPrincipal final User user,
-            @PathVariable final UUID uuid,
-            @RequestBody final Article article
+        @AuthenticationPrincipal final User user,
+        @PathVariable final UUID id,
+        @Validated @RequestBody final Article article
     ) {
-        Article articleFromDb = articleService.getByUuid(uuid);
+        Article articleFromDb = articleService.getById(id);
         if (articleFromDb == null) {
-            throw new ArticleNotExistException();
-        }
-
-        if (article.getText() == null || article.getText().isEmpty()
-                || article.getTitle() == null || article.getTitle().isEmpty()) {
-            throw new EmptyFieldException();
-        }
-
-        Account author = articleFromDb.getAuthor();
-        Account authAccount = accountService.getByEmail(user.getUsername());
-        if (!authAccount.getId().equals(author.getId())) {
-            throw new AccountPermissionException("You cannot to update this article");
-        }
-        articleFromDb.setTitle(article.getTitle());
-        articleFromDb.setText(article.getText());
-        if ((articleFromDb.getStatus() != 2)) {
-            if (article.getStatus() > 1) {
-                article.setStatus(1);
-            }
-            articleFromDb.setStatus(article.getStatus());
-        }
-        articleFromDb.getTags().clear();
-        addTagsToArticle(article.getTags(), articleFromDb);
-        addImagesToArticle(article, articleFromDb);
-        return singleResult(articleService.edit(articleFromDb));
-    }
-
-    @RequestMapping(value = "/{uuid}", method = RequestMethod.DELETE)
-    @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void delete(@AuthenticationPrincipal final User user, final @PathVariable UUID uuid) {
-        Article articleFromDb = articleService.getByUuid(uuid);
-        if (articleFromDb == null) {
-            throw new ArticleNotExistException("Wrong UUID");
+            throw new EntityNotExistException("Article with id %s not exist", id);
         }
 
         Account authAccount = accountService.getByEmail(user.getUsername());
-        if (!authAccount.getAuthority().equals(Role.ROLE_MODERATOR.name())
-                && !authAccount.getAuthority().equals(Role.ROLE_ADMIN.name())
-                && !authAccount.getId().equals(articleFromDb.getAuthor().getId())) {
-            throw new AccountPermissionException();
+        if (articleFromDb.getAuthor() == null || !authAccount.getId().equals(articleFromDb.getAuthor().getId())) {
+            throw new AccountPermissionException("Only author can update article");
         }
-
-        for (Image image : articleFromDb.getImages()) {
-            new File(image.getOriginalPath()).delete();
-            new File(image.getThumbnailPath()).delete();
-            imageService.delete(image);
-        }
-
-        for (Comment comment : articleFromDb.getComments()) {
-            commentService.delete(comment);
-        }
-        articleService.delete(uuid);
+        article.setId(articleFromDb.getId());
+        return singleResult(articleService.update(article));
     }
 
-    @RequestMapping(value = "/{uuid}/comment", method = RequestMethod.GET)
-    public ApiResult getCommentList(
-            @AuthenticationPrincipal final User user,
-            @PathVariable final UUID uuid,
-            final Integer page,
-            final Integer limit
-    ) {
-        Article article = articleService.getByUuid(uuid);
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public ApiResult delete(@AuthenticationPrincipal final User user, final @PathVariable UUID id) {
+        Article article = articleService.getById(id);
         if (article == null) {
-            throw new ArticleNotExistException();
+            throw new EntityNotExistException("Article with id %s not exist", id);
         }
 
-        Page<Comment> comments = commentService.findByArticle(
-                ApiUtils.createPageRequest(limit, page, "creationDate:asc"), article);
-        if (article.getStatus() == 0) {
-            return listResult(comments);
-        }
-
-        if (user == null) {
-            throw new ArticleNotExistException();
-        }
         Account account = accountService.getByEmail(user.getUsername());
+        if (account.getAuthority().equals(AccountRole.ADMIN)
+            || account.getAuthority().equals(AccountRole.MODERATOR)) {
+            articleService.delete(article.getId());
+            return okResult();
+        }
+        if (article.getAuthor() == null) {
+            throw new AccountPermissionException("Only author can update article");
+        }
         if (article.getAuthor().getId().equals(account.getId())) {
-            return listResult(comments);
+            articleService.delete(article.getId());
+            return okResult();
         }
 
-        if (article.getStatus() == 2 && (account.getAuthority().equals(Role.ROLE_MODERATOR.name())
-                || account.getAuthority().equals(Role.ROLE_ADMIN.name()))) {
-            return listResult(comments);
-        }
-
-        throw new ArticleNotExistException();
+        throw new AccountPermissionException();
     }
 
-    @RequestMapping(value = "/{uuid}/block", method = RequestMethod.GET)
-    @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void block(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
+    @RequestMapping(value = "/{id}/lock", method = RequestMethod.GET)
+    public ApiResult lock(@AuthenticationPrincipal final User user, @PathVariable final UUID id) {
         Account account = accountService.getByEmail(user.getUsername());
-        if (!(account.getAuthority().equals(Role.ROLE_ADMIN.name())
-                || account.getAuthority().equals(Role.ROLE_MODERATOR.name()))) {
-            throw new AccountPermissionException();
+        if (!(account.getAuthority().equals(AccountRole.ADMIN)
+            || account.getAuthority().equals(AccountRole.MODERATOR))) {
+            throw new AccountPermissionException("Only admin/moderator can lock article");
         }
 
-        Article article = articleService.getByUuid(uuid);
-        if (article == null || article.getStatus() == 1) {
-            throw new ArticleNotExistException();
+        Article article = articleService.getById(id);
+        if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
+            throw new EntityNotExistException("Article with id %s not exist", id);
         }
 
-        article.setStatus(2);
-        articleService.edit(article);
+        articleService.lock(article);
+        return okResult();
     }
 
-    @RequestMapping(value = "/{uuid}/unlock", method = RequestMethod.GET)
-    @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public void unlock(@AuthenticationPrincipal final User user, @PathVariable final UUID uuid) {
+    @RequestMapping(value = "/{id}/unlock", method = RequestMethod.GET)
+    public ApiResult unlock(@AuthenticationPrincipal final User user, @PathVariable final UUID id) {
         Account account = accountService.getByEmail(user.getUsername());
-        if (!(account.getAuthority().equals(Role.ROLE_ADMIN.name())
-                || account.getAuthority().equals(Role.ROLE_MODERATOR.name()))) {
-            throw new AccountPermissionException();
+        if (!(account.getAuthority().equals(AccountRole.ADMIN))
+            || account.getAuthority().equals(AccountRole.MODERATOR)) {
+            throw new AccountPermissionException("Only admin/moderator can unlock article");
         }
 
-        Article article = articleService.getByUuid(uuid);
-        if (article == null || article.getStatus() == 1) {
-            throw new ArticleNotExistException();
+        Article article = articleService.getById(id);
+        if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
+            throw new EntityNotExistException("Article with id %s not exist", id);
         }
 
-
-        article.setStatus(0);
-        articleService.edit(article);
-    }
-
-    private void addImagesToArticle(Article article, Article articleFromDb) {
-        if (article.getImages() != null) {
-            for (Image image : article.getImages()) {
-                Image imageFromDb = imageService.getByUuid(image.getId());
-                if (imageFromDb != null && imageFromDb.getArticle() == null) {
-                    imageFromDb.setArticle(articleFromDb);
-                    imageService.edit(imageFromDb);
-                    articleFromDb.getImages().add(imageFromDb);
-                }
-            }
-        }
-    }
-
-    private void addTagsToArticle(Collection<Tag> tags, Article article) {
-        if (tags == null) {
-            return;
-        }
-
-        for (Tag tag : tags) {
-            Tag tagFromDb = tagService.getByUuid(tag.getId());
-            if (tagFromDb != null) {
-                article.getTags().add(tagFromDb);
-            }
-        }
+        articleService.unlock(article);
+        return okResult();
     }
 }

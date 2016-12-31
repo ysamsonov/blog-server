@@ -6,8 +6,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,12 +33,13 @@ public class Tag {
     @Type(type = "uuid-char")
     private UUID id;
 
+    @NotBlank
     @Column(nullable = false, unique = true)
     private String value;
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "tags")
-    private List<Article> articles;
+    @ManyToMany(cascade = CascadeType.ALL, mappedBy = "tags", fetch = FetchType.LAZY)
+    private List<Article> articles = new ArrayList<>();
 
     public Tag() {
     }

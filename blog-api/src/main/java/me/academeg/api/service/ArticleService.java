@@ -14,13 +14,17 @@ import java.util.UUID;
  */
 public interface ArticleService {
 
-    Article add(Article article);
+    Article create(Article article);
 
-    void delete(UUID uuid);
+    void delete(UUID id);
 
-    Article getByUuid(UUID uuid);
+    Article getById(UUID id);
 
-    Page<Article> getAll(Pageable pageable);
+    Page<Article> getPage(Pageable pageable);
 
-    Article edit(Article article);
+    Article update(Article article);
+
+    Article lock(Article article);
+
+    Article unlock(Article article);
 }

@@ -1,6 +1,7 @@
 package me.academeg.api.service;
 
 import me.academeg.api.entity.Image;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -12,13 +13,11 @@ import java.util.UUID;
  */
 public interface ImageService {
 
-    Image add(Image image);
+    Image create(MultipartFile file);
 
-    Image edit(Image image);
+    void delete(UUID id);
 
-    Image getByUuid(UUID uuid);
+    Image getById(UUID id);
 
-    void delete(Image image);
-
-    void delete(UUID uuid);
+    Image update(Image image);
 }

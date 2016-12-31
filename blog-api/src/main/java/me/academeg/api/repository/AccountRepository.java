@@ -13,7 +13,7 @@ import java.util.UUID;
  */
 public interface AccountRepository extends PagingAndSortingRepository<Account, UUID> {
 
-    Account getByEmail(String email);
+    Account getByEmailIgnoreCase(String email);
 
-    Account getByLogin(String login);
+    Account getByLoginIgnoreCase(String login);
 }

@@ -8,8 +8,11 @@ import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,6 +36,7 @@ public class Account {
     @Type(type = "uuid-char")
     private UUID id;
 
+    @NotBlank
     @Column(nullable = false, unique = true)
     private String login;
 
@@ -48,21 +52,24 @@ public class Account {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
+    @Size(min = 4, max = 255)
+    @NotBlank
     private String password;
 
-    @OneToOne(mappedBy = "account")
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "account")
     private Avatar avatar;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "author")
-    private List<Article> articles;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "author")
+    private List<Article> articles = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(mappedBy = "author")
-    private List<Comment> comments;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "author")
+    private List<Comment> comments = new ArrayList<>();
 
-    @JsonIgnore
-    private String authority;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AccountRole authority;
 
     public Account() {
     }

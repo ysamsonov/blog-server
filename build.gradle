@@ -61,6 +61,8 @@ project(':blog-api') {
         compile "org.projectlombok:lombok:${lombokVersion}"
 
         compile project(':blog-frontend')
+
+        testCompile "junit:junit:4.12"
     }
 }
 

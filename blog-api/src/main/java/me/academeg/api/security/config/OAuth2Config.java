@@ -1,5 +1,6 @@
 package me.academeg.api.security.config;
 
+import me.academeg.api.security.CustomTokenEnhancer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +15,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 
@@ -35,12 +37,18 @@ public class OAuth2Config {
         @Override
         public void configure(HttpSecurity http) throws Exception {
             http
-                    .exceptionHandling()
-                    .and()
-                    .authorizeRequests()
-                    .antMatchers(HttpMethod.POST, "/api/account").permitAll()
-                    .antMatchers(HttpMethod.GET, "/").permitAll()
-                    .anyRequest().authenticated();
+                .exceptionHandling()
+                .and()
+                .authorizeRequests()
+                .antMatchers(HttpMethod.GET, "/").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/accounts/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/accounts").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/articles/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/tags/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/avatars/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/images/**").permitAll()
+                .anyRequest().authenticated();
         }
     }
 
@@ -58,30 +66,36 @@ public class OAuth2Config {
         @Override
         public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
             oauthServer
-                    .tokenKeyAccess("permitAll()")
-                    .checkTokenAccess("isAuthenticated()");
+                .tokenKeyAccess("permitAll()")
+                .checkTokenAccess("isAuthenticated()");
         }
 
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
             clients.inMemory()
-                    .withClient("web_app")
-                    .secret("secret_key")
-                    .authorizedGrantTypes("password", "refresh_token")
-                    .scopes("read", "write")
-                    .autoApprove(true);
+                .withClient("web_app")
+                .secret("secret_key")
+                .authorizedGrantTypes("password", "refresh_token")
+                .scopes("read", "write")
+                .autoApprove(true);
         }
 
         @Override
         public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
             endpoints
-                    .tokenStore(tokenStoreBean())
-                    .authenticationManager(authenticationManager);
+                .tokenStore(tokenStoreBean())
+                .tokenEnhancer(tokenEnhancer())
+                .authenticationManager(authenticationManager);
         }
 
         @Bean
         public TokenStore tokenStoreBean() {
             return new JdbcTokenStore(dataSource);
+        }
+
+        @Bean
+        public TokenEnhancer tokenEnhancer() {
+            return new CustomTokenEnhancer();
         }
     }
 }
