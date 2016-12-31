@@ -64,7 +64,7 @@ public class AccountController {
 
         Account authUser = accountService.getByEmail(user.getUsername());
         if (!authUser.getId().equals(id)) {
-            throw new EntityNotExistException(String.format("Account with id %s not exist", id));
+            throw new EntityNotExistException("Account with id %s not exist", id);
         }
 
         account.setId(id);
@@ -77,7 +77,7 @@ public class AccountController {
             Optional
                 .ofNullable(accountService.getById(id))
                 .<EntityNotExistException>orElseThrow(
-                    () -> new EntityNotExistException(String.format("Account with id %s not exist", id))));
+                    () -> new EntityNotExistException("Account with id %s not exist", id)));
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
@@ -92,7 +92,7 @@ public class AccountController {
     ) {
         Account deletedUser = accountService.getById(id);
         if (deletedUser == null) {
-            throw new EntityNotExistException(String.format("Account with id %s not exist", id));
+            throw new EntityNotExistException("Account with id %s not exist", id);
         }
 
         Account authUser = accountService.getByEmail(user.getUsername());

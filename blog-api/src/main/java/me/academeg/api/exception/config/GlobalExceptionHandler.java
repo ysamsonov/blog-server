@@ -1,10 +1,12 @@
 package me.academeg.api.exception.config;
 
-import me.academeg.api.common.*;
+import me.academeg.api.common.ApiResult;
+import me.academeg.api.common.ApiResultImpl;
+import me.academeg.api.common.ApiResultWithData;
+import me.academeg.api.common.CollectionResult;
 import me.academeg.api.exception.EntityExistException;
 import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.exception.entity.AccountPermissionException;
-import me.academeg.api.exception.entity.EmptyFieldException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.validation.FieldError;
@@ -43,11 +45,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     public ApiResult handle(EntityNotExistException ex) {
         return new ApiResultImpl(4000, ex.getMessage());
-    }
-
-    @ExceptionHandler
-    public ApiResult handle(EmptyFieldException ex) {
-        return new ApiResultWithData(4000, "Argument not valid", new ArbitraryResult<>(ex.getMessage()));
     }
 
     @ExceptionHandler
