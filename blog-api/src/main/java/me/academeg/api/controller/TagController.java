@@ -5,7 +5,7 @@ import me.academeg.api.entity.Account;
 import me.academeg.api.entity.AccountRole;
 import me.academeg.api.entity.Tag;
 import me.academeg.api.exception.EntityNotExistException;
-import me.academeg.api.exception.entity.AccountPermissionException;
+import me.academeg.api.exception.AccountPermissionException;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;

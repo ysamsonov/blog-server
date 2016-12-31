@@ -3,7 +3,7 @@ package me.academeg.api.controller;
 import me.academeg.api.common.ApiResult;
 import me.academeg.api.entity.*;
 import me.academeg.api.exception.EntityNotExistException;
-import me.academeg.api.exception.entity.AccountPermissionException;
+import me.academeg.api.exception.AccountPermissionException;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.ArticleService;
 import me.academeg.api.service.CommentService;

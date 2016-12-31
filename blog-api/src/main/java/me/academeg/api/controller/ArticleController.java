@@ -6,7 +6,7 @@ import me.academeg.api.entity.AccountRole;
 import me.academeg.api.entity.Article;
 import me.academeg.api.entity.ArticleStatus;
 import me.academeg.api.exception.EntityNotExistException;
-import me.academeg.api.exception.entity.AccountPermissionException;
+import me.academeg.api.exception.AccountPermissionException;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.ArticleService;
 import me.academeg.api.utils.ApiUtils;
