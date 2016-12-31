@@ -1,4 +1,4 @@
-package me.academeg.api.exception.entity;
+package me.academeg.api.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class AccountPermissionException extends AccessDeniedException {
 
     public AccountPermissionException() {
-        super("Access denied. You have no rights.");
+        this("Access denied. You have no rights.");
     }
 
     public AccountPermissionException(String message) {

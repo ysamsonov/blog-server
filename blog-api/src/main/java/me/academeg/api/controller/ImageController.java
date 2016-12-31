@@ -5,9 +5,8 @@ import me.academeg.api.common.ApiResult;
 import me.academeg.api.entity.Account;
 import me.academeg.api.entity.Image;
 import me.academeg.api.exception.EntityNotExistException;
-import me.academeg.api.exception.entity.AccountPermissionException;
-import me.academeg.api.exception.entity.FileFormatException;
-import me.academeg.api.exception.entity.ImageNotExistException;
+import me.academeg.api.exception.AccountPermissionException;
+import me.academeg.api.exception.FileFormatException;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.ImageService;
 import me.academeg.api.utils.ImageUtils;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.UUID;
 
 import static me.academeg.api.utils.ApiUtils.okResult;
@@ -54,23 +54,23 @@ public class ImageController {
 
     @RequestMapping(value = "{id}", method = RequestMethod.GET)
     public ApiResult getById(@PathVariable final UUID id) {
-        Image imageFromDb = imageService.getById(id);
-        if (imageFromDb == null) {
-            throw new EntityNotExistException("Image not exist");
-        }
-        return singleResult(imageFromDb);
+        return singleResult(
+            Optional
+                .ofNullable(imageService.getById(id))
+                .<EntityNotExistException>orElseThrow(
+                    () -> new EntityNotExistException("Image with id %s not exist", id))
+        );
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public ApiResult delete(@AuthenticationPrincipal final User user, @PathVariable final UUID id) {
-        Image imageFromDb = imageService.getById(id);
-        if (imageFromDb == null) {
-            throw new ImageNotExistException();
-        }
+        Image imageFromDb = Optional
+            .ofNullable(imageService.getById(id))
+            .orElseThrow(() -> new EntityNotExistException("Image with id %s not exist", id));
 
         Account authAcc = accountService.getByEmail(user.getUsername());
         if (imageFromDb.getArticle() == null) {
-            throw new ImageNotExistException();
+            throw new EntityNotExistException("Image with id %s not exist", id);
         }
 
         if (!imageFromDb.getArticle().getAuthor().getId().equals(authAcc.getId())) {
