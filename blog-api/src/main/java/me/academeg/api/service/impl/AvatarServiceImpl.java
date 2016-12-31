@@ -61,6 +61,8 @@ public class AvatarServiceImpl implements AvatarService {
             avatar.getOriginalPath(),
             avatar.getThumbnailPath()
         );
+        avatar.getAccount().setAvatar(null);
+        avatar.setAccount(null);
         avatarRepository.delete(id);
     }
 }
