@@ -2,8 +2,7 @@ package me.academeg.api.service.impl;
 
 import me.academeg.api.entity.Account;
 import me.academeg.api.entity.AccountRole;
-import me.academeg.api.exception.entity.EmailExistException;
-import me.academeg.api.exception.entity.LoginExistException;
+import me.academeg.api.exception.EntityExistException;
 import me.academeg.api.repository.AccountRepository;
 import me.academeg.api.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,10 +40,10 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account create(Account account) {
         if (getByEmail(account.getEmail()) != null) {
-            throw new EmailExistException("Email is already exist");
+            throw new EntityExistException(String.format("Account with email %s is already exist", account.getEmail()));
         }
         if (getByLogin(account.getLogin()) != null) {
-            throw new LoginExistException("Login is already exist");
+            throw new EntityExistException(String.format("Account with login %s is already exist", account.getLogin()));
         }
 
         Account accountDb = new Account();
@@ -94,7 +93,7 @@ public class AccountServiceImpl implements AccountService {
     public Account update(Account account) {
         Account accountDB = getById(account.getId());
         if (!accountDB.getLogin().equals(account.getLogin()) && getByLogin(account.getLogin()) != null) {
-            throw new LoginExistException();
+            throw new EntityExistException(String.format("Account with login %s is already exist", account.getLogin()));
         }
 
         accountDB.setSurname(account.getSurname());

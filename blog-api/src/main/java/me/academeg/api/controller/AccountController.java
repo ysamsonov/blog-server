@@ -3,7 +3,7 @@ package me.academeg.api.controller;
 import me.academeg.api.common.ApiResult;
 import me.academeg.api.entity.Account;
 import me.academeg.api.entity.AccountRole;
-import me.academeg.api.exception.entity.AccountNotExistException;
+import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.exception.entity.AccountPermissionException;
 import me.academeg.api.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +17,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -63,7 +64,7 @@ public class AccountController {
 
         Account authUser = accountService.getByEmail(user.getUsername());
         if (!authUser.getId().equals(id)) {
-            throw new AccountNotExistException();
+            throw new EntityNotExistException(String.format("Account with id %s not exist", id));
         }
 
         account.setId(id);
@@ -72,11 +73,11 @@ public class AccountController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ApiResult getById(@PathVariable final UUID id) {
-        Account account = accountService.getById(id);
-        if (account == null) {
-            throw new AccountNotExistException();
-        }
-        return singleResult(account);
+        return singleResult(
+            Optional
+                .ofNullable(accountService.getById(id))
+                .<EntityNotExistException>orElseThrow(
+                    () -> new EntityNotExistException(String.format("Account with id %s not exist", id))));
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
@@ -91,7 +92,7 @@ public class AccountController {
     ) {
         Account deletedUser = accountService.getById(id);
         if (deletedUser == null) {
-            throw new AccountNotExistException();
+            throw new EntityNotExistException(String.format("Account with id %s not exist", id));
         }
 
         Account authUser = accountService.getByEmail(user.getUsername());
