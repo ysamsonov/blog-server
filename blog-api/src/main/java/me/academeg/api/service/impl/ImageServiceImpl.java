@@ -1,7 +1,7 @@
 package me.academeg.api.service.impl;
 
 import me.academeg.api.entity.Image;
-import me.academeg.api.exception.entity.ImageNotExistException;
+import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.repository.ImageRepository;
 import me.academeg.api.service.ImageService;
 import me.academeg.api.utils.ImageUtils;
@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
-import static me.academeg.api.Constants.AVATAR_PATH;
 import static me.academeg.api.Constants.IMAGE_PATH;
 
 /**
@@ -52,7 +51,7 @@ public class ImageServiceImpl implements ImageService {
     public void delete(UUID id) {
         Image image = imageRepository.findOne(id);
         if (image == null || image.getArticle() == null) {
-            throw new ImageNotExistException();
+            throw new EntityNotExistException("Image with id %s not exist", id);
         }
         image.getArticle().getImages().remove(image);
         ImageUtils.deleteImages(IMAGE_PATH, image.getOriginalPath(), image.getThumbnailPath());
