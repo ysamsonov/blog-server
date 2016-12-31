@@ -15,4 +15,8 @@ public class EntityExistException extends RuntimeException {
     public EntityExistException(String message) {
         super(message);
     }
+
+    public EntityExistException(String message, Object... args) {
+        super(String.format(message, args));
+    }
 }

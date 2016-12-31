@@ -4,6 +4,7 @@ import me.academeg.api.common.ApiResult;
 import me.academeg.api.entity.Account;
 import me.academeg.api.entity.AccountRole;
 import me.academeg.api.entity.Tag;
+import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.exception.entity.AccountPermissionException;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.TagService;
@@ -13,6 +14,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static me.academeg.api.utils.ApiUtils.*;
@@ -38,7 +40,11 @@ public class TagController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ApiResult getById(@PathVariable final UUID id) {
-        return singleResult(tagService.getById(id));
+        return singleResult(
+            Optional
+                .ofNullable(tagService.getById(id))
+                .<EntityNotExistException>orElseThrow(() -> new EntityNotExistException("Tag with id %s not exist", id))
+        );
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
@@ -72,7 +78,7 @@ public class TagController {
         Account authAccount = accountService.getByEmail(user.getUsername());
         if (!authAccount.getAuthority().equals(AccountRole.MODERATOR)
             && !authAccount.getAuthority().equals(AccountRole.ADMIN)) {
-            throw new AccountPermissionException();
+            throw new AccountPermissionException("Only admin/moderator can delete the tag");
         }
 
         tagService.delete(id);

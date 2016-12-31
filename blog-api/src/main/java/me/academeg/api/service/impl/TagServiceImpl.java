@@ -1,8 +1,8 @@
 package me.academeg.api.service.impl;
 
 import me.academeg.api.entity.Tag;
-import me.academeg.api.exception.entity.TagExistException;
-import me.academeg.api.exception.entity.TagNotExistException;
+import me.academeg.api.exception.EntityExistException;
+import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.repository.TagRepository;
 import me.academeg.api.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -43,10 +44,10 @@ public class TagServiceImpl implements TagService {
     @Transactional
     @Override
     public void delete(UUID id) {
-        Tag tag = getById(id);
-        if (tag == null) {
-            throw new TagNotExistException();
-        }
+        Tag tag = Optional
+            .ofNullable(getById(id))
+            .orElseThrow(() -> new EntityNotExistException("Tag with id %s not exist"));
+
         tag.getArticles().forEach(article -> article.getTags().remove(tag));
         tag.setArticles(null);
         tagRepository.delete(tagRepository.save(tag));
@@ -73,11 +74,11 @@ public class TagServiceImpl implements TagService {
         tag.setValue(tag.getValue().toLowerCase());
         Tag tagFromDb = getById(tag.getId());
         if (tagFromDb == null) {
-            throw new TagNotExistException();
+            throw new EntityNotExistException("Tag with id %s not exist", tag.getId());
         }
         Tag tagFromDbByValue = getByValue(tag.getValue());
         if (tagFromDbByValue != null) {
-            throw new TagExistException();
+            throw new EntityExistException("Tag with value %s already exist", tag.getValue());
         }
         tagFromDb.setValue(tag.getValue());
         return tagRepository.save(tagFromDb);
