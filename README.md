@@ -28,12 +28,9 @@ The server part of the blogging system implemented with Spring Boot/JPA + Hibern
     -Dspring.jpa.hibernate.ddl-auto=update
     -Dspring.jpa.generate-ddl=true
     -Dspring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
- 
-    -Dorg.slf4j.simpleLogger.defaultLogLevel=INFO
-    -Dorg.slf4j.simpleLogger.log.org.hibernate.engine.internal.StatisticalLoggingSessionEventListener=ERROR
-    -Dorg.slf4j.simpleLogger.showDateTime=true
-    -Dorg.slf4j.simpleLogger.dateTimeFormat=yyyy.MM.dd'T'HH:mm:ss.SSSZ
-    -Dorg.slf4j.simpleLogger.showThreadName=true
+    
+    -Dlogging.level.root=INFO
+    -Dlogging.level.org.hibernate.engine.internal.StatisticalLoggingSessionEventListener=ERROR
     ```
     
 ## Api Documentation
