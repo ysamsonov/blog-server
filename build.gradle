@@ -6,6 +6,7 @@ buildscript {
         springSecurityVersion = '2.0.11.RELEASE'
         mysqlConnectorVersion = '6.0.4'
         lombokVersion = '1.16.10'
+        queryDslVersion = '4.1.4'
     }
     repositories {
         mavenCentral()
@@ -77,8 +78,8 @@ project(':blog-api') {
         compile "org.projectlombok:lombok:${lombokVersion}"
 
         // QueryDSL
-        compile 'com.querydsl:querydsl-jpa:4.1.4'
-        querydslapt 'com.querydsl:querydsl-apt:4.1.4'
+        compile "com.querydsl:querydsl-jpa:${queryDslVersion}"
+        querydslapt "com.querydsl:querydsl-apt:${queryDslVersion}"
 
         compile project(':blog-frontend')
 
