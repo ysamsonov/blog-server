@@ -1,21 +1,26 @@
 package me.academeg.api.controller;
 
 import me.academeg.api.common.ApiResult;
-import me.academeg.api.entity.Account;
-import me.academeg.api.entity.AccountRole;
-import me.academeg.api.entity.Article;
-import me.academeg.api.entity.ArticleStatus;
-import me.academeg.api.exception.EntityNotExistException;
+import me.academeg.api.entity.*;
 import me.academeg.api.exception.AccountPermissionException;
+import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.ArticleService;
-import me.academeg.api.utils.ApiUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Fetch;
+import javax.persistence.criteria.Root;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,6 +38,9 @@ import static me.academeg.api.utils.ApiUtils.*;
 public class ArticleController {
     private final AccountService accountService;
     private final ArticleService articleService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     public ArticleController(ArticleService articleService, AccountService accountService) {
@@ -74,7 +82,34 @@ public class ArticleController {
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ApiResult getList(final Integer page, final Integer limit) {
         //@TODO return not only publish article, add opportunity to filter article by status
-        return listResult(articleService.getPage(ApiUtils.createPageRequest(limit, page, "creationDate:desc")));
+
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+
+        CriteriaQuery<Article> criteriaQuery = builder.createQuery(Article.class);
+        Root<Article> articleRoot = criteriaQuery.from(Article.class);
+        criteriaQuery.select(articleRoot);
+
+        Specification<Article> titleSpec = (root, query, cb) -> cb
+            .like(root.get(Article_.title), "%#123");
+
+        Specification<Article> tagsSpec = (root, query, cb) -> {
+            Fetch<Article, Tag> articleTag = root.fetch(Article_.tags);
+            Root<Tag> tagRoot = query.from(Tag.class);
+            return cb.like(tagRoot.get(Tag_.value), "фотки");
+        };
+
+        criteriaQuery.where(builder.and(
+//            titleSpec.toPredicate(articleRoot, criteriaQuery, builder),
+            tagsSpec.toPredicate(articleRoot, criteriaQuery, builder)
+        ));
+
+        criteriaQuery.orderBy(builder.desc(articleRoot.get(Article_.creationDate)));
+        criteriaQuery.distinct(true);
+
+        TypedQuery<Article> typedQuery = entityManager.createQuery(criteriaQuery);
+        typedQuery.setFirstResult(0); // page * limit
+        typedQuery.setMaxResults(20); // limit
+        return listResult(typedQuery.getResultList());
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
