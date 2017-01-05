@@ -44,6 +44,22 @@ subprojects {
 project(':blog-api') {
     apply plugin: 'spring-boot'
 
+    def generatedSourcePath = 'src/main/generated-src'
+
+    sourceSets {
+        main {
+            java {
+                srcDir 'src/main/java'
+                srcDir generatedSourcePath
+            }
+        }
+    }
+
+    configurations {
+        metamodelgen
+        oneJar
+    }
+
     dependencies {
         // Spring
         compile "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
@@ -60,9 +76,28 @@ project(':blog-api') {
         // Lombok for create getter/setter and other cool features
         compile "org.projectlombok:lombok:${lombokVersion}"
 
-        compile project(':blog-frontend')
+//        compile project(':blog-frontend')
+
+        compile 'org.hibernate:hibernate-jpamodelgen:5.2.5.Final'
 
         testCompile "junit:junit:4.12"
+    }
+
+    task generateMetamodel(type: JavaCompile, group: 'build') {
+        source = sourceSets.main.java
+        classpath = configurations.compile + configurations.metamodelgen
+        options.compilerArgs = [
+                "-proc:only",
+                "-processor",
+                "org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor"
+        ]
+        destinationDir = file(generatedSourcePath)
+    }
+
+    compileJava.dependsOn generateMetamodel
+
+    clean {
+        delete generatedSourcePath
     }
 }
 
