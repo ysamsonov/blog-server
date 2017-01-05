@@ -78,7 +78,7 @@ project(':blog-api') {
 
 //        compile project(':blog-frontend')
 
-        compile 'org.hibernate:hibernate-jpamodelgen:5.2.5.Final'
+        metamodelgen 'org.hibernate:hibernate-jpamodelgen:5.2.5.Final'
 
         testCompile "junit:junit:4.12"
     }
