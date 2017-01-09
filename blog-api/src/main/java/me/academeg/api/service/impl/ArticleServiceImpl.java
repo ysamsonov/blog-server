@@ -44,7 +44,7 @@ public class ArticleServiceImpl implements ArticleService {
         saveArticle.setAuthor(article.getAuthor());
         saveArticle.setTitle(article.getTitle());
         saveArticle.setText(article.getText());
-        if (!article.getStatus().equals(ArticleStatus.PUBLISHED) || !article.getStatus().equals(ArticleStatus.DRAFT)) {
+        if (!article.getStatus().equals(ArticleStatus.PUBLISHED) && !article.getStatus().equals(ArticleStatus.DRAFT)) {
             article.setStatus(ArticleStatus.PUBLISHED);
         }
         saveArticle.setStatus(article.getStatus());
