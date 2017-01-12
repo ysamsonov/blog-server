@@ -1,12 +1,10 @@
 package me.academeg.api.controller;
 
+import com.querydsl.core.types.dsl.BooleanExpression;
 import me.academeg.api.common.ApiResult;
-import me.academeg.api.entity.Account;
-import me.academeg.api.entity.AccountRole;
-import me.academeg.api.entity.Article;
-import me.academeg.api.entity.ArticleStatus;
-import me.academeg.api.exception.EntityNotExistException;
+import me.academeg.api.entity.*;
 import me.academeg.api.exception.AccountPermissionException;
+import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.ArticleService;
 import me.academeg.api.utils.ApiUtils;
@@ -72,9 +70,41 @@ public class ArticleController {
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public ApiResult getList(final Integer page, final Integer limit) {
-        //@TODO return not only publish article, add opportunity to filter article by status
-        return listResult(articleService.getPage(ApiUtils.createPageRequest(limit, page, "creationDate:desc")));
+    public ApiResult getList(
+        @RequestParam(required = false) final UUID authorId,
+        @RequestParam(required = false) ArticleStatus status,
+        @RequestParam(required = false) final String tag,
+        @RequestParam(required = false) final Integer page,
+        @RequestParam(required = false) final Integer limit,
+        @AuthenticationPrincipal final User user
+    ) {
+        status = Optional.ofNullable(status).orElse(ArticleStatus.PUBLISHED);
+
+        if (!status.equals(ArticleStatus.PUBLISHED) && user == null) {
+            throw new AccountPermissionException("You cannot get '{}' articles", status);
+        }
+
+        Account authUser = accountService.getByEmail(user.getUsername());
+        if (!status.equals(ArticleStatus.PUBLISHED)
+            && !authUser.getId().equals(authorId)) {
+            throw new AccountPermissionException("You cannot get '{}' articles", status);
+        }
+
+
+        QArticle article = QArticle.article;
+
+        BooleanExpression eq1 = article.author().id.eq(authorId);
+        BooleanExpression eq2 = article.status.eq(status);
+        BooleanExpression eq3 = article.tags.any().value.eq(tag);
+
+        return
+            listResult(
+                articleService
+                    .getPage(
+                        eq1.and(eq2).and(eq3),
+                        ApiUtils.createPageRequest(limit, page, "creationDate:desc")
+                    )
+            );
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
