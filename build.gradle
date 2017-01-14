@@ -6,6 +6,7 @@ buildscript {
         springSecurityVersion = '2.0.11.RELEASE'
         mysqlConnectorVersion = '6.0.4'
         lombokVersion = '1.16.10'
+        queryDslVersion = '4.1.4'
     }
     repositories {
         mavenCentral()
@@ -44,6 +45,22 @@ subprojects {
 project(':blog-api') {
     apply plugin: 'spring-boot'
 
+    def generatedSourcePath = 'src/main/generated-src'
+
+    sourceSets {
+        main {
+            java {
+                srcDir 'src/main/java'
+                srcDir generatedSourcePath
+            }
+        }
+    }
+
+    configurations {
+        querydslapt
+        oneJar
+    }
+
     dependencies {
         // Spring
         compile "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
@@ -60,9 +77,31 @@ project(':blog-api') {
         // Lombok for create getter/setter and other cool features
         compile "org.projectlombok:lombok:${lombokVersion}"
 
+        // QueryDSL
+        compile "com.querydsl:querydsl-jpa:${queryDslVersion}"
+        querydslapt "com.querydsl:querydsl-apt:${queryDslVersion}"
+
         compile project(':blog-frontend')
 
         testCompile "junit:junit:4.12"
+    }
+
+    task generateQueryDSL(type: JavaCompile, group: 'build', description: 'Generates the QueryDSL query types') {
+        source = sourceSets.main.java
+        classpath = configurations.compile + configurations.querydslapt
+        options.compilerArgs = [
+                "-proc:only",
+                "-processor",
+                "com.querydsl.apt.jpa.JPAAnnotationProcessor",
+                "-Aquerydsl.entityAccessors=true"
+        ]
+        destinationDir = file(generatedSourcePath) //sourceSets.main.java.srcDir.stream().skip(1).findFirst()
+    }
+
+    compileJava.dependsOn generateQueryDSL
+
+    clean {
+        delete generatedSourcePath
     }
 }
 

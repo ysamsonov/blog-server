@@ -1,5 +1,6 @@
 package me.academeg.api.service;
 
+import com.querydsl.core.types.Predicate;
 import me.academeg.api.entity.Article;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,8 @@ public interface ArticleService {
     Article getById(UUID id);
 
     Page<Article> getPage(Pageable pageable);
+
+    Page<Article> getPage(Predicate predicate, Pageable pageable);
 
     Article update(Article article);
 

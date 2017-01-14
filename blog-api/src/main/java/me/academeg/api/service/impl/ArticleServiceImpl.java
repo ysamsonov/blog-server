@@ -1,5 +1,6 @@
 package me.academeg.api.service.impl;
 
+import com.querydsl.core.types.Predicate;
 import me.academeg.api.Constants;
 import me.academeg.api.entity.Article;
 import me.academeg.api.entity.ArticleStatus;
@@ -25,7 +26,6 @@ import java.util.UUID;
  */
 @Service
 public class ArticleServiceImpl implements ArticleService {
-
     private ArticleRepository articleRepository;
     private ImageService imageService;
 
@@ -44,7 +44,7 @@ public class ArticleServiceImpl implements ArticleService {
         saveArticle.setAuthor(article.getAuthor());
         saveArticle.setTitle(article.getTitle());
         saveArticle.setText(article.getText());
-        if (!article.getStatus().equals(ArticleStatus.PUBLISHED) || !article.getStatus().equals(ArticleStatus.DRAFT)) {
+        if (!article.getStatus().equals(ArticleStatus.PUBLISHED) && !article.getStatus().equals(ArticleStatus.DRAFT)) {
             article.setStatus(ArticleStatus.PUBLISHED);
         }
         saveArticle.setStatus(article.getStatus());
@@ -77,6 +77,11 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public Page<Article> getPage(Pageable pageable) {
         return articleRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Article> getPage(Predicate predicate, Pageable pageable) {
+        return articleRepository.findAll(predicate, pageable);
     }
 
     @Override

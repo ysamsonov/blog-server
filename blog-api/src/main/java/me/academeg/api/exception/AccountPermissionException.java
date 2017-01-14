@@ -20,4 +20,8 @@ public class AccountPermissionException extends AccessDeniedException {
     public AccountPermissionException(String message) {
         super(message);
     }
+
+    public AccountPermissionException(String message, Object... args) {
+        super(String.format(message, args));
+    }
 }

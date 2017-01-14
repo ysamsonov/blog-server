@@ -3,7 +3,6 @@ package me.academeg.api.service.impl;
 import me.academeg.api.entity.Article;
 import me.academeg.api.entity.Comment;
 import me.academeg.api.repository.CommentRepository;
-import me.academeg.api.service.ArticleService;
 import me.academeg.api.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -52,6 +51,6 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Page<Comment> getPageByArticle(Pageable pageable, Article article) {
-        return commentRepository.findByArticleUuid(pageable, article.getId());
+        return commentRepository.findByArticleId(pageable, article.getId());
     }
 }
