@@ -1,6 +1,6 @@
 package me.academeg.api.security.config;
 
-import me.academeg.api.security.CustomTokenEnhancer;
+import me.academeg.api.security.CORSFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +18,8 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
+import org.springframework.web.cors.CorsUtils;
 
 import javax.sql.DataSource;
 
@@ -40,6 +42,7 @@ public class OAuth2Config {
                 .exceptionHandling()
                 .and()
                 .authorizeRequests()
+                .requestMatchers(CorsUtils::isCorsRequest).permitAll()
                 .antMatchers(HttpMethod.GET, "/").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/accounts/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/accounts").permitAll()
@@ -48,7 +51,9 @@ public class OAuth2Config {
                 .antMatchers(HttpMethod.GET, "/api/tags/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/avatars/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/images/**").permitAll()
-                .anyRequest().authenticated();
+                .anyRequest().authenticated()
+                .and().httpBasic()
+                .and().addFilterBefore(new CORSFilter(), ChannelProcessingFilter.class);
         }
     }
 
@@ -62,6 +67,9 @@ public class OAuth2Config {
 
         @Autowired
         private DataSource dataSource;
+
+        @Autowired
+        private TokenEnhancer tokenEnhancer;
 
         @Override
         public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
@@ -84,18 +92,13 @@ public class OAuth2Config {
         public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
             endpoints
                 .tokenStore(tokenStoreBean())
-                .tokenEnhancer(tokenEnhancer())
+                .tokenEnhancer(tokenEnhancer)
                 .authenticationManager(authenticationManager);
         }
 
         @Bean
         public TokenStore tokenStoreBean() {
             return new JdbcTokenStore(dataSource);
-        }
-
-        @Bean
-        public TokenEnhancer tokenEnhancer() {
-            return new CustomTokenEnhancer();
         }
     }
 }
