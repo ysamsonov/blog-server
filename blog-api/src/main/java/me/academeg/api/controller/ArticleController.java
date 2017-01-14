@@ -130,6 +130,23 @@ public class ArticleController {
         throw new AccountPermissionException("You cannot get %s articles", status);
     }
 
+    @RequestMapping(value = "/search", method = RequestMethod.GET)
+    public ApiResult search(
+        @RequestParam(name = "q") final String query,
+        @RequestParam(required = false) final Integer page,
+        @RequestParam(required = false) final Integer limit
+    ) {
+        log.info("/SEARCH method invoked for {} query {}", "Article", query);
+        log.info("It's temporary solution. May be very slow(");
+        return
+            listResult(
+                articleService.getPage(
+                    hasText(query),
+                    createPageRequest(limit, page, "creationDate:desc")
+                )
+            );
+    }
+
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ApiResult create(
         @Validated @RequestBody final Article article,
