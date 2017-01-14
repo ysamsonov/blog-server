@@ -1,13 +1,16 @@
 package me.academeg.api.controller;
 
-import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.BooleanBuilder;
+import lombok.extern.slf4j.Slf4j;
 import me.academeg.api.common.ApiResult;
-import me.academeg.api.entity.*;
+import me.academeg.api.entity.Account;
+import me.academeg.api.entity.AccountRole;
+import me.academeg.api.entity.Article;
+import me.academeg.api.entity.ArticleStatus;
 import me.academeg.api.exception.AccountPermissionException;
 import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.service.AccountService;
 import me.academeg.api.service.ArticleService;
-import me.academeg.api.utils.ApiUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 import java.util.UUID;
 
+import static me.academeg.api.specification.ArticleSpec.*;
 import static me.academeg.api.utils.ApiUtils.*;
 
 /**
@@ -28,6 +32,7 @@ import static me.academeg.api.utils.ApiUtils.*;
 @RestController
 @RequestMapping("/api/articles")
 @Validated
+@Slf4j
 public class ArticleController {
     private final AccountService accountService;
     private final ArticleService articleService;
@@ -43,6 +48,8 @@ public class ArticleController {
         @AuthenticationPrincipal final User user,
         @PathVariable final UUID id
     ) {
+        log.info("/GET method invoked for {} id {}", "Article", id);
+
         Article article = Optional
             .ofNullable(articleService.getById(id))
             .orElseThrow(() -> new EntityNotExistException("Article with id %s not exist", id));
@@ -72,39 +79,55 @@ public class ArticleController {
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ApiResult getList(
         @RequestParam(required = false) final UUID authorId,
-        @RequestParam(required = false) ArticleStatus status,
+        @RequestParam(required = false, defaultValue = "PUBLISHED") ArticleStatus status,
         @RequestParam(required = false) final String tag,
         @RequestParam(required = false) final Integer page,
         @RequestParam(required = false) final Integer limit,
         @AuthenticationPrincipal final User user
     ) {
-        status = Optional.ofNullable(status).orElse(ArticleStatus.PUBLISHED);
+        log.info("/LIST method invoked for {}, authorId {}, status {}, tag {}", "Article", authorId, status, tag);
 
-        if (!status.equals(ArticleStatus.PUBLISHED) && user == null) {
-            throw new AccountPermissionException("You cannot get '{}' articles", status);
+        BooleanBuilder predicateBuilder = new BooleanBuilder(withStatus(status));
+        if (authorId != null) {
+            predicateBuilder.and(withAuthorId(authorId));
+        }
+
+        if (tag != null) {
+            predicateBuilder.and(hasTag(tag));
+        }
+
+        if (status.equals(ArticleStatus.PUBLISHED)) {
+            return listResult(
+                articleService.getPage(predicateBuilder.getValue(),
+                    createPageRequest(limit, page, "creationDate:desc")));
+        }
+
+        if (user == null) {
+            throw new AccountPermissionException("You cannot get %s articles", status);
         }
 
         Account authUser = accountService.getByEmail(user.getUsername());
-        if (!status.equals(ArticleStatus.PUBLISHED)
-            && !authUser.getId().equals(authorId)) {
-            throw new AccountPermissionException("You cannot get '{}' articles", status);
+        if (status.equals(ArticleStatus.LOCKED)
+            && (
+            authUser.getAuthority().equals(AccountRole.MODERATOR)
+                || authUser.getAuthority().equals(AccountRole.ADMIN))
+            ) {
+            return listResult(
+                articleService.getPage(predicateBuilder.getValue(),
+                    createPageRequest(limit, page, "creationDate:desc")));
         }
 
+        if (authorId == null) {
+            throw new AccountPermissionException("You cannot get %s articles", status);
+        }
 
-        QArticle article = QArticle.article;
+        if (authUser.getId().equals(authorId)) {
+            return listResult(
+                articleService.getPage(predicateBuilder.getValue(),
+                    createPageRequest(limit, page, "creationDate:desc")));
+        }
 
-        BooleanExpression eq1 = article.author().id.eq(authorId);
-        BooleanExpression eq2 = article.status.eq(status);
-        BooleanExpression eq3 = article.tags.any().value.eq(tag);
-
-        return
-            listResult(
-                articleService
-                    .getPage(
-                        eq1.and(eq2).and(eq3),
-                        ApiUtils.createPageRequest(limit, page, "creationDate:desc")
-                    )
-            );
+        throw new AccountPermissionException("You cannot get %s articles", status);
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
@@ -112,6 +135,8 @@ public class ArticleController {
         @Validated @RequestBody final Article article,
         @AuthenticationPrincipal final User user
     ) {
+        log.info("/ADD method invoked for {}", "Article");
+
         article.setAuthor(accountService.getByEmail(user.getUsername()));
         return singleResult(articleService.create(article));
     }
@@ -122,6 +147,8 @@ public class ArticleController {
         @PathVariable final UUID id,
         @Validated @RequestBody final Article article
     ) {
+        log.info("/EDIT method invoked for {} id {}", "Article", id);
+
         Article articleFromDb = articleService.getById(id);
         if (articleFromDb == null) {
             throw new EntityNotExistException("Article with id %s not exist", id);
@@ -136,7 +163,12 @@ public class ArticleController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ApiResult delete(@AuthenticationPrincipal final User user, final @PathVariable UUID id) {
+    public ApiResult delete(
+        @AuthenticationPrincipal final User user,
+        final @PathVariable UUID id
+    ) {
+        log.info("/EDIT invoked for {} id {}", "Article", id);
+
         Article article = articleService.getById(id);
         if (article == null) {
             throw new EntityNotExistException("Article with id %s not exist", id);
@@ -161,6 +193,8 @@ public class ArticleController {
 
     @RequestMapping(value = "/{id}/lock", method = RequestMethod.GET)
     public ApiResult lock(@AuthenticationPrincipal final User user, @PathVariable final UUID id) {
+        log.info("/LOCK invoked for {} id {}", "Article", id);
+
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(AccountRole.ADMIN)
             || account.getAuthority().equals(AccountRole.MODERATOR))) {
@@ -178,6 +212,8 @@ public class ArticleController {
 
     @RequestMapping(value = "/{id}/unlock", method = RequestMethod.GET)
     public ApiResult unlock(@AuthenticationPrincipal final User user, @PathVariable final UUID id) {
+        log.info("/UNLOCK invoked for {} id {}", "Article", id);
+
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(AccountRole.ADMIN))
             || account.getAuthority().equals(AccountRole.MODERATOR)) {
