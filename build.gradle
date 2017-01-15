@@ -42,7 +42,7 @@ subprojects {
 }
 
 project(':blog-api') {
-    apply plugin: 'spring-boot'
+    apply plugin: 'org.springframework.boot'
 
     def generatedSourcePath = 'src/main/generated-src'
 
