@@ -1,11 +1,12 @@
 package me.academeg.api.security;
 
-import me.academeg.api.entity.Account;
-import me.academeg.api.repository.AccountRepository;
+import me.academeg.dal.domain.Account;
+import me.academeg.dal.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
@@ -19,16 +20,20 @@ import java.util.Collection;
  * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
  * @version 1.0
  */
-@Component("userDetailsService")
-public class CustomUserDetailsServiceImpl implements org.springframework.security.core.userdetails.UserDetailsService {
+@Component
+public class CustomUserDetailsServiceImpl implements UserDetailsService {
+
+    private AccountRepository accountRepository;
 
     @Autowired
-    private AccountRepository accountRepository;
+    public CustomUserDetailsServiceImpl(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
 
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Account accountFromDb = accountRepository.getByEmailIgnoreCase(username.toLowerCase());
+        Account accountFromDb = accountRepository.getByEmailIgnoreCase(username);
         if (accountFromDb == null) {
             throw new UsernameNotFoundException("User " + username + " was not found in the database");
         }

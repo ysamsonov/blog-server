@@ -1,15 +1,16 @@
 package me.academeg.api.controller;
 
+import com.querydsl.core.BooleanBuilder;
+import lombok.extern.slf4j.Slf4j;
 import me.academeg.api.common.ApiResult;
-import me.academeg.api.entity.Account;
-import me.academeg.api.entity.AccountRole;
-import me.academeg.api.entity.Article;
-import me.academeg.api.entity.ArticleStatus;
-import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.exception.AccountPermissionException;
-import me.academeg.api.service.AccountService;
-import me.academeg.api.service.ArticleService;
-import me.academeg.api.utils.ApiUtils;
+import me.academeg.api.exception.EntityNotExistException;
+import me.academeg.dal.domain.Account;
+import me.academeg.dal.domain.AccountRole;
+import me.academeg.dal.domain.Article;
+import me.academeg.dal.domain.ArticleStatus;
+import me.academeg.dal.service.AccountService;
+import me.academeg.dal.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static me.academeg.api.utils.ApiUtils.*;
+import static me.academeg.dal.specification.ArticleSpec.*;
 
 /**
  * ArticleController Controller
@@ -30,14 +32,17 @@ import static me.academeg.api.utils.ApiUtils.*;
 @RestController
 @RequestMapping("/api/articles")
 @Validated
+@Slf4j
 public class ArticleController {
     private final AccountService accountService;
     private final ArticleService articleService;
+    private final Class resourceClass;
 
     @Autowired
     public ArticleController(ArticleService articleService, AccountService accountService) {
         this.articleService = articleService;
         this.accountService = accountService;
+        this.resourceClass = Article.class;
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
@@ -45,6 +50,8 @@ public class ArticleController {
         @AuthenticationPrincipal final User user,
         @PathVariable final UUID id
     ) {
+        log.info("/GET method invoked for {} id {}", resourceClass.getSimpleName(), id);
+
         Article article = Optional
             .ofNullable(articleService.getById(id))
             .orElseThrow(() -> new EntityNotExistException("Article with id %s not exist", id));
@@ -72,9 +79,75 @@ public class ArticleController {
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public ApiResult getList(final Integer page, final Integer limit) {
-        //@TODO return not only publish article, add opportunity to filter article by status
-        return listResult(articleService.getPage(ApiUtils.createPageRequest(limit, page, "creationDate:desc")));
+    public ApiResult getList(
+        @RequestParam(required = false) final UUID authorId,
+        @RequestParam(required = false, defaultValue = "PUBLISHED") ArticleStatus status,
+        @RequestParam(required = false) final String tag,
+        @RequestParam(required = false) final Integer page,
+        @RequestParam(required = false) final Integer limit,
+        @AuthenticationPrincipal final User user
+    ) {
+        log.info("/LIST method invoked for {}, authorId {}, status {}, tag {}",
+            resourceClass.getSimpleName(), authorId, status, tag);
+
+        BooleanBuilder predicateBuilder = new BooleanBuilder(withStatus(status));
+        if (authorId != null) {
+            predicateBuilder.and(withAuthorId(authorId));
+        }
+
+        if (tag != null) {
+            predicateBuilder.and(hasTag(tag));
+        }
+
+        if (status.equals(ArticleStatus.PUBLISHED)) {
+            return listResult(
+                articleService.getPage(predicateBuilder.getValue(),
+                    createPageRequest(limit, page, "creationDate:desc")));
+        }
+
+        if (user == null) {
+            throw new AccountPermissionException("You cannot get %s articles", status);
+        }
+
+        Account authUser = accountService.getByEmail(user.getUsername());
+        if (status.equals(ArticleStatus.LOCKED)
+            && (
+            authUser.getAuthority().equals(AccountRole.MODERATOR)
+                || authUser.getAuthority().equals(AccountRole.ADMIN))
+            ) {
+            return listResult(
+                articleService.getPage(predicateBuilder.getValue(),
+                    createPageRequest(limit, page, "creationDate:desc")));
+        }
+
+        if (authorId == null) {
+            throw new AccountPermissionException("You cannot get %s articles", status);
+        }
+
+        if (authUser.getId().equals(authorId)) {
+            return listResult(
+                articleService.getPage(predicateBuilder.getValue(),
+                    createPageRequest(limit, page, "creationDate:desc")));
+        }
+
+        throw new AccountPermissionException("You cannot get %s articles", status);
+    }
+
+    @RequestMapping(value = "/search", method = RequestMethod.GET)
+    public ApiResult search(
+        @RequestParam(name = "q") final String query,
+        @RequestParam(required = false) final Integer page,
+        @RequestParam(required = false) final Integer limit
+    ) {
+        log.info("/SEARCH method invoked for {} query {}", resourceClass.getSimpleName(), query);
+        log.info("It's temporary solution. May be very slow(");
+        return
+            listResult(
+                articleService.getPage(
+                    hasText(query),
+                    createPageRequest(limit, page, "creationDate:desc")
+                )
+            );
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
@@ -82,6 +155,7 @@ public class ArticleController {
         @Validated @RequestBody final Article article,
         @AuthenticationPrincipal final User user
     ) {
+        log.info("/CREATE method invoked for {}", resourceClass.getSimpleName());
         article.setAuthor(accountService.getByEmail(user.getUsername()));
         return singleResult(articleService.create(article));
     }
@@ -92,6 +166,8 @@ public class ArticleController {
         @PathVariable final UUID id,
         @Validated @RequestBody final Article article
     ) {
+        log.info("/UPDATE method invoked for {} id {}", resourceClass.getSimpleName(), id);
+
         Article articleFromDb = articleService.getById(id);
         if (articleFromDb == null) {
             throw new EntityNotExistException("Article with id %s not exist", id);
@@ -106,7 +182,12 @@ public class ArticleController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ApiResult delete(@AuthenticationPrincipal final User user, final @PathVariable UUID id) {
+    public ApiResult delete(
+        @AuthenticationPrincipal final User user,
+        final @PathVariable UUID id
+    ) {
+        log.info("/DELETE invoked for {} id {}", resourceClass.getSimpleName(), id);
+
         Article article = articleService.getById(id);
         if (article == null) {
             throw new EntityNotExistException("Article with id %s not exist", id);
@@ -131,6 +212,8 @@ public class ArticleController {
 
     @RequestMapping(value = "/{id}/lock", method = RequestMethod.GET)
     public ApiResult lock(@AuthenticationPrincipal final User user, @PathVariable final UUID id) {
+        log.info("/LOCK invoked for {} id {}", resourceClass.getSimpleName(), id);
+
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(AccountRole.ADMIN)
             || account.getAuthority().equals(AccountRole.MODERATOR))) {
@@ -148,6 +231,8 @@ public class ArticleController {
 
     @RequestMapping(value = "/{id}/unlock", method = RequestMethod.GET)
     public ApiResult unlock(@AuthenticationPrincipal final User user, @PathVariable final UUID id) {
+        log.info("/UNLOCK invoked for {} id {}", resourceClass.getSimpleName(), id);
+
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(AccountRole.ADMIN))
             || account.getAuthority().equals(AccountRole.MODERATOR)) {

@@ -1,13 +1,14 @@
 package me.academeg.api.security;
 
-import me.academeg.api.entity.Account;
-import me.academeg.api.service.AccountService;
+import me.academeg.dal.domain.Account;
+import me.academeg.dal.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,10 +19,15 @@ import java.util.Map;
  * @author Yuriy A. Samsonov <y.samsonov@erpscan.com>
  * @version 1.0
  */
+@Component
 public class CustomTokenEnhancer implements TokenEnhancer {
 
-    @Autowired
     private AccountService accountService;
+
+    @Autowired
+    public CustomTokenEnhancer(AccountService accountService) {
+        this.accountService = accountService;
+    }
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
