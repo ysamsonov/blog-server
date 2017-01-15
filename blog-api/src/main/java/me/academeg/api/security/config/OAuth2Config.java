@@ -1,5 +1,6 @@
 package me.academeg.api.security.config;
 
+import me.academeg.api.security.CORSFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 
 import javax.sql.DataSource;
 
@@ -39,7 +41,6 @@ public class OAuth2Config {
                 .exceptionHandling()
                 .and()
                 .authorizeRequests()
-//                .requestMatchers(CorsUtils::isCorsRequest).fullyAuthenticated() //@TODO remove on production
                 .antMatchers(HttpMethod.GET, "/").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/accounts/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/accounts").permitAll()
@@ -50,8 +51,8 @@ public class OAuth2Config {
                 .antMatchers(HttpMethod.GET, "/api/avatars/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/images/**").permitAll()
                 .anyRequest().authenticated()
-                .and().httpBasic();
-//                .and().addFilterBefore(new CORSFilter(), ChannelProcessingFilter.class); //@TODO remove on production
+                .and().httpBasic()
+                .and().addFilterBefore(new CORSFilter(), ChannelProcessingFilter.class); //@TODO remove on production
         }
     }
 
