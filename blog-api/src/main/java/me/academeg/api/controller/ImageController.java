@@ -3,7 +3,6 @@ package me.academeg.api.controller;
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.api.Constants;
 import me.academeg.api.common.ApiResult;
-import me.academeg.api.exception.AccountPermissionException;
 import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.exception.FileFormatException;
 import me.academeg.dal.domain.Image;
@@ -70,10 +69,6 @@ public class ImageController {
         @PathVariable final UUID id
     ) {
         log.info("/DELETE method invoked for {} id {}", resourceClass.getSimpleName(), id);
-        if (user == null) {
-            throw new AccountPermissionException("You cannot delete image with id %s", id);
-        }
-
         imageService.delete(id);
         return okResult();
     }
