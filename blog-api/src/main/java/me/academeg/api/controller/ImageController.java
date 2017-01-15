@@ -44,7 +44,7 @@ public class ImageController {
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ApiResult create(@RequestParam(name = "image") final MultipartFile image) {
-        log.info("/ADD method invoked for {}", resourceClass.getSimpleName());
+        log.info("/CREATE method invoked for {}", resourceClass.getSimpleName());
         if (!image.getContentType().startsWith("image/")) {
             throw new FileFormatException("You can upload only images");
         }
@@ -75,7 +75,7 @@ public class ImageController {
 
     @RequestMapping(value = "/file/{name}", method = RequestMethod.GET, produces = "image/jpg")
     public byte[] getByName(@PathVariable final String name) {
-        log.info("/GET/FILE method invoked for {} name {}", resourceClass.getSimpleName(), name);
+        log.info("/FILE method invoked for {} name {}", resourceClass.getSimpleName(), name);
         return ImageUtils.toByteArray(new File(Constants.IMAGE_PATH + name));
     }
 }

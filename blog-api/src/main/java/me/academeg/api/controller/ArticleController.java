@@ -155,7 +155,7 @@ public class ArticleController {
         @Validated @RequestBody final Article article,
         @AuthenticationPrincipal final User user
     ) {
-        log.info("/ADD method invoked for {}", resourceClass.getSimpleName());
+        log.info("/CREATE method invoked for {}", resourceClass.getSimpleName());
         article.setAuthor(accountService.getByEmail(user.getUsername()));
         return singleResult(articleService.create(article));
     }
@@ -166,7 +166,7 @@ public class ArticleController {
         @PathVariable final UUID id,
         @Validated @RequestBody final Article article
     ) {
-        log.info("/EDIT method invoked for {} id {}", resourceClass.getSimpleName(), id);
+        log.info("/UPDATE method invoked for {} id {}", resourceClass.getSimpleName(), id);
 
         Article articleFromDb = articleService.getById(id);
         if (articleFromDb == null) {

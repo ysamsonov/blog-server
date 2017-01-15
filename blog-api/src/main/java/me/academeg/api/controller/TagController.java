@@ -1,11 +1,12 @@
 package me.academeg.api.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import me.academeg.api.common.ApiResult;
+import me.academeg.api.exception.AccountPermissionException;
+import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.dal.domain.Account;
 import me.academeg.dal.domain.AccountRole;
 import me.academeg.dal.domain.Tag;
-import me.academeg.api.exception.EntityNotExistException;
-import me.academeg.api.exception.AccountPermissionException;
 import me.academeg.dal.service.AccountService;
 import me.academeg.dal.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,18 +29,22 @@ import static me.academeg.api.utils.ApiUtils.*;
 @RestController
 @RequestMapping("/api/tags")
 @Validated
+@Slf4j
 public class TagController {
     private final TagService tagService;
     private final AccountService accountService;
+    private final Class resourceClass;
 
     @Autowired
     public TagController(TagService tagService, AccountService accountService) {
         this.tagService = tagService;
         this.accountService = accountService;
+        this.resourceClass = Tag.class;
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ApiResult getById(@PathVariable final UUID id) {
+        log.info("/GET method invoked for {} id {}", resourceClass.getSimpleName(), id);
         return singleResult(
             Optional
                 .ofNullable(tagService.getById(id))
@@ -49,11 +54,13 @@ public class TagController {
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ApiResult getList(final Integer page, final Integer limit) {
+        log.info("/LIST method invoked for {}", resourceClass.getSimpleName());
         return listResult(tagService.getPage(createPageRequest(limit, page, null)));
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ApiResult create(@Validated @RequestBody final Tag tag) {
+        log.info("/CREATE method invoked for {}", resourceClass.getSimpleName());
         return singleResult(tagService.create(tag));
     }
 
@@ -63,24 +70,24 @@ public class TagController {
         @PathVariable final UUID id,
         @RequestBody final Tag tag
     ) {
+        log.info("/UPDATE method invoked for {} id {}", resourceClass.getSimpleName(), id);
         Account authAccount = accountService.getByEmail(user.getUsername());
         if (!authAccount.getAuthority().equals(AccountRole.MODERATOR)
             && !authAccount.getAuthority().equals(AccountRole.ADMIN)) {
             throw new AccountPermissionException();
         }
-
         tag.setId(id);
         return singleResult(tagService.update(tag));
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public ApiResult delete(@AuthenticationPrincipal final User user, final @PathVariable UUID id) {
+        log.info("/DELETE method invoked for {} id {}", resourceClass.getSimpleName(), id);
         Account authAccount = accountService.getByEmail(user.getUsername());
         if (!authAccount.getAuthority().equals(AccountRole.MODERATOR)
             && !authAccount.getAuthority().equals(AccountRole.ADMIN)) {
             throw new AccountPermissionException("Only admin/moderator can delete the tag");
         }
-
         tagService.delete(id);
         return okResult();
     }

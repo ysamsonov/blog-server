@@ -1,10 +1,11 @@
 package me.academeg.api.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import me.academeg.api.common.ApiResult;
+import me.academeg.api.exception.AccountPermissionException;
+import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.dal.domain.Account;
 import me.academeg.dal.domain.AccountRole;
-import me.academeg.api.exception.EntityNotExistException;
-import me.academeg.api.exception.AccountPermissionException;
 import me.academeg.dal.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,9 +32,11 @@ import static me.academeg.api.utils.ApiUtils.*;
  */
 @RestController
 @RequestMapping("/api/accounts")
+@Slf4j
 public class AccountController {
     private final AccountService accountService;
     private final TokenStore tokenStore;
+    private final Class resourceClass;
 
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
@@ -44,10 +47,12 @@ public class AccountController {
     ) {
         this.accountService = accountService;
         this.tokenStore = tokenStore;
+        this.resourceClass = Account.class;
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ApiResult create(@Validated @RequestBody final Account account) {
+        log.info("/CREATE method invoked for {}", resourceClass.getSimpleName());
         return singleResult(accountService.create(account));
     }
 
@@ -57,6 +62,7 @@ public class AccountController {
         @PathVariable final UUID id,
         @RequestBody final Account account
     ) {
+        log.info("/UPDATE method invoked for {} id {}", resourceClass.getSimpleName(), id);
         Set<ConstraintViolation<Account>> validated = validator.validateProperty(account, "login");
         if (validated.size() > 0) {
             throw new ConstraintViolationException(validated);
@@ -73,6 +79,7 @@ public class AccountController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ApiResult getById(@PathVariable final UUID id) {
+        log.info("/GET method invoked for {} id {}", resourceClass.getSimpleName(), id);
         return singleResult(
             Optional
                 .ofNullable(accountService.getById(id))
@@ -82,6 +89,7 @@ public class AccountController {
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ApiResult getList(final Integer page, final Integer limit) {
+        log.info("/LIST method invoked for {}", resourceClass.getSimpleName());
         return listResult(accountService.getPage(createPageRequest(limit, page, null)));
     }
 
@@ -90,6 +98,7 @@ public class AccountController {
         @PathVariable final UUID id,
         @AuthenticationPrincipal final User user
     ) {
+        log.info("/DELETE method invoked for {} id {}", resourceClass.getSimpleName(), id);
         Account deletedUser = accountService.getById(id);
         if (deletedUser == null) {
             throw new EntityNotExistException("Account with id %s not exist", id);

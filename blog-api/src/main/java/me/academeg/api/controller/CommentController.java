@@ -1,5 +1,6 @@
 package me.academeg.api.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import me.academeg.api.common.ApiResult;
 import me.academeg.dal.domain.*;
 import me.academeg.api.exception.EntityNotExistException;
@@ -33,10 +34,12 @@ import static me.academeg.api.utils.ApiUtils.*;
 @RestController
 @RequestMapping("/api/comments")
 @Validated
+@Slf4j
 public class CommentController {
     private final CommentService commentService;
     private final ArticleService articleService;
     private final AccountService accountService;
+    private final Class resourceClass;
 
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
@@ -49,10 +52,12 @@ public class CommentController {
         this.commentService = commentService;
         this.articleService = articleService;
         this.accountService = accountService;
+        this.resourceClass = Comment.class;
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ApiResult getById(@PathVariable final UUID id) {
+        log.info("/GET method invoked for {} id {}", resourceClass.getSimpleName(), id);
         return singleResult(
             Optional
                 .ofNullable(commentService.getById(id))
@@ -66,6 +71,7 @@ public class CommentController {
         @RequestBody @Validated final Comment comment,
         @AuthenticationPrincipal final User user
     ) {
+        log.info("/CREATE method invoked for {}", resourceClass.getSimpleName());
         if (comment.getArticle().getId() == null) {
             throw new EntityNotExistException("Article with nullable id not exist");
         }
@@ -86,6 +92,7 @@ public class CommentController {
         @RequestBody final Comment commentRequest,
         @AuthenticationPrincipal final User user
     ) {
+        log.info("/UPDATE method invoked for {} id {}", resourceClass.getSimpleName(), id);
         Set<ConstraintViolation<Comment>> validated = validator.validateProperty(commentRequest, "text");
         if (validated.size() > 0) {
             throw new ConstraintViolationException(validated);
@@ -111,6 +118,7 @@ public class CommentController {
         final Integer page,
         final Integer limit
     ) {
+        log.info("/LIST method invoked for {} articleId {}", resourceClass.getSimpleName(), articleId);
         Article article = articleService.getById(articleId);
         if (article == null) {
             throw new EntityNotExistException("Article with id %s not exist", articleId);
@@ -143,6 +151,7 @@ public class CommentController {
         @PathVariable final UUID id,
         @AuthenticationPrincipal final User user
     ) {
+        log.info("/DELETE method invoked for {} id {}", resourceClass.getSimpleName(), id);
         Comment comment = Optional
             .ofNullable(commentService.getById(id))
             .orElseThrow(() -> new EntityNotExistException(String.format("Comment with id %s not exist", id)));

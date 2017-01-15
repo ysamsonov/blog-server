@@ -1,10 +1,12 @@
 package me.academeg.api.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import me.academeg.api.Constants;
 import me.academeg.api.common.ApiResult;
-import me.academeg.dal.domain.Account;
 import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.exception.FileFormatException;
+import me.academeg.dal.domain.Account;
+import me.academeg.dal.domain.Avatar;
 import me.academeg.dal.service.AccountService;
 import me.academeg.dal.service.AvatarService;
 import me.academeg.dal.utils.ImageUtils;
@@ -31,9 +33,11 @@ import static me.academeg.api.utils.ApiUtils.singleResult;
 @RestController
 @RequestMapping("/api/avatars")
 @Validated
+@Slf4j
 public class AvatarController {
     private final AvatarService avatarService;
     private final AccountService accountService;
+    private final Class resourceClass;
 
     @Autowired
     public AvatarController(
@@ -42,6 +46,7 @@ public class AvatarController {
     ) {
         this.avatarService = avatarService;
         this.accountService = accountService;
+        this.resourceClass = Avatar.class;
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
@@ -49,6 +54,7 @@ public class AvatarController {
         @AuthenticationPrincipal final User user,
         @RequestParam final MultipartFile image
     ) {
+        log.info("/CREATE method invoked for {}", resourceClass.getSimpleName());
         if (!image.getContentType().startsWith("image/")) {
             throw new FileFormatException("You can upload only images");
         }
@@ -58,6 +64,7 @@ public class AvatarController {
 
     @RequestMapping(value = "{id}", method = RequestMethod.GET)
     public ApiResult getById(@PathVariable final UUID id) {
+        log.info("/GET method invoked for {} id {}", resourceClass.getSimpleName(), id);
         return singleResult(
             Optional
                 .ofNullable(avatarService.getById(id))
@@ -68,6 +75,7 @@ public class AvatarController {
 
     @RequestMapping(value = "", method = RequestMethod.DELETE)
     public ApiResult delete(@AuthenticationPrincipal final User user) {
+        log.info("/DELETE method invoked for {}", resourceClass.getSimpleName());
         Account account = accountService.getByEmail(user.getUsername());
         if (account.getAvatar() != null) {
             avatarService.delete(account.getAvatar().getId());
@@ -77,6 +85,7 @@ public class AvatarController {
 
     @RequestMapping(value = "/file/{name}", method = RequestMethod.GET, produces = "image/jpg")
     public byte[] getByName(@PathVariable final String name) {
+        log.info("/FILE method invoked for {} name {}", resourceClass.getSimpleName(), name);
         return ImageUtils.toByteArray(new File(Constants.AVATAR_PATH + name));
     }
 }
