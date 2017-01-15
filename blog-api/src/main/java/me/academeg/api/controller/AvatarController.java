@@ -2,12 +2,12 @@ package me.academeg.api.controller;
 
 import me.academeg.api.Constants;
 import me.academeg.api.common.ApiResult;
-import me.academeg.api.entity.Account;
+import me.academeg.dal.domain.Account;
 import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.exception.FileFormatException;
-import me.academeg.api.service.AccountService;
-import me.academeg.api.service.AvatarService;
-import me.academeg.api.utils.ImageUtils;
+import me.academeg.dal.service.AccountService;
+import me.academeg.dal.service.AvatarService;
+import me.academeg.dal.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;

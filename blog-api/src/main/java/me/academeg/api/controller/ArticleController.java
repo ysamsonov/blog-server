@@ -3,14 +3,14 @@ package me.academeg.api.controller;
 import com.querydsl.core.BooleanBuilder;
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.api.common.ApiResult;
-import me.academeg.api.entity.Account;
-import me.academeg.api.entity.AccountRole;
-import me.academeg.api.entity.Article;
-import me.academeg.api.entity.ArticleStatus;
+import me.academeg.dal.domain.Account;
+import me.academeg.dal.domain.AccountRole;
+import me.academeg.dal.domain.Article;
+import me.academeg.dal.domain.ArticleStatus;
 import me.academeg.api.exception.AccountPermissionException;
 import me.academeg.api.exception.EntityNotExistException;
-import me.academeg.api.service.AccountService;
-import me.academeg.api.service.ArticleService;
+import me.academeg.dal.service.AccountService;
+import me.academeg.dal.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 import java.util.UUID;
 
-import static me.academeg.api.specification.ArticleSpec.*;
+import static me.academeg.dal.specification.ArticleSpec.*;
 import static me.academeg.api.utils.ApiUtils.*;
 
 /**

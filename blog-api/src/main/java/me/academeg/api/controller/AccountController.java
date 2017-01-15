@@ -1,11 +1,11 @@
 package me.academeg.api.controller;
 
 import me.academeg.api.common.ApiResult;
-import me.academeg.api.entity.Account;
-import me.academeg.api.entity.AccountRole;
+import me.academeg.dal.domain.Account;
+import me.academeg.dal.domain.AccountRole;
 import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.exception.AccountPermissionException;
-import me.academeg.api.service.AccountService;
+import me.academeg.dal.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;

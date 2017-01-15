@@ -95,7 +95,7 @@ project(':blog-api') {
                 "com.querydsl.apt.jpa.JPAAnnotationProcessor",
                 "-Aquerydsl.entityAccessors=true"
         ]
-        destinationDir = file(generatedSourcePath) //sourceSets.main.java.srcDir.stream().skip(1).findFirst()
+        destinationDir = file(generatedSourcePath)
     }
 
     compileJava.dependsOn generateQueryDSL

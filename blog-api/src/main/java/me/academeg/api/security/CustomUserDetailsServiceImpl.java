@@ -1,7 +1,7 @@
 package me.academeg.api.security;
 
-import me.academeg.api.entity.Account;
-import me.academeg.api.repository.AccountRepository;
+import me.academeg.dal.domain.Account;
+import me.academeg.dal.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
