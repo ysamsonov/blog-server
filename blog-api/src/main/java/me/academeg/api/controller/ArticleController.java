@@ -3,12 +3,12 @@ package me.academeg.api.controller;
 import com.querydsl.core.BooleanBuilder;
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.api.common.ApiResult;
+import me.academeg.api.exception.AccountPermissionException;
+import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.dal.domain.Account;
 import me.academeg.dal.domain.AccountRole;
 import me.academeg.dal.domain.Article;
 import me.academeg.dal.domain.ArticleStatus;
-import me.academeg.api.exception.AccountPermissionException;
-import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.dal.service.AccountService;
 import me.academeg.dal.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 import java.util.UUID;
 
-import static me.academeg.dal.specification.ArticleSpec.*;
 import static me.academeg.api.utils.ApiUtils.*;
+import static me.academeg.dal.specification.ArticleSpec.*;
 
 /**
  * ArticleController Controller
@@ -36,11 +36,13 @@ import static me.academeg.api.utils.ApiUtils.*;
 public class ArticleController {
     private final AccountService accountService;
     private final ArticleService articleService;
+    private final Class resourceClass;
 
     @Autowired
     public ArticleController(ArticleService articleService, AccountService accountService) {
         this.articleService = articleService;
         this.accountService = accountService;
+        this.resourceClass = Article.class;
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
@@ -48,7 +50,7 @@ public class ArticleController {
         @AuthenticationPrincipal final User user,
         @PathVariable final UUID id
     ) {
-        log.info("/GET method invoked for {} id {}", "Article", id);
+        log.info("/GET method invoked for {} id {}", resourceClass.getSimpleName(), id);
 
         Article article = Optional
             .ofNullable(articleService.getById(id))
@@ -85,7 +87,8 @@ public class ArticleController {
         @RequestParam(required = false) final Integer limit,
         @AuthenticationPrincipal final User user
     ) {
-        log.info("/LIST method invoked for {}, authorId {}, status {}, tag {}", "Article", authorId, status, tag);
+        log.info("/LIST method invoked for {}, authorId {}, status {}, tag {}",
+            resourceClass.getSimpleName(), authorId, status, tag);
 
         BooleanBuilder predicateBuilder = new BooleanBuilder(withStatus(status));
         if (authorId != null) {
@@ -136,7 +139,7 @@ public class ArticleController {
         @RequestParam(required = false) final Integer page,
         @RequestParam(required = false) final Integer limit
     ) {
-        log.info("/SEARCH method invoked for {} query {}", "Article", query);
+        log.info("/SEARCH method invoked for {} query {}", resourceClass.getSimpleName(), query);
         log.info("It's temporary solution. May be very slow(");
         return
             listResult(
@@ -152,7 +155,7 @@ public class ArticleController {
         @Validated @RequestBody final Article article,
         @AuthenticationPrincipal final User user
     ) {
-        log.info("/ADD method invoked for {}", "Article");
+        log.info("/ADD method invoked for {}", resourceClass.getSimpleName());
 
         article.setAuthor(accountService.getByEmail(user.getUsername()));
         return singleResult(articleService.create(article));
@@ -164,7 +167,7 @@ public class ArticleController {
         @PathVariable final UUID id,
         @Validated @RequestBody final Article article
     ) {
-        log.info("/EDIT method invoked for {} id {}", "Article", id);
+        log.info("/EDIT method invoked for {} id {}", resourceClass.getSimpleName(), id);
 
         Article articleFromDb = articleService.getById(id);
         if (articleFromDb == null) {
@@ -184,7 +187,7 @@ public class ArticleController {
         @AuthenticationPrincipal final User user,
         final @PathVariable UUID id
     ) {
-        log.info("/EDIT invoked for {} id {}", "Article", id);
+        log.info("/EDIT invoked for {} id {}", resourceClass.getSimpleName(), id);
 
         Article article = articleService.getById(id);
         if (article == null) {
@@ -210,7 +213,7 @@ public class ArticleController {
 
     @RequestMapping(value = "/{id}/lock", method = RequestMethod.GET)
     public ApiResult lock(@AuthenticationPrincipal final User user, @PathVariable final UUID id) {
-        log.info("/LOCK invoked for {} id {}", "Article", id);
+        log.info("/LOCK invoked for {} id {}", resourceClass.getSimpleName(), id);
 
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(AccountRole.ADMIN)
@@ -229,7 +232,7 @@ public class ArticleController {
 
     @RequestMapping(value = "/{id}/unlock", method = RequestMethod.GET)
     public ApiResult unlock(@AuthenticationPrincipal final User user, @PathVariable final UUID id) {
-        log.info("/UNLOCK invoked for {} id {}", "Article", id);
+        log.info("/UNLOCK invoked for {} id {}", resourceClass.getSimpleName(), id);
 
         Account account = accountService.getByEmail(user.getUsername());
         if (!(account.getAuthority().equals(AccountRole.ADMIN))

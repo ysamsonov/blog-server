@@ -1,13 +1,12 @@
 package me.academeg.api.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import me.academeg.api.Constants;
 import me.academeg.api.common.ApiResult;
-import me.academeg.dal.domain.Account;
-import me.academeg.dal.domain.Image;
-import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.exception.AccountPermissionException;
+import me.academeg.api.exception.EntityNotExistException;
 import me.academeg.api.exception.FileFormatException;
-import me.academeg.dal.service.AccountService;
+import me.academeg.dal.domain.Image;
 import me.academeg.dal.service.ImageService;
 import me.academeg.dal.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,18 +32,20 @@ import static me.academeg.api.utils.ApiUtils.singleResult;
 @RestController
 @RequestMapping("/api/images")
 @Validated
+@Slf4j
 public class ImageController {
     private final ImageService imageService;
-    private final AccountService accountService;
+    private final Class resourceClass;
 
     @Autowired
-    public ImageController(ImageService imageService, AccountService accountService) {
+    public ImageController(ImageService imageService) {
         this.imageService = imageService;
-        this.accountService = accountService;
+        this.resourceClass = Image.class;
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ApiResult create(@RequestParam(name = "image") final MultipartFile image) {
+        log.info("/ADD method invoked for {}", resourceClass.getSimpleName());
         if (!image.getContentType().startsWith("image/")) {
             throw new FileFormatException("You can upload only images");
         }
@@ -54,6 +55,7 @@ public class ImageController {
 
     @RequestMapping(value = "{id}", method = RequestMethod.GET)
     public ApiResult getById(@PathVariable final UUID id) {
+        log.info("/GET method invoked for {} id {}", resourceClass.getSimpleName(), id);
         return singleResult(
             Optional
                 .ofNullable(imageService.getById(id))
@@ -63,26 +65,22 @@ public class ImageController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ApiResult delete(@AuthenticationPrincipal final User user, @PathVariable final UUID id) {
-        Image imageFromDb = Optional
-            .ofNullable(imageService.getById(id))
-            .orElseThrow(() -> new EntityNotExistException("Image with id %s not exist", id));
-
-        Account authAcc = accountService.getByEmail(user.getUsername());
-        if (imageFromDb.getArticle() == null) {
-            throw new EntityNotExistException("Image with id %s not exist", id);
+    public ApiResult delete(
+        @AuthenticationPrincipal final User user,
+        @PathVariable final UUID id
+    ) {
+        log.info("/DELETE method invoked for {} id {}", resourceClass.getSimpleName(), id);
+        if (user == null) {
+            throw new AccountPermissionException("You cannot delete image with id %s", id);
         }
 
-        if (!imageFromDb.getArticle().getAuthor().getId().equals(authAcc.getId())) {
-            throw new AccountPermissionException();
-        }
-
-        imageService.delete(imageFromDb.getId());
+        imageService.delete(id);
         return okResult();
     }
 
     @RequestMapping(value = "/file/{name}", method = RequestMethod.GET, produces = "image/jpg")
     public byte[] getByName(@PathVariable final String name) {
+        log.info("/GET/FILE method invoked for {} name {}", resourceClass.getSimpleName(), name);
         return ImageUtils.toByteArray(new File(Constants.IMAGE_PATH + name));
     }
 }
