@@ -1,6 +1,6 @@
 package me.academeg.api.security.config;
 
-import me.academeg.api.security.CORSFilter;
+import me.academeg.api.security.CorsFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -52,7 +52,7 @@ public class OAuth2Config {
                 .antMatchers(HttpMethod.GET, "/api/images/**").permitAll()
                 .anyRequest().authenticated()
                 .and().httpBasic()
-                .and().addFilterBefore(new CORSFilter(), ChannelProcessingFilter.class); //@TODO remove on production
+                .and().addFilterBefore(new CorsFilter(), ChannelProcessingFilter.class); //@TODO remove on production
         }
     }
 
