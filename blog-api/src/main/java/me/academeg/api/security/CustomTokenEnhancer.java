@@ -1,7 +1,7 @@
 package me.academeg.api.security;
 
-import me.academeg.api.entity.Account;
-import me.academeg.api.service.AccountService;
+import me.academeg.dal.domain.Account;
+import me.academeg.dal.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
