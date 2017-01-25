@@ -6,5 +6,7 @@ package me.academeg.blog.api.common;
  * @author Yuriy A. Samsonov <y.samsonov@erpscan.com>
  * @version 1.0
  */
-public interface ResultData {
+public interface ResultData<T> {
+
+    T getResult();
 }

@@ -9,11 +9,11 @@ import lombok.Getter;
  * @version 1.0
  */
 @Getter
-public class ApiResultWithData extends ApiResultImpl {
+public class ApiResultWithData<DATA extends ResultData> extends ApiResultImpl {
 
-    private final ResultData data;
+    private final DATA data;
 
-    public ApiResultWithData(final long status, final String message, final ResultData data) {
+    public ApiResultWithData(final long status, final String message, final DATA data) {
         super(status, message);
         this.data = data;
     }

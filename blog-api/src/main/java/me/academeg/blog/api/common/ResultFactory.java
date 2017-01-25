@@ -19,8 +19,8 @@ public class ResultFactory {
         return new ApiResultImpl(0, "OK");
     }
 
-    public ApiResult ok(ResultData resultData) {
-        return new ApiResultWithData(0, "OK", resultData);
+    public <RESULT extends ResultData> ApiResultWithData<RESULT> ok(RESULT resultData) {
+        return new ApiResultWithData<>(0, "OK", resultData);
     }
 
     public ApiResult error(String message) {
