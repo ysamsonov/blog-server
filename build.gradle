@@ -81,7 +81,8 @@ project(':blog-api') {
 
 //        compile project(':blog-frontend')
 
-        testCompile "junit:junit:4.12"
+        testCompile 'junit:junit:4.12'
+        testCompile 'org.assertj:assertj-core:3.6.1'
     }
 
     task generateQueryDSL(type: JavaCompile, group: 'build', description: 'Generates the QueryDSL query types') {
