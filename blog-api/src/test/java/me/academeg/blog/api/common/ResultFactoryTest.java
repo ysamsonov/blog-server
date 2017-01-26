@@ -35,7 +35,10 @@ public class ResultFactoryTest {
 
     @Test
     public void okWithArbitraryResult() throws Exception {
-        ApiResultWithData<ArbitraryResult<String>> result = ResultFactory.build().ok(new ArbitraryResult<>("Some result"));
+        ApiResultWithData<ArbitraryResult<String>> result =
+            ResultFactory
+                .build()
+                .ok(new ArbitraryResult<>("Some result"));
 
         assertThat(result.getStatus()).isEqualTo(0);
         assertThat(result.getMessage()).isEqualTo("OK");
@@ -65,7 +68,10 @@ public class ResultFactoryTest {
         data.add("Moscow");
         data.add("Murmansk");
 
-        ApiResultWithData<CollectionResult<String>> result = ResultFactory.build().ok(new CollectionResult<>(data, 100));
+        ApiResultWithData<CollectionResult<String>> result =
+            ResultFactory
+                .build()
+                .ok(new CollectionResult<>(data, 100));
 
         assertThat(result.getStatus()).isEqualTo(0);
         assertThat(result.getMessage()).isEqualTo("OK");

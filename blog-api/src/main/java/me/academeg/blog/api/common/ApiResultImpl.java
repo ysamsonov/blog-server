@@ -14,9 +14,6 @@ public class ApiResultImpl implements ApiResult {
     private long status;
     private String message;
 
-    public ApiResultImpl() {
-    }
-
     public ApiResultImpl(final long status, final String message) {
         this.status = status;
         this.message = message;
