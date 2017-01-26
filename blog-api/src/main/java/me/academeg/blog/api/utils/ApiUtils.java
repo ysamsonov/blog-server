@@ -1,10 +1,7 @@
 package me.academeg.blog.api.utils;
 
 import me.academeg.blog.api.Constants;
-import me.academeg.blog.api.common.ApiResult;
-import me.academeg.blog.api.common.ArbitraryResult;
-import me.academeg.blog.api.common.CollectionResult;
-import me.academeg.blog.api.common.ResultFactory;
+import me.academeg.blog.api.common.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -72,19 +69,19 @@ final public class ApiUtils {
         return ResultFactory.build().ok();
     }
 
-    public static <T> ApiResult singleResult(final T result) {
+    public static <T> ApiResultWithData<ArbitraryResult<T>> singleResult(final T result) {
         return ResultFactory.build().ok(new ArbitraryResult<>(result));
     }
 
-    public static <T> ApiResult listResult(final Collection<T> result, final long total) {
+    public static <T> ApiResultWithData<CollectionResult<T>> listResult(final Collection<T> result, final long total) {
         return ResultFactory.build().ok(new CollectionResult<>(result, total));
     }
 
-    public static <T> ApiResult listResult(final Page<T> page) {
+    public static <T> ApiResultWithData<CollectionResult<T>> listResult(final Page<T> page) {
         return ResultFactory.build().ok(new CollectionResult<>(page.getContent(), page.getTotalElements()));
     }
 
-    public static <T> ApiResult listResult(final Collection<T> resultCollection) {
+    public static <T> ApiResultWithData<CollectionResult<T>> listResult(final Collection<T> resultCollection) {
         return listResult(resultCollection, (long) resultCollection.size());
     }
 }

@@ -2,9 +2,16 @@ package me.academeg.blog.api.utils;
 
 import me.academeg.blog.api.Constants;
 import me.academeg.blog.api.common.ApiResult;
+import me.academeg.blog.api.common.ApiResultWithData;
+import me.academeg.blog.api.common.ArbitraryResult;
+import me.academeg.blog.api.common.CollectionResult;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -77,5 +84,78 @@ public class ApiUtilsTest {
 
         assertThat(result.getMessage()).isEqualTo("OK");
         assertThat(result.getStatus()).isEqualTo(0);
+    }
+
+    @Test
+    public void okSingleResult() throws Exception {
+        ApiResultWithData<ArbitraryResult<String>> result = ApiUtils.singleResult("Simple string");
+
+        assertThat(result.getStatus()).isEqualTo(0);
+        assertThat(result.getMessage()).isEqualTo("OK");
+        assertThat(result.getData().getResult()).isEqualTo("Simple string");
+    }
+
+    @Test
+    public void okListResultWithoutTotal() throws Exception {
+        ArrayList<String> data = new ArrayList<>();
+        data.add("Moscow");
+        data.add("Saint. P.");
+        data.add("Murmansk");
+
+        ApiResultWithData<CollectionResult<String>> result = ApiUtils.listResult(data);
+
+        assertThat(result.getStatus()).isEqualTo(0);
+        assertThat(result.getMessage()).isEqualTo("OK");
+        assertThat(result.getData().getResult()).containsExactly(
+            "Moscow",
+            "Saint. P.",
+            "Murmansk"
+        );
+        assertThat(result.getData().getCount()).isEqualTo(data.size());
+        assertThat(result.getData().getTotal()).isEqualTo((long) data.size());
+    }
+
+    @Test
+    public void okListResultWithTotal() throws Exception {
+        ArrayList<String> data = new ArrayList<>();
+        data.add("Moscow");
+        data.add("Saint. P.");
+        data.add("Murmansk");
+
+        ApiResultWithData<CollectionResult<String>> result = ApiUtils.listResult(data, 100);
+
+        assertThat(result.getStatus()).isEqualTo(0);
+        assertThat(result.getMessage()).isEqualTo("OK");
+        assertThat(result.getData().getResult()).containsExactly(
+            "Moscow",
+            "Saint. P.",
+            "Murmansk"
+        );
+        assertThat(result.getData().getCount()).isEqualTo(data.size());
+        assertThat(result.getData().getTotal()).isEqualTo(100L);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void okListResultWithPage() throws Exception {
+        ArrayList<String> data = new ArrayList<>();
+        data.add("Moscow");
+        data.add("Saint. P.");
+        data.add("Murmansk");
+
+        Page<String> page = (Page<String>) Mockito.mock(Page.class);
+        Mockito.when(page.getTotalElements()).thenReturn(100L);
+        Mockito.when(page.getContent()).thenReturn(data);
+
+        ApiResultWithData<CollectionResult<String>> result = ApiUtils.listResult(page);
+        assertThat(result.getStatus()).isEqualTo(0);
+        assertThat(result.getMessage()).isEqualTo("OK");
+        assertThat(result.getData().getResult()).containsExactly(
+            "Moscow",
+            "Saint. P.",
+            "Murmansk"
+        );
+        assertThat(result.getData().getCount()).isEqualTo(data.size());
+        assertThat(result.getData().getTotal()).isEqualTo(100L);
     }
 }
