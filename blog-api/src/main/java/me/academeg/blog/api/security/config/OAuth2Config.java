@@ -35,6 +35,13 @@ public class OAuth2Config {
     @EnableResourceServer
     protected static class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
 
+        private CorsFilter corsFilter;
+
+        @Autowired
+        public ResourceServerConfiguration(CorsFilter corsFilter) {
+            this.corsFilter = corsFilter;
+        }
+
         @Override
         public void configure(HttpSecurity http) throws Exception {
             http
@@ -52,7 +59,7 @@ public class OAuth2Config {
                 .antMatchers(HttpMethod.GET, "/api/images/**").permitAll()
                 .anyRequest().authenticated()
                 .and().httpBasic()
-                .and().addFilterBefore(new CorsFilter(), ChannelProcessingFilter.class); //@TODO remove on production
+                .and().addFilterBefore(corsFilter, ChannelProcessingFilter.class); //@TODO remove on production
         }
     }
 
@@ -60,15 +67,20 @@ public class OAuth2Config {
     @EnableAuthorizationServer
     protected static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
-        @Autowired
-        @Qualifier("authenticationManagerBean")
         private AuthenticationManager authenticationManager;
-
-        @Autowired
         private DataSource dataSource;
+        private TokenEnhancer tokenEnhancer;
 
         @Autowired
-        private TokenEnhancer tokenEnhancer;
+        public AuthorizationServerConfiguration(
+            @Qualifier("authenticationManagerBean") AuthenticationManager authenticationManager,
+            DataSource dataSource,
+            TokenEnhancer tokenEnhancer
+        ) {
+            this.authenticationManager = authenticationManager;
+            this.dataSource = dataSource;
+            this.tokenEnhancer = tokenEnhancer;
+        }
 
         @Override
         public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
@@ -79,7 +91,8 @@ public class OAuth2Config {
 
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-            clients.inMemory()
+            clients
+                .inMemory()
                 .withClient("web_app")
                 .secret("secret_key")
                 .authorizedGrantTypes("password", "refresh_token")

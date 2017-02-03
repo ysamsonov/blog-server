@@ -1,5 +1,8 @@
 package me.academeg.blog.api.security;
 
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
@@ -10,6 +13,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  * @author Yuriy A. Samsonov <y.samsonov@erpscan.com>
  * @version 1.0
  */
+@Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorsFilter extends org.springframework.web.filter.CorsFilter {
 
     public CorsFilter() {
@@ -24,6 +29,7 @@ public class CorsFilter extends org.springframework.web.filter.CorsFilter {
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         source.registerCorsConfiguration("/api/**", config);
+        source.registerCorsConfiguration("/oauth/**", config);
         return source;
     }
 }
