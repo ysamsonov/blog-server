@@ -29,7 +29,7 @@ subprojects {
     targetCompatibility = 1.8
 
     group 'me.academeg'
-    version = '1.0.1-SNAPSHOT'
+    version = '1.0.1'
 
     repositories {
         mavenCentral()
