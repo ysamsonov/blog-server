@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
@@ -25,13 +23,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "tag")
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
-public class Tag {
-
-    @Id
-    @GenericGenerator(name = "uuid-gen", strategy = "uuid2")
-    @GeneratedValue(generator = "uuid-gen")
-    @Type(type = "uuid-char")
-    private UUID id;
+public class Tag extends BaseEntity {
 
     @NotBlank
     @Column(nullable = false, unique = true)
@@ -44,7 +36,7 @@ public class Tag {
     public Tag() {
     }
 
-    public Tag(UUID uuid) {
-        this.id = uuid;
+    public Tag(UUID id) {
+        super(id);
     }
 }
