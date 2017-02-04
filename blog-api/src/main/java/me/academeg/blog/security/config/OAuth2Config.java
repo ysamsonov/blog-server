@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -70,16 +71,19 @@ public class OAuth2Config {
         private AuthenticationManager authenticationManager;
         private DataSource dataSource;
         private TokenEnhancer tokenEnhancer;
+        private UserDetailsService userDetailsService;
 
         @Autowired
         public AuthorizationServerConfiguration(
             @Qualifier("authenticationManagerBean") AuthenticationManager authenticationManager,
             DataSource dataSource,
-            TokenEnhancer tokenEnhancer
+            TokenEnhancer tokenEnhancer,
+            UserDetailsService userDetailsService
         ) {
             this.authenticationManager = authenticationManager;
             this.dataSource = dataSource;
             this.tokenEnhancer = tokenEnhancer;
+            this.userDetailsService = userDetailsService;
         }
 
         @Override
@@ -105,7 +109,8 @@ public class OAuth2Config {
             endpoints
                 .tokenStore(tokenStoreBean())
                 .tokenEnhancer(tokenEnhancer)
-                .authenticationManager(authenticationManager);
+                .authenticationManager(authenticationManager)
+                .userDetailsService(userDetailsService);
         }
 
         @Bean
