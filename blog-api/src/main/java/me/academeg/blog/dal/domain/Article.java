@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 import me.academeg.blog.api.Constants;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
@@ -26,13 +24,7 @@ import java.util.*;
 @Entity
 @Table(name = "article")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Article {
-
-    @Id
-    @GenericGenerator(name = "uuid-gen", strategy = "uuid2")
-    @GeneratedValue(generator = "uuid-gen")
-    @Type(type = "uuid-char")
-    private UUID id;
+public class Article extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id")
@@ -74,7 +66,7 @@ public class Article {
     public Article() {
     }
 
-    public Article(UUID uuid) {
-        this.id = uuid;
+    public Article(UUID id) {
+        super(id);
     }
 }
