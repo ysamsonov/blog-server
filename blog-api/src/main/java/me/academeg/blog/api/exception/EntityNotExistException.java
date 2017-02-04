@@ -10,13 +10,17 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class EntityNotExistException extends RuntimeException {
+public class EntityNotExistException extends BlogException {
 
     public EntityNotExistException(String message) {
         super(message);
     }
 
     public EntityNotExistException(String message, Object... args) {
-        super(String.format(message, args));
+        super(message, args);
+    }
+
+    public EntityNotExistException(Throwable cause) {
+        super(cause);
     }
 }

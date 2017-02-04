@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -28,13 +26,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "account")
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
-public class Account {
-
-    @Id
-    @GenericGenerator(name = "uuid-gen", strategy = "uuid2")
-    @GeneratedValue(generator = "uuid-gen")
-    @Type(type = "uuid-char")
-    private UUID id;
+public class Account extends BaseEntity {
 
     @NotBlank
     @Column(nullable = false, unique = true)
@@ -74,7 +66,7 @@ public class Account {
     public Account() {
     }
 
-    public Account(UUID uuid) {
-        this.id = uuid;
+    public Account(UUID id) {
+        super(id);
     }
 }

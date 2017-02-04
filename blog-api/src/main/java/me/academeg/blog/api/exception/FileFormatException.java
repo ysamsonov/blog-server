@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class FileFormatException extends RuntimeException {
+public class FileFormatException extends BlogException {
 
     public FileFormatException() {
         this("Wrong file format");
@@ -18,5 +18,13 @@ public class FileFormatException extends RuntimeException {
 
     public FileFormatException(String message) {
         super(message);
+    }
+
+    public FileFormatException(String message, Object... args) {
+        super(message, args);
+    }
+
+    public FileFormatException(Throwable cause) {
+        super(cause);
     }
 }
