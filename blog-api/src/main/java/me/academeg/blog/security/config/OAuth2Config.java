@@ -1,6 +1,6 @@
-package me.academeg.blog.api.security.config;
+package me.academeg.blog.security.config;
 
-import me.academeg.blog.api.security.CorsFilter;
+import me.academeg.blog.security.CorsFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;

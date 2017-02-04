@@ -1,4 +1,4 @@
-package me.academeg.blog.api.security;
+package me.academeg.blog.security;
 
 import me.academeg.blog.dal.domain.Account;
 import me.academeg.blog.dal.service.AccountService;

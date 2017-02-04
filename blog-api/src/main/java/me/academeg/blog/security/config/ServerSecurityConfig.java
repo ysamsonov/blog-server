@@ -1,4 +1,4 @@
-package me.academeg.blog.api.security.config;
+package me.academeg.blog.security.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

@@ -1,4 +1,4 @@
-package me.academeg.blog.api.security;
+package me.academeg.blog.security;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;

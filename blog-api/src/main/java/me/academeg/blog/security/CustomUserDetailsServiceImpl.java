@@ -1,4 +1,4 @@
-package me.academeg.blog.api.security;
+package me.academeg.blog.security;
 
 import me.academeg.blog.dal.domain.Account;
 import me.academeg.blog.dal.repository.AccountRepository;
@@ -35,7 +35,7 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Account accountFromDb = accountRepository.getByEmailIgnoreCase(username);
         if (accountFromDb == null) {
-            throw new UsernameNotFoundException("User " + username + " was not found in the database");
+            throw new UsernameNotFoundException("User " + username + " was not found");
         }
 
         Collection<GrantedAuthority> grantedAuthorities = new ArrayList<>();
