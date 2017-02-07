@@ -1,13 +1,11 @@
 package me.academeg.blog.api.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import me.academeg.blog.api.Constants;
 import me.academeg.blog.api.common.ApiResult;
 import me.academeg.blog.api.exception.EntityNotExistException;
 import me.academeg.blog.api.exception.FileFormatException;
-import me.academeg.blog.dal.service.ImageService;
 import me.academeg.blog.dal.domain.Image;
-import me.academeg.blog.dal.utils.ImageUtils;
+import me.academeg.blog.dal.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -15,7 +13,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -76,6 +73,6 @@ public class ImageController {
     @RequestMapping(value = "/file/{name}", method = RequestMethod.GET, produces = "image/jpg")
     public byte[] getByName(@PathVariable final String name) {
         log.info("/FILE method invoked for {} name {}", resourceClass.getSimpleName(), name);
-        return ImageUtils.toByteArray(new File(Constants.IMAGE_PATH + name));
+        return imageService.getFile(name);
     }
 }

@@ -20,4 +20,8 @@ public interface ImageService {
     Image getById(UUID id);
 
     Image update(Image image);
+
+    byte[] getFile(String name);
+
+    String getPath();
 }

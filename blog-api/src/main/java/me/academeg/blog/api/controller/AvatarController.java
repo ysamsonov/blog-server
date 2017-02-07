@@ -1,15 +1,13 @@
 package me.academeg.blog.api.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import me.academeg.blog.api.Constants;
 import me.academeg.blog.api.common.ApiResult;
 import me.academeg.blog.api.exception.EntityNotExistException;
 import me.academeg.blog.api.exception.FileFormatException;
-import me.academeg.blog.dal.domain.Avatar;
 import me.academeg.blog.dal.domain.Account;
+import me.academeg.blog.dal.domain.Avatar;
 import me.academeg.blog.dal.service.AccountService;
 import me.academeg.blog.dal.service.AvatarService;
-import me.academeg.blog.dal.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -17,7 +15,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -86,6 +83,6 @@ public class AvatarController {
     @RequestMapping(value = "/file/{name}", method = RequestMethod.GET, produces = "image/jpg")
     public byte[] getByName(@PathVariable final String name) {
         log.info("/FILE method invoked for {} name {}", resourceClass.getSimpleName(), name);
-        return ImageUtils.toByteArray(new File(Constants.AVATAR_PATH + name));
+        return avatarService.getFile(name);
     }
 }

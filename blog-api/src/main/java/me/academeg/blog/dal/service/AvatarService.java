@@ -19,4 +19,6 @@ public interface AvatarService {
     Avatar getById(UUID id);
 
     void delete(UUID id);
+
+    byte[] getFile(String name);
 }

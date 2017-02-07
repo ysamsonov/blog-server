@@ -1,13 +1,12 @@
 package me.academeg.blog.dal.service.impl;
 
 import com.querydsl.core.types.Predicate;
-import me.academeg.blog.api.Constants;
 import me.academeg.blog.dal.domain.Article;
 import me.academeg.blog.dal.domain.ArticleStatus;
 import me.academeg.blog.dal.domain.Image;
 import me.academeg.blog.dal.repository.ArticleRepository;
-import me.academeg.blog.dal.service.ImageService;
 import me.academeg.blog.dal.service.ArticleService;
+import me.academeg.blog.dal.service.ImageService;
 import me.academeg.blog.dal.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -62,7 +61,7 @@ public class ArticleServiceImpl implements ArticleService {
         Article article = getById(id);
         article.getImages().forEach(
             image -> ImageUtils.deleteImages(
-                Constants.IMAGE_PATH,
+                imageService.getPath(),
                 image.getThumbnailPath(),
                 image.getOriginalPath())
         );

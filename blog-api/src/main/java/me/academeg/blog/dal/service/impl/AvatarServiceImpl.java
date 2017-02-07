@@ -6,12 +6,12 @@ import me.academeg.blog.dal.repository.AvatarRepository;
 import me.academeg.blog.dal.service.AvatarService;
 import me.academeg.blog.dal.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.UUID;
-
-import static me.academeg.blog.api.Constants.AVATAR_PATH;
 
 /**
  * AvatarServiceImpl Service
@@ -21,6 +21,9 @@ import static me.academeg.blog.api.Constants.AVATAR_PATH;
  */
 @Service
 public class AvatarServiceImpl implements AvatarService {
+
+    @Value("${me.academeg.blog.avatars.path:avatar/}")
+    private String avatarPath;
 
     private AvatarRepository avatarRepository;
 
@@ -32,13 +35,13 @@ public class AvatarServiceImpl implements AvatarService {
     @Override
     public Avatar create(MultipartFile file, Account account) {
         Avatar avatar = new Avatar();
-        avatar.setOriginalPath(ImageUtils.saveImage(AVATAR_PATH, file));
-        avatar.setThumbnailPath(ImageUtils.compressImage(avatar.getOriginalPath(), AVATAR_PATH));
+        avatar.setOriginalPath(ImageUtils.saveImage(avatarPath, file));
+        avatar.setThumbnailPath(ImageUtils.compressImage(avatar.getOriginalPath(), avatarPath));
         avatar.setAccount(account);
 
         if (account.getAvatar() != null) {
             ImageUtils.deleteImages(
-                AVATAR_PATH,
+                avatarPath,
                 account.getAvatar().getOriginalPath(),
                 account.getAvatar().getThumbnailPath()
             );
@@ -57,12 +60,17 @@ public class AvatarServiceImpl implements AvatarService {
     public void delete(UUID id) {
         Avatar avatar = avatarRepository.findOne(id);
         ImageUtils.deleteImages(
-            AVATAR_PATH,
+            avatarPath,
             avatar.getOriginalPath(),
             avatar.getThumbnailPath()
         );
         avatar.getAccount().setAvatar(null);
         avatar.setAccount(null);
         avatarRepository.delete(id);
+    }
+
+    @Override
+    public byte[] getFile(String name) {
+        return ImageUtils.toByteArray(new File(avatarPath + name));
     }
 }
