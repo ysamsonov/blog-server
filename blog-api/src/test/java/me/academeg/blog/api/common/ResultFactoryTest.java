@@ -26,6 +26,14 @@ public class ResultFactoryTest {
     }
 
     @Test
+    public void errorWithMsg() throws Exception {
+        ApiResult result = ResultFactory.build().error("Fatal error");
+
+        assertThat(result.getStatus()).isEqualTo(-1);
+        assertThat(result.getMessage()).isEqualTo("Fatal error");
+    }
+
+    @Test
     public void errorWithStatusAndMsg() throws Exception {
         ApiResult result = ResultFactory.build().error(100, "Fatal error");
 
