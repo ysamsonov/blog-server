@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResult handle(MethodArgumentNotValidException ex) {
-        return new ApiResultWithData(
+        return new ApiResultWithData<>(
             4010,
             "Argument not valid",
             new MapResult<>(
@@ -62,7 +62,12 @@ public class GlobalExceptionHandler {
                     .getBindingResult()
                     .getFieldErrors()
                     .stream()
-                    .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage))
+                    .collect(
+                        Collectors.toMap(
+                            FieldError::getField,
+                            FieldError::getDefaultMessage
+                        )
+                    )
             )
         );
     }
@@ -70,7 +75,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResult handle(ConstraintViolationException ex) {
-        return new ApiResultWithData(
+        return new ApiResultWithData<>(
             4020,
             "Constraint exception",
             new CollectionResult<>(
