@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 import me.academeg.blog.api.Constants;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
@@ -26,7 +28,7 @@ import java.util.*;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Article extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")
     private Account author;
 
@@ -52,6 +54,7 @@ public class Article extends BaseEntity {
     private Set<Image> images = new HashSet<>();
 
     @JsonIgnore
+    @LazyCollection(LazyCollectionOption.EXTRA)
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "article", orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
@@ -68,5 +71,9 @@ public class Article extends BaseEntity {
 
     public Article(UUID id) {
         super(id);
+    }
+
+    public int getCommentsCount() {
+        return this.comments.size();
     }
 }

@@ -48,7 +48,7 @@ public class Account extends BaseEntity {
     @NotBlank
     private String password;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "account")
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "account")
     private Avatar avatar;
 
     @JsonIgnore
