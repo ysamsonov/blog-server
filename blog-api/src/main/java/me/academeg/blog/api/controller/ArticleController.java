@@ -70,8 +70,8 @@ public class ArticleController {
         }
 
         if (article.getStatus().equals(ArticleStatus.LOCKED)
-            && (account.getAuthority().equals(AccountRole.MODERATOR)
-            || account.getAuthority().equals(AccountRole.ADMIN))) {
+            && (account.hasRole(AccountRole.MODERATOR)
+            || account.hasRole(AccountRole.ADMIN))) {
             return singleResult(article);
         }
 
@@ -112,8 +112,8 @@ public class ArticleController {
         Account authUser = accountService.getByEmail(user.getUsername());
         if (status.equals(ArticleStatus.LOCKED)
             && (
-            authUser.getAuthority().equals(AccountRole.MODERATOR)
-                || authUser.getAuthority().equals(AccountRole.ADMIN))
+            authUser.hasRole(AccountRole.MODERATOR)
+                || authUser.hasRole(AccountRole.ADMIN))
             ) {
             return listResult(
                 articleService.getPage(predicateBuilder.getValue(),
@@ -194,8 +194,8 @@ public class ArticleController {
         }
 
         Account account = accountService.getByEmail(user.getUsername());
-        if (account.getAuthority().equals(AccountRole.ADMIN)
-            || account.getAuthority().equals(AccountRole.MODERATOR)) {
+        if (account.hasRole(AccountRole.ADMIN)
+            || account.hasRole(AccountRole.MODERATOR)) {
             articleService.delete(article.getId());
             return okResult();
         }
@@ -215,8 +215,8 @@ public class ArticleController {
         log.info("/LOCK invoked for {} id {}", resourceClass.getSimpleName(), id);
 
         Account account = accountService.getByEmail(user.getUsername());
-        if (!(account.getAuthority().equals(AccountRole.ADMIN)
-            || account.getAuthority().equals(AccountRole.MODERATOR))) {
+        if (!(account.hasRole(AccountRole.ADMIN)
+            || account.hasRole(AccountRole.MODERATOR))) {
             throw new AccountPermissionException("Only admin/moderator can lock article");
         }
 
@@ -234,8 +234,8 @@ public class ArticleController {
         log.info("/UNLOCK invoked for {} id {}", resourceClass.getSimpleName(), id);
 
         Account account = accountService.getByEmail(user.getUsername());
-        if (!(account.getAuthority().equals(AccountRole.ADMIN))
-            || account.getAuthority().equals(AccountRole.MODERATOR)) {
+        if (!(account.hasRole(AccountRole.ADMIN))
+            || account.hasRole(AccountRole.MODERATOR)) {
             throw new AccountPermissionException("Only admin/moderator can unlock article");
         }
 

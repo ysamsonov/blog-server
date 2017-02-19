@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.UUID;
 
 /**
@@ -52,7 +53,7 @@ public class AccountServiceImpl implements AccountService {
         accountDb.setSurname(account.getSurname());
         accountDb.setEmail(account.getEmail().toLowerCase());
         accountDb.setPassword(passwordEncoder.encode(account.getPassword()));
-        accountDb.setAuthority(AccountRole.USER);
+        accountDb.setRoles(Collections.singleton(AccountRole.USER));
         return accountRepository.save(accountDb);
     }
 

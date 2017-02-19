@@ -58,6 +58,7 @@ public class CommentController {
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ApiResult getById(@PathVariable final UUID id) {
         log.info("/GET method invoked for {} id {}", resourceClass.getSimpleName(), id);
+        //noinspection RedundantTypeArguments
         return singleResult(
             Optional
                 .ofNullable(commentService.getById(id))
@@ -138,8 +139,8 @@ public class CommentController {
             return listResult(comments);
         }
 
-        if (article.getStatus().equals(ArticleStatus.LOCKED) && (account.getAuthority().equals(AccountRole.MODERATOR)
-            || account.getAuthority().equals(AccountRole.ADMIN))) {
+        if (article.getStatus().equals(ArticleStatus.LOCKED) && (account.hasRole(AccountRole.MODERATOR)
+            || account.hasRole(AccountRole.ADMIN))) {
             return listResult(comments);
         }
 
@@ -157,8 +158,8 @@ public class CommentController {
             .orElseThrow(() -> new EntityNotExistException(String.format("Comment with id %s not exist", id)));
 
         Account account = accountService.getByEmail(user.getUsername());
-        if (account.getAuthority().equals(AccountRole.ADMIN)
-            || account.getAuthority().equals(AccountRole.MODERATOR)) {
+        if (account.hasRole(AccountRole.ADMIN)
+            || account.hasRole(AccountRole.MODERATOR)) {
             commentService.delete(comment.getId());
             return okResult();
         }

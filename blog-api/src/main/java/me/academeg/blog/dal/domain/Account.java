@@ -10,9 +10,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Account Entity
@@ -60,13 +58,17 @@ public class Account extends BaseEntity {
     private List<Comment> comments = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private AccountRole authority;
+    @ElementCollection(fetch = FetchType.LAZY)
+    private Set<AccountRole> roles = new HashSet<>();
 
     public Account() {
     }
 
     public Account(UUID id) {
         super(id);
+    }
+
+    public boolean hasRole(AccountRole role) {
+        return this.roles.contains(role);
     }
 }

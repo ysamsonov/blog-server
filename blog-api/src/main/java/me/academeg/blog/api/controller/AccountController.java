@@ -80,6 +80,7 @@ public class AccountController {
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ApiResult getById(@PathVariable final UUID id) {
         log.info("/GET method invoked for {} id {}", resourceClass.getSimpleName(), id);
+        //noinspection RedundantTypeArguments
         return singleResult(
             Optional
                 .ofNullable(accountService.getById(id))
@@ -105,7 +106,7 @@ public class AccountController {
         }
 
         Account authUser = accountService.getByEmail(user.getUsername());
-        if (!authUser.getId().equals(deletedUser.getId()) && !authUser.getAuthority().equals(AccountRole.ADMIN)) {
+        if (!authUser.getId().equals(deletedUser.getId()) && !authUser.hasRole(AccountRole.ADMIN)) {
             throw new AccountPermissionException("You have not permission");
         }
         removeTokens(deletedUser);

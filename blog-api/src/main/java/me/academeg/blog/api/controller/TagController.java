@@ -45,6 +45,7 @@ public class TagController {
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ApiResult getById(@PathVariable final UUID id) {
         log.info("/GET method invoked for {} id {}", resourceClass.getSimpleName(), id);
+        //noinspection RedundantTypeArguments
         return singleResult(
             Optional
                 .ofNullable(tagService.getById(id))
@@ -72,8 +73,8 @@ public class TagController {
     ) {
         log.info("/UPDATE method invoked for {} id {}", resourceClass.getSimpleName(), id);
         Account authAccount = accountService.getByEmail(user.getUsername());
-        if (!authAccount.getAuthority().equals(AccountRole.MODERATOR)
-            && !authAccount.getAuthority().equals(AccountRole.ADMIN)) {
+        if (!authAccount.hasRole(AccountRole.MODERATOR)
+            && !authAccount.hasRole(AccountRole.ADMIN)) {
             throw new AccountPermissionException();
         }
         tag.setId(id);
@@ -84,8 +85,8 @@ public class TagController {
     public ApiResult delete(@AuthenticationPrincipal final User user, final @PathVariable UUID id) {
         log.info("/DELETE method invoked for {} id {}", resourceClass.getSimpleName(), id);
         Account authAccount = accountService.getByEmail(user.getUsername());
-        if (!authAccount.getAuthority().equals(AccountRole.MODERATOR)
-            && !authAccount.getAuthority().equals(AccountRole.ADMIN)) {
+        if (!authAccount.hasRole(AccountRole.MODERATOR)
+            && !authAccount.hasRole(AccountRole.ADMIN)) {
             throw new AccountPermissionException("Only admin/moderator can delete the tag");
         }
         tagService.delete(id);
