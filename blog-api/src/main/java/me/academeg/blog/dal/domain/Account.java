@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -20,6 +21,7 @@ import java.util.*;
  */
 @Setter
 @Getter
+@Accessors(chain = true)
 
 @Entity
 @Table(name = "account")
@@ -67,6 +69,30 @@ public class Account extends BaseEntity {
     public Account(UUID id) {
         super(id);
     }
+
+    // Avatar ----------------------------------------------------------------------------------
+    public Account setAvatar(Avatar avatar) {
+        if (this.avatar == avatar) {
+            return this;
+        }
+
+        if (this.avatar != null) {
+            Avatar tmpAvatar = this.avatar;
+            this.avatar = null;
+            tmpAvatar.setAccount(null);
+        }
+
+        if (avatar != null) {
+            if (this.avatar == avatar) {
+                return this;
+            }
+            this.avatar = avatar;
+            avatar.setAccount(this);
+        }
+
+        return this;
+    }
+    // -----------------------------------------------------------------------------------------
 
     public boolean hasRole(AccountRole role) {
         return this.roles.contains(role);

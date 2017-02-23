@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import java.util.UUID;
  */
 @Setter
 @Getter
+@Accessors(chain = true)
 
 @Entity
 @Table(name = "avatar")
@@ -38,4 +40,27 @@ public class Avatar extends BaseEntity {
     public Avatar(UUID id) {
         super(id);
     }
+
+    // Account ---------------------------------------------------------------------------------
+    public Avatar setAccount(Account account) {
+        if (this.account == account) {
+            return this;
+        }
+
+        if (this.account != null) {
+            Account tmpAccount = this.account;
+            this.account = null;
+            tmpAccount.setAvatar(null);
+        }
+
+        if (account != null) {
+            if (this.account == account) {
+                return this;
+            }
+            this.account = account;
+            account.setAvatar(this);
+        }
+        return this;
+    }
+    // -----------------------------------------------------------------------------------------
 }
