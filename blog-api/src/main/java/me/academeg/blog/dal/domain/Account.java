@@ -13,6 +13,8 @@ import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.util.*;
 
+import static me.academeg.blog.dal.utils.Relations.*;
+
 /**
  * Account Entity
  *
@@ -94,7 +96,83 @@ public class Account extends BaseEntity {
     }
     // -----------------------------------------------------------------------------------------
 
+    // Articles --------------------------------------------------------------------------------
+    public Account addArticle(Article article) {
+        return addOneToMany(
+            this,
+            this.articles,
+            article,
+            Article::getAuthor,
+            Article::setAuthor
+        );
+    }
+
+    public Account removeArticle(Article article) {
+        return removeOneToMany(
+            this,
+            this.articles,
+            article,
+            Article::setAuthor
+        );
+    }
+
+    public Collection<Article> getArticles() {
+        return getOneToMany(this.articles);
+    }
+
+    public Account setArticles(Collection<Article> articles) {
+        return setOneToMany(
+            this,
+            articles,
+            this.articles,
+            Article::getAuthor,
+            Article::setAuthor
+        );
+    }
+    // -----------------------------------------------------------------------------------------
+
+    // Comments --------------------------------------------------------------------------------
+    public Account addComment(Comment comment) {
+        return addOneToMany(
+            this,
+            this.comments,
+            comment,
+            Comment::getAuthor,
+            Comment::setAuthor
+        );
+    }
+
+    public Account removeComment(Comment comment) {
+        return removeOneToMany(
+            this,
+            this.comments,
+            comment,
+            Comment::setAuthor
+        );
+    }
+
+    public Collection<Comment> getComments() {
+        return getOneToMany(this.comments);
+    }
+
+    public Account setComments(Collection<Comment> comments) {
+        return setOneToMany(
+            this,
+            comments,
+            this.comments,
+            Comment::getAuthor,
+            Comment::setAuthor
+        );
+    }
+    // -----------------------------------------------------------------------------------------
+
+    // Roles -----------------------------------------------------------------------------------
     public boolean hasRole(AccountRole role) {
         return this.roles.contains(role);
     }
+
+    public Collection<AccountRole> getRoles() {
+        return getOneToMany(this.roles);
+    }
+    // -----------------------------------------------------------------------------------------
 }

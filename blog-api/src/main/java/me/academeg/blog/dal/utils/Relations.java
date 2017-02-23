@@ -71,16 +71,16 @@ final public class Relations {
         return oneSide;
     }
 
-    public static <Many> Collection<Many> getOneToMany(Collection<Many> realCollection) {
-        if (realCollection == null) {
+    public static <Many> Collection<Many> getOneToMany(Collection<Many> collection) {
+        if (collection == null) {
             return null;
         }
 
-        if (Hibernate.isInitialized(realCollection)) {
-            return Collections.unmodifiableCollection(realCollection);
+        if (Hibernate.isInitialized(collection)) {
+            return Collections.unmodifiableCollection(collection);
         }
 
-        return realCollection;
+        return collection;
     }
 
     public static <One, Many> Many setManyToOne(
