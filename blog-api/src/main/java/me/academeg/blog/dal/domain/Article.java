@@ -118,8 +118,8 @@ public class Article extends BaseEntity {
     public Article setImages(Collection<Image> images) {
         return setOneToMany(
             this,
-            images,
             this.images,
+            images,
             Image::getArticle,
             Image::setArticle
         );
@@ -153,8 +153,8 @@ public class Article extends BaseEntity {
     public Article setComments(Collection<Comment> comments) {
         return setOneToMany(
             this,
-            comments,
             this.comments,
+            comments,
             Comment::getArticle,
             Comment::setArticle
         );

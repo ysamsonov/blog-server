@@ -123,8 +123,8 @@ public class Account extends BaseEntity {
     public Account setArticles(Collection<Article> articles) {
         return setOneToMany(
             this,
-            articles,
             this.articles,
+            articles,
             Article::getAuthor,
             Article::setAuthor
         );
@@ -158,8 +158,8 @@ public class Account extends BaseEntity {
     public Account setComments(Collection<Comment> comments) {
         return setOneToMany(
             this,
-            comments,
             this.comments,
+            comments,
             Comment::getAuthor,
             Comment::setAuthor
         );
@@ -167,12 +167,28 @@ public class Account extends BaseEntity {
     // -----------------------------------------------------------------------------------------
 
     // Roles -----------------------------------------------------------------------------------
+    public Account addRole(AccountRole role) {
+        this.roles.add(role);
+        return this;
+    }
+
+    public Account removeRole(AccountRole role) {
+        this.roles.remove(role);
+        return this;
+    }
+
     public boolean hasRole(AccountRole role) {
         return this.roles.contains(role);
     }
 
     public Collection<AccountRole> getRoles() {
         return getOneToMany(this.roles);
+    }
+
+    public Account setRoles(Collection<AccountRole> roles) {
+        this.roles.clear();
+        this.roles.addAll(roles);
+        return this;
     }
     // -----------------------------------------------------------------------------------------
 }
