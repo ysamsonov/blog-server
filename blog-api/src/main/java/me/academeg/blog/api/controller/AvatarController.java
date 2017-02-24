@@ -2,8 +2,8 @@ package me.academeg.blog.api.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.api.common.ApiResult;
-import me.academeg.blog.api.exception.EntityNotExistException;
-import me.academeg.blog.api.exception.FileFormatException;
+import me.academeg.blog.api.exception.BlogEntityNotExistException;
+import me.academeg.blog.api.exception.BlogFileFormatException;
 import me.academeg.blog.dal.domain.Account;
 import me.academeg.blog.dal.domain.Avatar;
 import me.academeg.blog.dal.service.AccountService;
@@ -53,7 +53,7 @@ public class AvatarController {
     ) {
         log.info("/CREATE method invoked for {}", resourceClass.getSimpleName());
         if (!image.getContentType().startsWith("image/")) {
-            throw new FileFormatException("You can upload only images");
+            throw new BlogFileFormatException("You can upload only images");
         }
 
         return singleResult(avatarService.create(image, accountService.getByEmail(user.getUsername())));
@@ -65,8 +65,8 @@ public class AvatarController {
         return singleResult(
             Optional
                 .ofNullable(avatarService.getById(id))
-                .<EntityNotExistException>orElseThrow(
-                    () -> new EntityNotExistException("Avatar with id %s not exist", id))
+                .<BlogEntityNotExistException>orElseThrow(
+                    () -> new BlogEntityNotExistException("Avatar with id %s not exist", id))
         );
     }
 

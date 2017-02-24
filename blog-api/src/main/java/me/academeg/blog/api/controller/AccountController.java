@@ -3,7 +3,7 @@ package me.academeg.blog.api.controller;
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.api.common.ApiResult;
 import me.academeg.blog.api.exception.AccountPermissionException;
-import me.academeg.blog.api.exception.EntityNotExistException;
+import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.Account;
 import me.academeg.blog.dal.domain.AccountRole;
 import me.academeg.blog.dal.service.AccountService;
@@ -64,7 +64,7 @@ public class AccountController {
 
         Account authUser = accountService.getByEmail(user.getUsername());
         if (!authUser.getId().equals(id)) {
-            throw new EntityNotExistException("Account with id %s not exist", id);
+            throw new BlogEntityNotExistException("Account with id %s not exist", id);
         }
 
         account.setId(id);
@@ -78,8 +78,8 @@ public class AccountController {
         return singleResult(
             Optional
                 .ofNullable(accountService.getById(id))
-                .<EntityNotExistException>orElseThrow(
-                    () -> new EntityNotExistException("Account with id %s not exist", id)));
+                .<BlogEntityNotExistException>orElseThrow(
+                    () -> new BlogEntityNotExistException("Account with id %s not exist", id)));
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
@@ -96,7 +96,7 @@ public class AccountController {
         log.info("/DELETE method invoked for {} id {}", resourceClass.getSimpleName(), id);
         Account deletedUser = accountService.getById(id);
         if (deletedUser == null) {
-            throw new EntityNotExistException("Account with id %s not exist", id);
+            throw new BlogEntityNotExistException("Account with id %s not exist", id);
         }
 
         Account authUser = accountService.getByEmail(user.getUsername());

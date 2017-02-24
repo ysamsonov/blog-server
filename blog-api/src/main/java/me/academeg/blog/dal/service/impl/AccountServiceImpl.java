@@ -1,6 +1,6 @@
 package me.academeg.blog.dal.service.impl;
 
-import me.academeg.blog.api.exception.EntityExistException;
+import me.academeg.blog.api.exception.BlogEntityExistException;
 import me.academeg.blog.dal.domain.Account;
 import me.academeg.blog.dal.domain.AccountRole;
 import me.academeg.blog.dal.repository.AccountRepository;
@@ -43,10 +43,10 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account create(Account account) {
         if (getByEmail(account.getEmail()) != null) {
-            throw new EntityExistException(String.format("Account with email %s is already exist", account.getEmail()));
+            throw new BlogEntityExistException(String.format("Account with email %s is already exist", account.getEmail()));
         }
         if (getByLogin(account.getLogin()) != null) {
-            throw new EntityExistException(String.format("Account with login %s is already exist", account.getLogin()));
+            throw new BlogEntityExistException(String.format("Account with login %s is already exist", account.getLogin()));
         }
 
         Account accountDb = new Account();
@@ -97,7 +97,7 @@ public class AccountServiceImpl implements AccountService {
     public Account update(Account account) {
         Account accountDB = getById(account.getId());
         if (!accountDB.getLogin().equals(account.getLogin()) && getByLogin(account.getLogin()) != null) {
-            throw new EntityExistException(String.format("Account with login %s is already exist", account.getLogin()));
+            throw new BlogEntityExistException(String.format("Account with login %s is already exist", account.getLogin()));
         }
 
         accountDB.setSurname(account.getSurname());

@@ -2,8 +2,8 @@ package me.academeg.blog.api.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.api.common.ApiResult;
-import me.academeg.blog.api.exception.EntityNotExistException;
-import me.academeg.blog.api.exception.FileFormatException;
+import me.academeg.blog.api.exception.BlogEntityNotExistException;
+import me.academeg.blog.api.exception.BlogFileFormatException;
 import me.academeg.blog.dal.domain.Image;
 import me.academeg.blog.dal.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ public class ImageController {
     public ApiResult create(@RequestParam(name = "image") final MultipartFile image) {
         log.info("/CREATE method invoked for {}", resourceClass.getSimpleName());
         if (!image.getContentType().startsWith("image/")) {
-            throw new FileFormatException("You can upload only images");
+            throw new BlogFileFormatException("You can upload only images");
         }
 
         return singleResult(imageService.create(image));
@@ -55,8 +55,8 @@ public class ImageController {
         return singleResult(
             Optional
                 .ofNullable(imageService.getById(id))
-                .<EntityNotExistException>orElseThrow(
-                    () -> new EntityNotExistException("Image with id %s not exist", id))
+                .<BlogEntityNotExistException>orElseThrow(
+                    () -> new BlogEntityNotExistException("Image with id %s not exist", id))
         );
     }
 

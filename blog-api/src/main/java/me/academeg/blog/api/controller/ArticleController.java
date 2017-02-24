@@ -4,7 +4,7 @@ import com.querydsl.core.BooleanBuilder;
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.api.common.ApiResult;
 import me.academeg.blog.api.exception.AccountPermissionException;
-import me.academeg.blog.api.exception.EntityNotExistException;
+import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.Account;
 import me.academeg.blog.dal.domain.AccountRole;
 import me.academeg.blog.dal.domain.Article;
@@ -54,14 +54,14 @@ public class ArticleController {
 
         Article article = Optional
             .ofNullable(articleService.getById(id))
-            .orElseThrow(() -> new EntityNotExistException("Article with id %s not exist", id));
+            .orElseThrow(() -> new BlogEntityNotExistException("Article with id %s not exist", id));
 
         if (article.getStatus().equals(ArticleStatus.PUBLISHED)) {
             return singleResult(article);
         }
 
         if (user == null) {
-            throw new EntityNotExistException("Article with id %s not exist", id);
+            throw new BlogEntityNotExistException("Article with id %s not exist", id);
         }
 
         Account account = accountService.getByEmail(user.getUsername());
@@ -75,7 +75,7 @@ public class ArticleController {
             return singleResult(article);
         }
 
-        throw new EntityNotExistException("Article with id %s not exist", id);
+        throw new BlogEntityNotExistException("Article with id %s not exist", id);
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
@@ -170,7 +170,7 @@ public class ArticleController {
 
         Article articleFromDb = articleService.getById(id);
         if (articleFromDb == null) {
-            throw new EntityNotExistException("Article with id %s not exist", id);
+            throw new BlogEntityNotExistException("Article with id %s not exist", id);
         }
 
         Account authAccount = accountService.getByEmail(user.getUsername());
@@ -190,7 +190,7 @@ public class ArticleController {
 
         Article article = articleService.getById(id);
         if (article == null) {
-            throw new EntityNotExistException("Article with id %s not exist", id);
+            throw new BlogEntityNotExistException("Article with id %s not exist", id);
         }
 
         Account account = accountService.getByEmail(user.getUsername());
@@ -222,7 +222,7 @@ public class ArticleController {
 
         Article article = articleService.getById(id);
         if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
-            throw new EntityNotExistException("Article with id %s not exist", id);
+            throw new BlogEntityNotExistException("Article with id %s not exist", id);
         }
 
         articleService.lock(article);
@@ -241,7 +241,7 @@ public class ArticleController {
 
         Article article = articleService.getById(id);
         if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
-            throw new EntityNotExistException("Article with id %s not exist", id);
+            throw new BlogEntityNotExistException("Article with id %s not exist", id);
         }
 
         articleService.unlock(article);

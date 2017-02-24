@@ -1,7 +1,7 @@
 package me.academeg.blog.dal.service.impl;
 
-import me.academeg.blog.api.exception.EntityExistException;
-import me.academeg.blog.api.exception.EntityNotExistException;
+import me.academeg.blog.api.exception.BlogEntityExistException;
+import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.Tag;
 import me.academeg.blog.dal.repository.TagRepository;
 import me.academeg.blog.dal.service.TagService;
@@ -46,7 +46,7 @@ public class TagServiceImpl implements TagService {
     public void delete(UUID id) {
         Tag tag = Optional
             .ofNullable(getById(id))
-            .orElseThrow(() -> new EntityNotExistException("Tag with id %s not exist"));
+            .orElseThrow(() -> new BlogEntityNotExistException("Tag with id %s not exist"));
 
         tag.setArticles(Collections.emptyList());
         tagRepository.delete(tagRepository.save(tag));
@@ -73,11 +73,11 @@ public class TagServiceImpl implements TagService {
         tag.setValue(tag.getValue().toLowerCase());
         Tag tagFromDb = getById(tag.getId());
         if (tagFromDb == null) {
-            throw new EntityNotExistException("Tag with id %s not exist", tag.getId());
+            throw new BlogEntityNotExistException("Tag with id %s not exist", tag.getId());
         }
         Tag tagFromDbByValue = getByValue(tag.getValue());
         if (tagFromDbByValue != null) {
-            throw new EntityExistException("Tag with value %s already exist", tag.getValue());
+            throw new BlogEntityExistException("Tag with value %s already exist", tag.getValue());
         }
         tagFromDb.setValue(tag.getValue());
         return tagRepository.save(tagFromDb);

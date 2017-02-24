@@ -2,7 +2,7 @@ package me.academeg.blog.api.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.api.common.ApiResult;
-import me.academeg.blog.api.exception.EntityNotExistException;
+import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.*;
 import me.academeg.blog.dal.service.AccountService;
 import me.academeg.blog.api.exception.AccountPermissionException;
@@ -62,8 +62,8 @@ public class CommentController {
         return singleResult(
             Optional
                 .ofNullable(commentService.getById(id))
-                .<EntityNotExistException>orElseThrow(
-                    () -> new EntityNotExistException(String.format("Comment with id %s not exist", id)))
+                .<BlogEntityNotExistException>orElseThrow(
+                    () -> new BlogEntityNotExistException(String.format("Comment with id %s not exist", id)))
         );
     }
 
@@ -74,14 +74,14 @@ public class CommentController {
     ) {
         log.info("/CREATE method invoked for {}", resourceClass.getSimpleName());
         if (comment.getArticle().getId() == null) {
-            throw new EntityNotExistException("Article with nullable id not exist");
+            throw new BlogEntityNotExistException("Article with nullable id not exist");
         }
 
         Optional
             .ofNullable(articleService.getById(comment.getArticle().getId()))
             .filter(a -> a.getStatus().equals(ArticleStatus.PUBLISHED))
             .orElseThrow(
-                () -> new EntityNotExistException("Article with id %s not exist", comment.getArticle().getId()));
+                () -> new BlogEntityNotExistException("Article with id %s not exist", comment.getArticle().getId()));
 
         comment.setAuthor(new Account(accountService.getByEmail(user.getUsername()).getId()));
         return singleResult(commentService.create(comment));
@@ -101,7 +101,7 @@ public class CommentController {
 
         Comment commentFromDb = Optional
             .ofNullable(commentService.getById(id))
-            .orElseThrow(() -> new EntityNotExistException(String.format("Comment with id %s not exist", id)));
+            .orElseThrow(() -> new BlogEntityNotExistException(String.format("Comment with id %s not exist", id)));
 
         Account authAccount = accountService.getByEmail(user.getUsername());
         if (commentFromDb.getAuthor() == null || !authAccount.getId().equals(commentFromDb.getAuthor().getId())) {
@@ -122,7 +122,7 @@ public class CommentController {
         log.info("/LIST method invoked for {} articleId {}", resourceClass.getSimpleName(), articleId);
         Article article = articleService.getById(articleId);
         if (article == null) {
-            throw new EntityNotExistException("Article with id %s not exist", articleId);
+            throw new BlogEntityNotExistException("Article with id %s not exist", articleId);
         }
 
         Page<Comment> comments = commentService
@@ -132,7 +132,7 @@ public class CommentController {
         }
 
         if (user == null) {
-            throw new EntityNotExistException("Article with id %s not exist", articleId);
+            throw new BlogEntityNotExistException("Article with id %s not exist", articleId);
         }
         Account account = accountService.getByEmail(user.getUsername());
         if (article.getAuthor().getId().equals(account.getId())) {
@@ -144,7 +144,7 @@ public class CommentController {
             return listResult(comments);
         }
 
-        throw new EntityNotExistException("Article with id %s not exist", articleId);
+        throw new BlogEntityNotExistException("Article with id %s not exist", articleId);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
@@ -155,7 +155,7 @@ public class CommentController {
         log.info("/DELETE method invoked for {} id {}", resourceClass.getSimpleName(), id);
         Comment comment = Optional
             .ofNullable(commentService.getById(id))
-            .orElseThrow(() -> new EntityNotExistException(String.format("Comment with id %s not exist", id)));
+            .orElseThrow(() -> new BlogEntityNotExistException(String.format("Comment with id %s not exist", id)));
 
         Account account = accountService.getByEmail(user.getUsername());
         if (account.hasRole(AccountRole.ADMIN)

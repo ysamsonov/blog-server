@@ -3,7 +3,7 @@ package me.academeg.blog.api.controller;
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.api.common.ApiResult;
 import me.academeg.blog.api.exception.AccountPermissionException;
-import me.academeg.blog.api.exception.EntityNotExistException;
+import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.Account;
 import me.academeg.blog.dal.domain.AccountRole;
 import me.academeg.blog.dal.domain.Tag;
@@ -49,7 +49,7 @@ public class TagController {
         return singleResult(
             Optional
                 .ofNullable(tagService.getById(id))
-                .<EntityNotExistException>orElseThrow(() -> new EntityNotExistException("Tag with id %s not exist", id))
+                .<BlogEntityNotExistException>orElseThrow(() -> new BlogEntityNotExistException("Tag with id %s not exist", id))
         );
     }
 

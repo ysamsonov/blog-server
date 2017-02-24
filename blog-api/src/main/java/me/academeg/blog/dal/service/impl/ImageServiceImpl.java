@@ -1,7 +1,7 @@
 package me.academeg.blog.dal.service.impl;
 
 import lombok.Getter;
-import me.academeg.blog.api.exception.EntityNotExistException;
+import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.Image;
 import me.academeg.blog.dal.repository.ImageRepository;
 import me.academeg.blog.dal.service.ImageService;
@@ -57,7 +57,7 @@ public class ImageServiceImpl implements ImageService {
     public void delete(UUID id) {
         Image image = Optional
             .ofNullable(imageRepository.findOne(id))
-            .orElseThrow(() -> new EntityNotExistException("Image with id %s not exist", id));
+            .orElseThrow(() -> new BlogEntityNotExistException("Image with id %s not exist", id));
 
         if (image.getArticle() != null) {
             image.setArticle(null);
