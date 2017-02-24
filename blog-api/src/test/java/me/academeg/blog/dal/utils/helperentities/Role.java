@@ -5,11 +5,11 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import me.academeg.blog.dal.domain.BaseEntity;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import static me.academeg.blog.dal.utils.Relations.addManyToMany;
-import static me.academeg.blog.dal.utils.Relations.removeManyToMany;
+import static me.academeg.blog.dal.utils.Relations.*;
 
 /**
  * @author Yuriy A. Samsonov <y.samsonov@erpscan.com>
@@ -54,16 +54,17 @@ public class Role extends BaseEntity {
         );
     }
 
-//    public Collection<Account> getAccounts() {
-//        return getOneToMany(this.accounts);
-//    }
-//
-//    public void setAccounts(Set<Account> accounts) {
-//        setManyToMany(
-//            accounts,
-//            this.accounts,
-//            this::removeAccount,
-//            this::addAccount
-//        );
-//    }
+    public Collection<Account> getAccounts() {
+        return getOneToMany(this.accounts);
+    }
+
+    @SuppressWarnings("unused")
+    public void setAccounts(Set<Account> accounts) {
+        setManyToMany(
+            accounts,
+            this.accounts,
+            this::removeAccount,
+            this::addAccount
+        );
+    }
 }

@@ -7,6 +7,7 @@ import me.academeg.blog.dal.utils.helperentities.Role;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,6 +30,19 @@ public class RelationsTest {
 
         assertThat(pages.get(0).getBook().getName()).isEqualTo("Thinking in Java");
         assertThat(pages.get(1).getBook().getName()).isEqualTo("Thinking in Java");
+    }
+
+    @Test
+    public void setOneToManyTwiceTest() throws Exception {
+        Book book = new Book("Thinking in Java");
+        List<Page> pages = Arrays.asList(new Page(1), new Page(2));
+        book.setPages(pages);
+
+        book.setPages(Collections.emptyList());
+
+        assertThat(book.getPages().size()).isEqualTo(0);
+        assertThat(pages.get(0).getBook()).isNull();
+        assertThat(pages.get(1).getBook()).isNull();
     }
 
     @Test
@@ -127,29 +141,44 @@ public class RelationsTest {
             .containsExactly("Yuriy");
     }
 
-//    @Test
-//    public void setManyToManyTest() throws Exception {
-//        Account account = new Account("Yuriy");
-//        List<Role> roles = Arrays.asList(
-//            new Role("role 1"),
-//            new Role("role 2")
-//        );
-//
-//        account.setRoles(roles);
-//
-//        assertThat(account.getRoles())
-//            .extracting(Role::getName)
-//            .contains(
-//                "role 1",
-//                "role 2"
-//            );
-//
-//        assertThat(roles.get(0).getAccounts())
-//            .extracting(Account::getName)
-//            .containsExactly("Yuriy");
-//
-//        assertThat(roles.get(1).getAccounts())
-//            .extracting(Account::getName)
-//            .containsExactly("Yuriy");
-//    }
+    @Test
+    public void setManyToManyTest() throws Exception {
+        Account account = new Account("Yuriy");
+        List<Role> roles = Arrays.asList(
+            new Role("role 1"),
+            new Role("role 2")
+        );
+
+        account.setRoles(roles);
+
+        assertThat(account.getRoles())
+            .extracting(Role::getName)
+            .contains(
+                "role 1",
+                "role 2"
+            );
+
+        assertThat(roles.get(0).getAccounts())
+            .extracting(Account::getName)
+            .containsExactly("Yuriy");
+
+        assertThat(roles.get(1).getAccounts())
+            .extracting(Account::getName)
+            .containsExactly("Yuriy");
+    }
+
+    @Test
+    public void setManyToManyTwiceTest() throws Exception {
+        Account account = new Account("Yuriy");
+        List<Role> roles = Arrays.asList(
+            new Role("role 1"),
+            new Role("role 2")
+        );
+        account.setRoles(roles);
+        account.setRoles(Collections.emptyList());
+
+        assertThat(account.getRoles().size()).isEqualTo(0);
+        assertThat(roles.get(0).getAccounts().size()).isEqualTo(0);
+        assertThat(roles.get(1).getAccounts().size()).isEqualTo(0);
+    }
 }

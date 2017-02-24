@@ -11,6 +11,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
+ * This class contains methods to create references like: many-to-one, many-to-many, one-to-many
+ *
  * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
  * @version 1.0
  * @date 13.02.2017
@@ -139,18 +141,19 @@ final public class Relations {
         return left;
     }
 
-    // TODO: 24.02.2017 rewrite its not work with set empty collection after non empty
-//    public static <T> void setManyToMany(
-//        Collection<T> source,
-//        Collection<T> destination,
-//        Consumer<T> remover,
-//        Consumer<T> adder
-//    ) {
-//        destination.forEach(remover);
-//        destination.clear();
-//
-//        if (source != null) {
-//            source.forEach(adder);
-//        }
-//    }
+    public static <T> void setManyToMany(
+        Collection<T> source,
+        Collection<T> destination,
+        Consumer<T> remover,
+        Consumer<T> adder
+    ) {
+        if (destination != null) {
+            new ArrayList<>(destination).forEach(remover);
+            destination.clear();
+        }
+
+        if (source != null) {
+            source.forEach(adder);
+        }
+    }
 }
