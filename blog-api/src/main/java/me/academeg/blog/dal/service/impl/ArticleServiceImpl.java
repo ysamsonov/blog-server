@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
@@ -82,7 +83,7 @@ public class ArticleServiceImpl implements ArticleService {
             }
         }
         articleFromDb.getTags().forEach(articleFromDb::removeTag);
-        article.getTags().forEach(tag -> {
+        new ArrayList<>(article.getTags()).forEach(tag -> {
             articleFromDb.addTag(tag);
             article.removeTag(tag);
         });

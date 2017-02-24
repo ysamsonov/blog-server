@@ -190,18 +190,18 @@ public class Article extends BaseEntity {
         return this.tags.contains(tag);
     }
 
-//    public Collection<Tag> getTags() {
-//        return getOneToMany(this.tags);
-//    }
-//
-//    public Article setTags(Collection<Tag> tags) {
-//        setManyToMany(
-//            tags,
-//            this.tags,
-//            this::removeTag,
-//            this::addTag
-//        );
-//        return this;
-//    }
+    public Collection<Tag> getTags() {
+        return getOneToMany(this.tags);
+    }
+
+    public Article setTags(Collection<Tag> tags) {
+        setManyToMany(
+            tags,
+            this.tags,
+            this::removeTag,
+            this::addTag
+        );
+        return this;
+    }
     // -----------------------------------------------------------------------------------------
 }

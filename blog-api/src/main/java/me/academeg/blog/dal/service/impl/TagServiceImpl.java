@@ -48,7 +48,6 @@ public class TagServiceImpl implements TagService {
             .ofNullable(getById(id))
             .orElseThrow(() -> new EntityNotExistException("Tag with id %s not exist"));
 
-        tag.getArticles().forEach(article -> article.getTags().remove(tag));
         tag.setArticles(Collections.emptyList());
         tagRepository.delete(tagRepository.save(tag));
     }
