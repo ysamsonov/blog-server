@@ -156,7 +156,7 @@ public class ArticleController {
         @AuthenticationPrincipal final User user
     ) {
         log.info("/CREATE method invoked for {}", resourceClass.getSimpleName());
-        article.setAuthor(accountService.getByEmail(user.getUsername()));
+        article.setAuthor(new Account(accountService.getByEmail(user.getUsername()).getId()));
         return singleResult(articleService.create(article));
     }
 

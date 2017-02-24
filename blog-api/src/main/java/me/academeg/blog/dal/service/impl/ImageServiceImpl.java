@@ -60,7 +60,7 @@ public class ImageServiceImpl implements ImageService {
             .orElseThrow(() -> new EntityNotExistException("Image with id %s not exist", id));
 
         if (image.getArticle() != null) {
-            image.getArticle().getImages().remove(image);
+            image.setArticle(null);
         }
         ImageUtils.deleteImages(path, image.getOriginalPath(), image.getThumbnailPath());
         imageRepository.delete(image);

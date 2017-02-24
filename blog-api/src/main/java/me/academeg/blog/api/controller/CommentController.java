@@ -83,7 +83,7 @@ public class CommentController {
             .orElseThrow(
                 () -> new EntityNotExistException("Article with id %s not exist", comment.getArticle().getId()));
 
-        comment.setAuthor(accountService.getByEmail(user.getUsername()));
+        comment.setAuthor(new Account(accountService.getByEmail(user.getUsername()).getId()));
         return singleResult(commentService.create(comment));
     }
 

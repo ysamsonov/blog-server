@@ -9,11 +9,11 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import static me.academeg.blog.dal.utils.Relations.*;
+import static me.academeg.blog.dal.utils.Relations.addManyToMany;
+import static me.academeg.blog.dal.utils.Relations.removeManyToMany;
 
 /**
  * Tag Entity
@@ -70,18 +70,18 @@ public class Tag extends BaseEntity {
         return this.articles.contains(article);
     }
 
-    public Collection<Article> getArticles() {
-        return getOneToMany(this.articles);
-    }
-
-    public Tag setArticles(Collection<Article> articles) {
-        setManyToMany(
-            articles,
-            this.articles,
-            Collection::remove,
-            this::addArticle
-        );
-        return this;
-    }
+//    public Collection<Article> getArticles() {
+//        return getOneToMany(this.articles);
+//    }
+//
+//    public Tag setArticles(Collection<Article> articles) {
+//        setManyToMany(
+//            articles,
+//            this.articles,
+//            this::removeArticle,
+//            this::addArticle
+//        );
+//        return this;
+//    }
     // -----------------------------------------------------------------------------------------
 }

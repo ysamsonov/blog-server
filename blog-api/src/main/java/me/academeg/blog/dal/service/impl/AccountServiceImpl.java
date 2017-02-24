@@ -1,17 +1,17 @@
 package me.academeg.blog.dal.service.impl;
 
-import me.academeg.blog.dal.domain.AccountRole;
-import me.academeg.blog.dal.service.AccountService;
-import me.academeg.blog.dal.domain.Account;
 import me.academeg.blog.api.exception.EntityExistException;
+import me.academeg.blog.dal.domain.Account;
+import me.academeg.blog.dal.domain.AccountRole;
 import me.academeg.blog.dal.repository.AccountRepository;
+import me.academeg.blog.dal.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.UUID;
 
 /**
@@ -22,20 +22,22 @@ import java.util.UUID;
  */
 @Service
 public class AccountServiceImpl implements AccountService {
-    private PasswordEncoder passwordEncoder;
-    private AccountRepository accountRepository;
-    private AvatarServiceImpl avatarService;
-
+    private final AccountRepository accountRepository;
+    private final AvatarServiceImpl avatarService;
+    private final PasswordEncoder passwordEncoder;
+    private final TokenStore tokenStore;
 
     @Autowired
     public AccountServiceImpl(
         PasswordEncoder passwordEncoder,
         AccountRepository accountRepository,
-        AvatarServiceImpl avatarService
+        AvatarServiceImpl avatarService,
+        TokenStore tokenStore
     ) {
         this.passwordEncoder = passwordEncoder;
         this.accountRepository = accountRepository;
         this.avatarService = avatarService;
+        this.tokenStore = tokenStore;
     }
 
     @Override
@@ -53,7 +55,7 @@ public class AccountServiceImpl implements AccountService {
         accountDb.setSurname(account.getSurname());
         accountDb.setEmail(account.getEmail().toLowerCase());
         accountDb.setPassword(passwordEncoder.encode(account.getPassword()));
-        accountDb.setRoles(Collections.singleton(AccountRole.USER));
+        accountDb.addRole(AccountRole.USER);
         return accountRepository.save(accountDb);
     }
 
@@ -63,10 +65,11 @@ public class AccountServiceImpl implements AccountService {
         if (account.getAvatar() != null) {
             avatarService.delete(account.getAvatar().getId());
         }
-        account.getArticles().forEach(article -> article.setAuthor(null));
         account.setArticles(null);
-        account.getComments().forEach(comment -> comment.setAuthor(null));
         account.setComments(null);
+        tokenStore
+            .findTokensByClientIdAndUserName("web_app", account.getEmail())
+            .forEach(tokenStore::removeAccessToken);
         accountRepository.delete(account);
     }
 

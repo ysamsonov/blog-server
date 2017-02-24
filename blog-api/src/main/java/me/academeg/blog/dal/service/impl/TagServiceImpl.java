@@ -1,9 +1,9 @@
 package me.academeg.blog.dal.service.impl;
 
-import me.academeg.blog.api.exception.EntityNotExistException;
-import me.academeg.blog.dal.repository.TagRepository;
-import me.academeg.blog.dal.domain.Tag;
 import me.academeg.blog.api.exception.EntityExistException;
+import me.academeg.blog.api.exception.EntityNotExistException;
+import me.academeg.blog.dal.domain.Tag;
+import me.academeg.blog.dal.repository.TagRepository;
 import me.academeg.blog.dal.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,9 +37,8 @@ public class TagServiceImpl implements TagService {
             return newTag;
         }
 
-        newTag = new Tag();
-        newTag.setValue(tag.getValue().toLowerCase());
-        return tagRepository.save(newTag);
+        tag.setValue(tag.getValue().toLowerCase());
+        return tagRepository.save(tag);
     }
 
     @Transactional
@@ -49,7 +49,7 @@ public class TagServiceImpl implements TagService {
             .orElseThrow(() -> new EntityNotExistException("Tag with id %s not exist"));
 
         tag.getArticles().forEach(article -> article.getTags().remove(tag));
-        tag.setArticles(null);
+        tag.setArticles(Collections.emptyList());
         tagRepository.delete(tagRepository.save(tag));
     }
 

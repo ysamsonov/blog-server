@@ -127,29 +127,29 @@ public class RelationsTest {
             .containsExactly("Yuriy");
     }
 
-    @Test
-    public void setManyToManyTest() throws Exception {
-        Account account = new Account("Yuriy");
-        List<Role> roles = Arrays.asList(
-            new Role("role 1"),
-            new Role("role 2")
-        );
-
-        account.setRoles(roles);
-
-        assertThat(account.getRoles())
-            .extracting(Role::getName)
-            .contains(
-                "role 1",
-                "role 2"
-            );
-
-        assertThat(roles.get(0).getAccounts())
-            .extracting(Account::getName)
-            .containsExactly("Yuriy");
-
-        assertThat(roles.get(1).getAccounts())
-            .extracting(Account::getName)
-            .containsExactly("Yuriy");
-    }
+//    @Test
+//    public void setManyToManyTest() throws Exception {
+//        Account account = new Account("Yuriy");
+//        List<Role> roles = Arrays.asList(
+//            new Role("role 1"),
+//            new Role("role 2")
+//        );
+//
+//        account.setRoles(roles);
+//
+//        assertThat(account.getRoles())
+//            .extracting(Role::getName)
+//            .contains(
+//                "role 1",
+//                "role 2"
+//            );
+//
+//        assertThat(roles.get(0).getAccounts())
+//            .extracting(Account::getName)
+//            .containsExactly("Yuriy");
+//
+//        assertThat(roles.get(1).getAccounts())
+//            .extracting(Account::getName)
+//            .containsExactly("Yuriy");
+//    }
 }

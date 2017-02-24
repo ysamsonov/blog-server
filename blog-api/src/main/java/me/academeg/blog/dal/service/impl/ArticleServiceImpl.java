@@ -7,7 +7,6 @@ import me.academeg.blog.dal.domain.Image;
 import me.academeg.blog.dal.repository.ArticleRepository;
 import me.academeg.blog.dal.service.ArticleService;
 import me.academeg.blog.dal.service.ImageService;
-import me.academeg.blog.dal.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,8 +24,8 @@ import java.util.UUID;
  */
 @Service
 public class ArticleServiceImpl implements ArticleService {
-    private ArticleRepository articleRepository;
-    private ImageService imageService;
+    private final ArticleRepository articleRepository;
+    private final ImageService imageService;
 
     @Autowired
     public ArticleServiceImpl(
@@ -39,32 +38,18 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public Article create(Article article) {
-        Article saveArticle = new Article(UUID.randomUUID());
-        saveArticle.setAuthor(article.getAuthor());
-        saveArticle.setTitle(article.getTitle());
-        saveArticle.setText(article.getText());
         if (!article.getStatus().equals(ArticleStatus.PUBLISHED) && !article.getStatus().equals(ArticleStatus.DRAFT)) {
             article.setStatus(ArticleStatus.PUBLISHED);
         }
-        saveArticle.setStatus(article.getStatus());
-        saveArticle.setCreationDate(new Date());
-        saveArticle.setTags(article.getTags());
-
-        Article articleFromDb = articleRepository.save(saveArticle);
-        addImagesToArticle(article.getImages(), articleFromDb);
-
-        return articleFromDb;
+        article.setCreationDate(new Date());
+        addImagesToArticle(article.getImages(), article);
+        return articleRepository.saveAndFlush(article);
     }
 
     @Override
     public void delete(UUID id) {
         Article article = getById(id);
-        article.getImages().forEach(
-            image -> ImageUtils.deleteImages(
-                imageService.getPath(),
-                image.getThumbnailPath(),
-                image.getOriginalPath())
-        );
+        article.getImages().forEach(image -> imageService.delete(image.getId()));
         articleRepository.delete(id);
     }
 
@@ -96,8 +81,12 @@ public class ArticleServiceImpl implements ArticleService {
                 articleFromDb.setStatus(article.getStatus());
             }
         }
-        articleFromDb.getTags().clear();
-        articleFromDb.getTags().addAll(article.getTags());
+        articleFromDb.getTags().forEach(articleFromDb::removeTag);
+        article.getTags().forEach(tag -> {
+            articleFromDb.addTag(tag);
+            article.removeTag(tag);
+        });
+
         addImagesToArticle(article.getImages(), articleFromDb);
         return articleRepository.save(articleFromDb);
     }
@@ -121,10 +110,10 @@ public class ArticleServiceImpl implements ArticleService {
 
         images.forEach(image -> {
             Image imageFromDb = imageService.getById(image.getId());
+            article.removeImage(image);
             if (imageFromDb != null && imageFromDb.getArticle() == null) {
                 imageFromDb.setArticle(article);
-                imageService.update(imageFromDb);
-                article.getImages().add(imageFromDb);
+                article.addImage(imageFromDb);
             }
         });
     }

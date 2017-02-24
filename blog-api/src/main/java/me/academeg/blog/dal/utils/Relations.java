@@ -2,6 +2,7 @@ package me.academeg.blog.dal.utils;
 
 import org.hibernate.Hibernate;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.function.BiConsumer;
@@ -27,11 +28,10 @@ final public class Relations {
             return oneSide;
         }
 
-        if (manySide != null) {
-            manySide.forEach(item -> removeOneToMany(oneSide, collection, item, setter));
+        if (collection != null) {
+            new ArrayList<>(collection).forEach(item -> removeOneToMany(oneSide, collection, item, setter));
+            collection.clear();
         }
-
-        collection.clear();
 
         if (manySide != null) {
             manySide.forEach(item -> addOneToMany(oneSide, collection, item, getter, setter));
@@ -139,17 +139,18 @@ final public class Relations {
         return left;
     }
 
-    public static <T> void setManyToMany(
-        Collection<T> source,
-        Collection<T> destination,
-        BiConsumer<Collection<T>, T> remover,
-        Consumer<T> adder
-    ) {
-        destination.forEach(el -> remover.accept(source, el));
-        destination.clear();
-
-        if (source != null) {
-            source.forEach(adder);
-        }
-    }
+    // TODO: 24.02.2017 rewrite its not work with set empty collection after non empty
+//    public static <T> void setManyToMany(
+//        Collection<T> source,
+//        Collection<T> destination,
+//        Consumer<T> remover,
+//        Consumer<T> adder
+//    ) {
+//        destination.forEach(remover);
+//        destination.clear();
+//
+//        if (source != null) {
+//            source.forEach(adder);
+//        }
+//    }
 }

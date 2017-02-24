@@ -1,7 +1,7 @@
 package me.academeg.blog.security;
 
 import me.academeg.blog.dal.domain.Account;
-import me.academeg.blog.dal.service.AccountService;
+import me.academeg.blog.dal.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
@@ -22,17 +22,18 @@ import java.util.Map;
 @Component
 public class CustomTokenEnhancer implements TokenEnhancer {
 
-    private AccountService accountService;
+    private final AccountRepository repository;
 
     @Autowired
-    public CustomTokenEnhancer(AccountService accountService) {
-        this.accountService = accountService;
+    public CustomTokenEnhancer(AccountRepository repository) {
+        this.repository = repository;
     }
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
         final Map<String, Object> additionalInfo = new HashMap<>();
-        Account account = accountService.getByEmail(((User) authentication.getPrincipal()).getUsername());
+        // TODO: 24.02.2017 create custom UserDetailsIml that will contain accountId
+        Account account = repository.getByEmailIgnoreCase(((User) authentication.getPrincipal()).getUsername());
         additionalInfo.put("account_id", account.getId());
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
         return accessToken;

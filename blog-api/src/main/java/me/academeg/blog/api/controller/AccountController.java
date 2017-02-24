@@ -10,7 +10,6 @@ import me.academeg.blog.dal.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,18 +34,13 @@ import static me.academeg.blog.api.utils.ApiUtils.*;
 @Slf4j
 public class AccountController {
     private final AccountService accountService;
-    private final TokenStore tokenStore;
     private final Class resourceClass;
 
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     @Autowired
-    public AccountController(
-        AccountService accountService,
-        TokenStore tokenStore
-    ) {
+    public AccountController(AccountService accountService) {
         this.accountService = accountService;
-        this.tokenStore = tokenStore;
         this.resourceClass = Account.class;
     }
 
@@ -109,14 +103,7 @@ public class AccountController {
         if (!authUser.getId().equals(deletedUser.getId()) && !authUser.hasRole(AccountRole.ADMIN)) {
             throw new AccountPermissionException("You have not permission");
         }
-        removeTokens(deletedUser);
         accountService.delete(id);
         return okResult();
-    }
-
-    private void removeTokens(final Account account) {
-        tokenStore
-            .findTokensByClientIdAndUserName("web_app", account.getEmail())
-            .forEach(tokenStore::removeAccessToken);
     }
 }
