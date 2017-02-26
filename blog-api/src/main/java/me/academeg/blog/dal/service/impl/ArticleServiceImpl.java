@@ -1,6 +1,7 @@
 package me.academeg.blog.dal.service.impl;
 
 import com.querydsl.core.types.Predicate;
+import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.Article;
 import me.academeg.blog.dal.domain.ArticleStatus;
 import me.academeg.blog.dal.domain.Image;
@@ -25,13 +26,14 @@ import java.util.UUID;
  */
 @Service
 public class ArticleServiceImpl implements ArticleService {
+
     private final ArticleRepository articleRepository;
     private final ImageService imageService;
 
     @Autowired
     public ArticleServiceImpl(
-        ArticleRepository articleRepository,
-        ImageService imageService
+        final ArticleRepository articleRepository,
+        final ImageService imageService
     ) {
         this.articleRepository = articleRepository;
         this.imageService = imageService;
@@ -93,13 +95,21 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public Article lock(Article article) {
+    public Article lock(UUID id) {
+        Article article = getById(id);
+        if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
+            throw new BlogEntityNotExistException("Article with id %s not exist", id);
+        }
         article.setStatus(ArticleStatus.LOCKED);
         return articleRepository.save(article);
     }
 
     @Override
-    public Article unlock(Article article) {
+    public Article unlock(UUID id) {
+        Article article = getById(id);
+        if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
+            throw new BlogEntityNotExistException("Article with id %s not exist", id);
+        }
         article.setStatus(ArticleStatus.PUBLISHED);
         return articleRepository.save(article);
     }

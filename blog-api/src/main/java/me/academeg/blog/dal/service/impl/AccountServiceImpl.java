@@ -1,6 +1,7 @@
 package me.academeg.blog.dal.service.impl;
 
 import me.academeg.blog.api.exception.BlogEntityExistException;
+import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.Account;
 import me.academeg.blog.dal.domain.AccountRole;
 import me.academeg.blog.dal.repository.AccountRepository;
@@ -22,6 +23,7 @@ import java.util.UUID;
  */
 @Service
 public class AccountServiceImpl implements AccountService {
+
     private final AccountRepository accountRepository;
     private final AvatarServiceImpl avatarService;
     private final PasswordEncoder passwordEncoder;
@@ -29,10 +31,10 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     public AccountServiceImpl(
-        PasswordEncoder passwordEncoder,
-        AccountRepository accountRepository,
-        AvatarServiceImpl avatarService,
-        TokenStore tokenStore
+        final PasswordEncoder passwordEncoder,
+        final AccountRepository accountRepository,
+        final AvatarServiceImpl avatarService,
+        final TokenStore tokenStore
     ) {
         this.passwordEncoder = passwordEncoder;
         this.accountRepository = accountRepository;
@@ -43,10 +45,12 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account create(Account account) {
         if (getByEmail(account.getEmail()) != null) {
-            throw new BlogEntityExistException(String.format("Account with email %s is already exist", account.getEmail()));
+            throw new BlogEntityExistException(
+                String.format("Account with email %s is already exist", account.getEmail()));
         }
         if (getByLogin(account.getLogin()) != null) {
-            throw new BlogEntityExistException(String.format("Account with login %s is already exist", account.getLogin()));
+            throw new BlogEntityExistException(
+                String.format("Account with login %s is already exist", account.getLogin()));
         }
 
         Account accountDb = new Account();
@@ -62,6 +66,10 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public void delete(UUID id) {
         Account account = getById(id);
+        if (account == null) {
+            throw new BlogEntityNotExistException("Account with id %s not exist", id);
+        }
+
         if (account.getAvatar() != null) {
             avatarService.delete(account.getAvatar().getId());
         }
@@ -97,7 +105,8 @@ public class AccountServiceImpl implements AccountService {
     public Account update(Account account) {
         Account accountDB = getById(account.getId());
         if (!accountDB.getLogin().equals(account.getLogin()) && getByLogin(account.getLogin()) != null) {
-            throw new BlogEntityExistException(String.format("Account with login %s is already exist", account.getLogin()));
+            throw new BlogEntityExistException(
+                String.format("Account with login %s is already exist", account.getLogin()));
         }
 
         accountDB.setSurname(account.getSurname());

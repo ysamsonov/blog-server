@@ -1,7 +1,6 @@
 package me.academeg.blog.api.exception.config;
 
 import me.academeg.blog.api.common.*;
-import me.academeg.blog.api.exception.AccountPermissionException;
 import me.academeg.blog.api.exception.BlogEntityExistException;
 import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import org.springframework.http.HttpStatus;
@@ -31,12 +30,6 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResult handle(OAuth2Exception ex) {
         return new ApiResultImpl(1010, ex.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiResult handle(AccountPermissionException ex) {
-        return new ApiResultImpl(2000, ex.getMessage());
     }
 
     @ExceptionHandler
