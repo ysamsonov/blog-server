@@ -85,7 +85,7 @@ public class CommentController {
         @RequestParam final UUID articleId,
         @RequestParam(required = false) final Integer page,
         @RequestParam(required = false) final Integer limit,
-        @RequestParam(required = false, value = "creationDate:desc") final String orderBy
+        @RequestParam(required = false, defaultValue = "creationDate:desc") final String orderBy
     ) {
         log.info("/LIST method invoked for {} articleId {}", resourceClass.getSimpleName(), articleId);
         Page<Comment> comments = commentService.getPageByArticle(

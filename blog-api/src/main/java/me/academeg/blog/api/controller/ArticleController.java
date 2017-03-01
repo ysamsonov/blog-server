@@ -79,7 +79,7 @@ public class ArticleController {
         @RequestParam(required = false) final String tag,
         @RequestParam(required = false) final Integer page,
         @RequestParam(required = false) final Integer limit,
-        @RequestParam(required = false, value = "creationDate:desc") final String orderBy,
+        @RequestParam(required = false, defaultValue = "creationDate:desc") final String orderBy,
         @AuthenticationPrincipal final UserDetailsImpl user
     ) {
         log.info("/LIST method invoked for {}, authorId {}, status {}, tag {}",
@@ -131,7 +131,7 @@ public class ArticleController {
         @RequestParam(name = "q") final String query,
         @RequestParam(required = false) final Integer page,
         @RequestParam(required = false) final Integer limit,
-        @RequestParam(required = false, value = "creationDate:desc") final String orderBy
+        @RequestParam(required = false, defaultValue = "creationDate:desc") final String orderBy
     ) {
         log.info("/SEARCH method invoked for {} query {}", resourceClass.getSimpleName(), query);
         log.info("It's temporary solution. May be very slow(");
