@@ -3,9 +3,9 @@ package me.academeg.blog.dal.service.impl;
 import me.academeg.blog.api.exception.BlogEntityExistException;
 import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.Account;
-import me.academeg.blog.dal.domain.AccountRole;
 import me.academeg.blog.dal.repository.AccountRepository;
 import me.academeg.blog.dal.service.AccountService;
+import me.academeg.blog.security.RoleConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -59,7 +59,7 @@ public class AccountServiceImpl implements AccountService {
         accountDb.setSurname(account.getSurname());
         accountDb.setEmail(account.getEmail().toLowerCase());
         accountDb.setPassword(passwordEncoder.encode(account.getPassword()));
-        accountDb.addRole(AccountRole.USER);
+        accountDb.addRole(RoleConstants.USER);
         return accountRepository.save(accountDb);
     }
 

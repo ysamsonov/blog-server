@@ -2,7 +2,6 @@ package me.academeg.blog.security;
 
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.dal.domain.Account;
-import me.academeg.blog.dal.domain.AccountRole;
 import me.academeg.blog.dal.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -46,7 +45,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         Collection<GrantedAuthority> grantedAuthorities = accountFromDb
             .getRoles()
             .stream()
-            .map(AccountRole::name)
             .map(SimpleGrantedAuthority::new)
             .collect(Collectors.toList());
 

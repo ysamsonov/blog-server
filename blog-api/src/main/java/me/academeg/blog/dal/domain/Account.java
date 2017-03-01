@@ -61,9 +61,8 @@ public class Account extends BaseEntity {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "author")
     private List<Comment> comments = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.LAZY)
-    private Set<AccountRole> roles = new HashSet<>();
+    private Set<String> roles = new HashSet<>();
 
     public Account() {
     }
@@ -167,25 +166,25 @@ public class Account extends BaseEntity {
     // -----------------------------------------------------------------------------------------
 
     // Roles -----------------------------------------------------------------------------------
-    public Account addRole(AccountRole role) {
+    public Account addRole(String role) {
         this.roles.add(role);
         return this;
     }
 
-    public Account removeRole(AccountRole role) {
+    public Account removeRole(String role) {
         this.roles.remove(role);
         return this;
     }
 
-    public boolean hasRole(AccountRole role) {
+    public boolean hasRole(String role) {
         return this.roles.contains(role);
     }
 
-    public Collection<AccountRole> getRoles() {
+    public Collection<String> getRoles() {
         return getOneToMany(this.roles);
     }
 
-    public Account setRoles(Collection<AccountRole> roles) {
+    public Account setRoles(Collection<String> roles) {
         this.roles.clear();
         this.roles.addAll(roles);
         return this;
