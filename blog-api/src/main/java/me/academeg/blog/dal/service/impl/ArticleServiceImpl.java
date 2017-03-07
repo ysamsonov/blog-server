@@ -2,6 +2,7 @@ package me.academeg.blog.dal.service.impl;
 
 import com.querydsl.core.types.Predicate;
 import me.academeg.blog.api.exception.BlogEntityNotExistException;
+import me.academeg.blog.api.utils.WhiteListFactory;
 import me.academeg.blog.dal.domain.Article;
 import me.academeg.blog.dal.domain.ArticleStatus;
 import me.academeg.blog.dal.domain.Image;
@@ -31,6 +32,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     private final ArticleRepository articleRepository;
     private final ImageService imageService;
+    private final Whitelist tagsWhiteList = WhiteListFactory.getDefaultWithVideos();
 
     @Autowired
     public ArticleServiceImpl(
@@ -46,7 +48,7 @@ public class ArticleServiceImpl implements ArticleService {
         if (!article.getStatus().equals(ArticleStatus.PUBLISHED) && !article.getStatus().equals(ArticleStatus.DRAFT)) {
             article.setStatus(ArticleStatus.PUBLISHED);
         }
-        article.setText(Jsoup.clean(article.getText(), Whitelist.basicWithImages()));
+        article.setText(Jsoup.clean(article.getText(), tagsWhiteList));
         article.setCreationDate(new Date());
         addImagesToArticle(article.getImages(), article);
         return articleRepository.saveAndFlush(article);
@@ -79,7 +81,7 @@ public class ArticleServiceImpl implements ArticleService {
         Article articleFromDb = getById(article.getId());
         articleFromDb.setTitle(article.getTitle());
         articleFromDb.setText(article.getText());
-        articleFromDb.setText(Jsoup.clean(article.getText(), Whitelist.basicWithImages()));
+        articleFromDb.setText(Jsoup.clean(article.getText(), tagsWhiteList));
         if (!articleFromDb.getStatus().equals(ArticleStatus.LOCKED)) {
             if (article.getStatus() != null) {
                 if (article.getStatus().equals(ArticleStatus.LOCKED)) {
