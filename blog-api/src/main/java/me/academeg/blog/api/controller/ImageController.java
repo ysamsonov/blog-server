@@ -2,6 +2,7 @@ package me.academeg.blog.api.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.api.common.ApiResult;
+import me.academeg.blog.api.exception.BlogFileFormatException;
 import me.academeg.blog.dal.domain.Image;
 import me.academeg.blog.dal.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +35,12 @@ public class ImageController {
         this.resourceClass = Image.class;
     }
 
-    @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.IMAGE_JPEG_VALUE)
+    @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResult create(@RequestParam(name = "image") final MultipartFile image) {
         log.info("/CREATE method invoked for {}", resourceClass.getSimpleName());
+        if (!image.getContentType().startsWith("image/")) {
+            throw new BlogFileFormatException("You can upload only images");
+        }
         return singleResult(imageService.create(image));
     }
 

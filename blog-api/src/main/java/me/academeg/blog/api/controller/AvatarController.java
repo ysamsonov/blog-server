@@ -2,6 +2,7 @@ package me.academeg.blog.api.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.api.common.ApiResult;
+import me.academeg.blog.api.exception.BlogFileFormatException;
 import me.academeg.blog.dal.domain.Account;
 import me.academeg.blog.dal.domain.Avatar;
 import me.academeg.blog.dal.service.AccountService;
@@ -45,12 +46,15 @@ public class AvatarController {
         this.resourceClass = Avatar.class;
     }
 
-    @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.IMAGE_JPEG_VALUE)
+    @RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResult create(
         @AuthenticationPrincipal final UserDetailsImpl user,
         @RequestParam final MultipartFile image
     ) {
         log.info("/CREATE method invoked for {}", resourceClass.getSimpleName());
+        if (!image.getContentType().startsWith("image/")) {
+            throw new BlogFileFormatException("You can upload only images");
+        }
         return singleResult(avatarService.create(image, accountService.getByEmail(user.getUsername())));
     }
 
