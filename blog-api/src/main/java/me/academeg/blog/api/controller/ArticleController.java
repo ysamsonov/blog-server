@@ -1,8 +1,11 @@
 package me.academeg.blog.api.controller;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.api.common.ApiResult;
+import me.academeg.blog.api.common.ApiResultWithData;
+import me.academeg.blog.api.common.CollectionResult;
 import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.Account;
 import me.academeg.blog.dal.domain.Article;
@@ -10,13 +13,17 @@ import me.academeg.blog.dal.domain.ArticleStatus;
 import me.academeg.blog.dal.service.ArticleService;
 import me.academeg.blog.security.RoleConstants;
 import me.academeg.blog.security.UserDetailsImpl;
+import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 import static me.academeg.blog.api.utils.ApiUtils.*;
@@ -93,11 +100,11 @@ public class ArticleController {
             predicateBuilder.and(hasTag(tag));
         }
 
+        Pageable pageTo = createPageRequest(limit, page, orderBy);
+        Predicate predicate = predicateBuilder.getValue();
+
         if (status.equals(ArticleStatus.PUBLISHED)) {
-            return listResult(articleService.getPage(
-                predicateBuilder.getValue(),
-                createPageRequest(limit, page, orderBy)
-            ));
+            return doGetList(predicate, pageTo);
         }
 
         if (user == null) {
@@ -106,10 +113,7 @@ public class ArticleController {
 
         if (status.equals(ArticleStatus.LOCKED)
             && (user.hasAuthority(RoleConstants.MODERATOR) || user.hasAuthority(RoleConstants.ADMIN))) {
-            return listResult(articleService.getPage(
-                predicateBuilder.getValue(),
-                createPageRequest(limit, page, orderBy)
-            ));
+            return doGetList(predicate, pageTo);
         }
 
         if (authorId == null) {
@@ -117,10 +121,7 @@ public class ArticleController {
         }
 
         if (user.getId().equals(authorId)) {
-            return listResult(articleService.getPage(
-                predicateBuilder.getValue(),
-                createPageRequest(limit, page, orderBy)
-            ));
+            return doGetList(predicate, pageTo);
         }
 
         throw new AccessDeniedException("You don\'t have rights to get article");
@@ -135,10 +136,7 @@ public class ArticleController {
     ) {
         log.info("/SEARCH method invoked for {} query {}", resourceClass.getSimpleName(), query);
         log.info("It's temporary solution. May be very slow(");
-        return listResult(articleService.getPage(
-            hasText(query),
-            createPageRequest(limit, page, orderBy)
-        ));
+        return doGetList(hasText(query), createPageRequest(limit, page, orderBy));
     }
 
     @RequestMapping(value = "", method = RequestMethod.POST)
@@ -212,5 +210,20 @@ public class ArticleController {
         log.info("/UNLOCK invoked for {} id {}", resourceClass.getSimpleName(), id);
         articleService.unlock(id);
         return okResult();
+    }
+
+    protected ApiResultWithData<CollectionResult<Article>> doGetList(Predicate predicate, Pageable pageable) {
+        Page<Article> dataPage = articleService.getPage(predicate, pageable);
+        doTransform(dataPage.getContent());
+        return listResult(dataPage);
+    }
+
+    protected void doTransform(List<Article> articles) {
+        for (Article article : articles) {
+            String data = Jsoup.parse(article.getText()).text();
+            int maxLength = (data.length() < 100) ? data.length() : 100;
+            data = data.substring(0, maxLength);
+            article.setText(data);
+        }
     }
 }

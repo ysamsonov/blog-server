@@ -8,6 +8,8 @@ import me.academeg.blog.dal.domain.Image;
 import me.academeg.blog.dal.repository.ArticleRepository;
 import me.academeg.blog.dal.service.ArticleService;
 import me.academeg.blog.dal.service.ImageService;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +46,7 @@ public class ArticleServiceImpl implements ArticleService {
         if (!article.getStatus().equals(ArticleStatus.PUBLISHED) && !article.getStatus().equals(ArticleStatus.DRAFT)) {
             article.setStatus(ArticleStatus.PUBLISHED);
         }
+        article.setText(Jsoup.clean(article.getText(), Whitelist.basicWithImages()));
         article.setCreationDate(new Date());
         addImagesToArticle(article.getImages(), article);
         return articleRepository.saveAndFlush(article);
@@ -76,6 +79,7 @@ public class ArticleServiceImpl implements ArticleService {
         Article articleFromDb = getById(article.getId());
         articleFromDb.setTitle(article.getTitle());
         articleFromDb.setText(article.getText());
+        articleFromDb.setText(Jsoup.clean(article.getText(), Whitelist.basicWithImages()));
         if (!articleFromDb.getStatus().equals(ArticleStatus.LOCKED)) {
             if (article.getStatus() != null) {
                 if (article.getStatus().equals(ArticleStatus.LOCKED)) {
