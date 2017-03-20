@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import me.academeg.blog.api.Constants;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -12,6 +13,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.UUID;
+
+import static me.academeg.blog.dal.utils.Relations.setManyToOne;
 
 /**
  * Comment Entity
@@ -21,6 +24,7 @@ import java.util.UUID;
  */
 @Setter
 @Getter
+@Accessors(chain = true)
 
 @Entity
 @Table(name = "comment")
@@ -36,12 +40,12 @@ public class Comment extends BaseEntity {
     @Column(nullable = false)
     private Date creationDate;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Account author;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @NotNull
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Article article;
 
     public Comment() {
@@ -50,4 +54,30 @@ public class Comment extends BaseEntity {
     public Comment(UUID id) {
         super(id);
     }
+
+    // Article ---------------------------------------------------------------------------------
+    public Comment setArticle(Article article) {
+        return setManyToOne(
+            this,
+            article,
+            Comment::getArticle,
+            article1 -> this.article = article1,
+            Article::addComment,
+            Article::removeComment
+        );
+    }
+    // -----------------------------------------------------------------------------------------
+
+    // Author ----------------------------------------------------------------------------------
+    public Comment setAuthor(Account author) {
+        return setManyToOne(
+            this,
+            author,
+            Comment::getAuthor,
+            author1 -> this.author = author,
+            Account::addComment,
+            Account::removeComment
+        );
+    }
+    // -----------------------------------------------------------------------------------------
 }

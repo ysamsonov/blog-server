@@ -4,27 +4,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * FileFormatException
+ * BlogEntityExistException
  *
  * @author Yuriy A. Samsonov <y.samsonov@erpscan.com>
  * @version 1.0
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class FileFormatException extends BlogException {
+public class BlogEntityExistException extends BlogClientException {
 
-    public FileFormatException() {
-        this("Wrong file format");
-    }
-
-    public FileFormatException(String message) {
+    public BlogEntityExistException(String message) {
         super(message);
     }
 
-    public FileFormatException(String message, Object... args) {
+    public BlogEntityExistException(String message, Object... args) {
         super(message, args);
     }
 
-    public FileFormatException(Throwable cause) {
+    public BlogEntityExistException(Throwable cause) {
         super(cause);
     }
 }

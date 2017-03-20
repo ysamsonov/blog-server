@@ -6,12 +6,12 @@ import me.academeg.blog.dal.repository.AvatarRepository;
 import me.academeg.blog.dal.service.AvatarService;
 import me.academeg.blog.dal.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.UUID;
-
-import static me.academeg.blog.api.Constants.AVATAR_PATH;
 
 /**
  * AvatarServiceImpl Service
@@ -22,7 +22,10 @@ import static me.academeg.blog.api.Constants.AVATAR_PATH;
 @Service
 public class AvatarServiceImpl implements AvatarService {
 
-    private AvatarRepository avatarRepository;
+    private final AvatarRepository avatarRepository;
+
+    @Value("${me.academeg.blog.avatars.path:avatar/}")
+    private String avatarPath;
 
     @Autowired
     public AvatarServiceImpl(AvatarRepository avatarRepository) {
@@ -32,19 +35,19 @@ public class AvatarServiceImpl implements AvatarService {
     @Override
     public Avatar create(MultipartFile file, Account account) {
         Avatar avatar = new Avatar();
-        avatar.setOriginalPath(ImageUtils.saveImage(AVATAR_PATH, file));
-        avatar.setThumbnailPath(ImageUtils.compressImage(avatar.getOriginalPath(), AVATAR_PATH));
-        avatar.setAccount(account);
-
-        if (account.getAvatar() != null) {
+        avatar.setOriginalPath(ImageUtils.saveImage(avatarPath, file));
+        avatar.setThumbnailPath(ImageUtils.compressImage(avatar.getOriginalPath(), avatarPath));
+        Avatar oldAvatar = account.getAvatar();
+        if (oldAvatar != null) {
             ImageUtils.deleteImages(
-                AVATAR_PATH,
-                account.getAvatar().getOriginalPath(),
-                account.getAvatar().getThumbnailPath()
+                avatarPath,
+                oldAvatar.getOriginalPath(),
+                oldAvatar.getThumbnailPath()
             );
-            avatarRepository.delete(account.getAvatar());
+            account.setAvatar(null);
+            avatarRepository.delete(oldAvatar);
         }
-
+        avatar.setAccount(new Account(account.getId()));
         return avatarRepository.save(avatar);
     }
 
@@ -55,14 +58,18 @@ public class AvatarServiceImpl implements AvatarService {
 
     @Override
     public void delete(UUID id) {
-        Avatar avatar = avatarRepository.findOne(id);
+        Avatar avatar = getById(id);
         ImageUtils.deleteImages(
-            AVATAR_PATH,
+            avatarPath,
             avatar.getOriginalPath(),
             avatar.getThumbnailPath()
         );
-        avatar.getAccount().setAvatar(null);
         avatar.setAccount(null);
         avatarRepository.delete(id);
+    }
+
+    @Override
+    public byte[] getFile(String name) {
+        return ImageUtils.toByteArray(new File(avatarPath + name));
     }
 }

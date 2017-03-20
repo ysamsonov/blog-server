@@ -1,5 +1,6 @@
 package me.academeg.blog.security;
 
+import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.dal.domain.Account;
 import me.academeg.blog.dal.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,22 +12,23 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
- * CustomUserDetailsServiceImpl Service
+ * UserDetailsServiceImpl Service
  *
  * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
  * @version 1.0
  */
 @Component
-public class CustomUserDetailsServiceImpl implements UserDetailsService {
+@Slf4j
+public class UserDetailsServiceImpl implements UserDetailsService {
 
     private AccountRepository accountRepository;
 
     @Autowired
-    public CustomUserDetailsServiceImpl(AccountRepository accountRepository) {
+    public UserDetailsServiceImpl(final AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
     }
 
@@ -35,14 +37,19 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Account accountFromDb = accountRepository.getByEmailIgnoreCase(username);
         if (accountFromDb == null) {
-            throw new UsernameNotFoundException("User " + username + " was not found");
+            String msg = String.format("User %s was not found", username);
+            log.warn(msg);
+            throw new UsernameNotFoundException(msg);
         }
 
-        Collection<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(accountFromDb.getAuthority().name());
-        grantedAuthorities.add(grantedAuthority);
+        Collection<GrantedAuthority> grantedAuthorities = accountFromDb
+            .getRoles()
+            .stream()
+            .map(SimpleGrantedAuthority::new)
+            .collect(Collectors.toList());
 
-        return new org.springframework.security.core.userdetails.User(
+        return new UserDetailsImpl(
+            accountFromDb.getId(),
             accountFromDb.getEmail(),
             accountFromDb.getPassword(),
             grantedAuthorities

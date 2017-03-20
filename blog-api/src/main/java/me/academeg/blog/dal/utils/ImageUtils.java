@@ -1,5 +1,6 @@
 package me.academeg.blog.dal.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.api.Constants;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,11 +18,13 @@ import java.util.UUID;
  * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
  * @version 1.0
  */
+@Slf4j
 public final class ImageUtils {
 
     public static String saveImage(final String path, final MultipartFile file) {
         createFileStorage(path);
         String fileName = UUID.randomUUID().toString();
+        log.info("Save image in path '{}' with name '{}'", path, fileName);
         try (
             InputStream inputStream = file.getInputStream();
             BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(path + fileName))
@@ -32,12 +35,15 @@ public final class ImageUtils {
                 outputStream.write(cache, 0, count);
             }
         } catch (IOException e) {
+            // TODO: 08.02.2017 наверное имеет смысл кидать эксепшен дальше
+            log.error("Error during save image in path '{}'", path);
             e.printStackTrace();
         }
         return fileName;
     }
 
     public static String compressImage(final String originalImageFileName, final String dir) {
+        log.info("Compress original image '{}' in path '{}'", originalImageFileName, dir);
         String fileName = UUID.randomUUID().toString();
         try {
             BufferedImage originalImage = ImageIO.read(new File(dir + originalImageFileName));
@@ -51,12 +57,15 @@ public final class ImageUtils {
             BufferedImage resizeImagePng = resizeImage(originalImage, type);
             ImageIO.write(resizeImagePng, "png", new File(dir, fileName));
         } catch (IOException e) {
+            // TODO: 08.02.2017 наверное имеет смысл кидать эксепшен дальше
+            log.error("Error during compress image '{}' in path '{}'", originalImageFileName, dir);
             e.printStackTrace();
         }
         return fileName;
     }
 
     public static byte[] toByteArray(final File file) {
+        log.info("Read image to byte array from file '{}'", file.getAbsolutePath());
         try (
             InputStream inputStream = new FileInputStream(file);
             ByteArrayOutputStream buffer = new ByteArrayOutputStream()
@@ -69,13 +78,16 @@ public final class ImageUtils {
             buffer.flush();
             return buffer.toByteArray();
         } catch (IOException e) {
+            // TODO: 08.02.2017 наверное имеет смысл кидать эксепшен дальше
+            log.error("Cannot read file {}", file.getAbsolutePath());
             e.printStackTrace();
         }
         return null;
     }
 
     private static BufferedImage resizeImage(final BufferedImage image, final int type) {
-        final int scale = Math.max(image.getWidth(), image.getHeight()) / Constants.MAX_THUMBNAIL_SIZE;
+        final float maxSize = Math.max(image.getWidth(), image.getHeight());
+        final int scale = (int) Math.ceil(maxSize / Constants.MAX_THUMBNAIL_SIZE);
         final int width = image.getWidth() / scale;
         final int height = image.getHeight() / scale;
 
@@ -88,6 +100,7 @@ public final class ImageUtils {
     }
 
     public static void deleteImages(final String path, final String... fileNames) {
+        log.info("Delete files on path '{}'", path);
         Arrays
             .stream(fileNames)
             .map(f -> Optional.ofNullable(path).orElse("") + f)
@@ -97,7 +110,10 @@ public final class ImageUtils {
     private static void createFileStorage(final String path) {
         File file = new File(path);
         if (!file.exists()) {
-            file.mkdirs();
+            boolean res = file.mkdirs();
+            if (res) {
+                log.info("Dirs '{}' was successful created", path);
+            }
         }
     }
 }

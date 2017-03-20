@@ -1,9 +1,8 @@
 package me.academeg.blog.api.exception.config;
 
 import me.academeg.blog.api.common.*;
-import me.academeg.blog.api.exception.AccountPermissionException;
-import me.academeg.blog.api.exception.EntityExistException;
-import me.academeg.blog.api.exception.EntityNotExistException;
+import me.academeg.blog.api.exception.BlogEntityExistException;
+import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.validation.FieldError;
@@ -35,26 +34,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiResult handle(AccountPermissionException ex) {
-        return new ApiResultImpl(2000, ex.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiResult handle(EntityExistException ex) {
+    public ApiResult handle(BlogEntityExistException ex) {
         return new ApiResultImpl(3000, ex.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiResult handle(EntityNotExistException ex) {
+    public ApiResult handle(BlogEntityNotExistException ex) {
         return new ApiResultImpl(4000, ex.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResult handle(MethodArgumentNotValidException ex) {
-        return new ApiResultWithData(
+        return new ApiResultWithData<>(
             4010,
             "Argument not valid",
             new MapResult<>(
@@ -62,7 +55,12 @@ public class GlobalExceptionHandler {
                     .getBindingResult()
                     .getFieldErrors()
                     .stream()
-                    .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage))
+                    .collect(
+                        Collectors.toMap(
+                            FieldError::getField,
+                            FieldError::getDefaultMessage
+                        )
+                    )
             )
         );
     }
@@ -70,7 +68,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResult handle(ConstraintViolationException ex) {
-        return new ApiResultWithData(
+        return new ApiResultWithData<>(
             4020,
             "Constraint exception",
             new CollectionResult<>(

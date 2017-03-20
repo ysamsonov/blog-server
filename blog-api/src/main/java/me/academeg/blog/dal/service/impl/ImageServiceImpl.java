@@ -1,18 +1,19 @@
 package me.academeg.blog.dal.service.impl;
 
-import me.academeg.blog.api.exception.EntityNotExistException;
+import lombok.Getter;
+import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.Image;
 import me.academeg.blog.dal.repository.ImageRepository;
 import me.academeg.blog.dal.service.ImageService;
 import me.academeg.blog.dal.utils.ImageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.Optional;
 import java.util.UUID;
-
-import static me.academeg.blog.api.Constants.IMAGE_PATH;
 
 /**
  * ImageServiceImpl
@@ -22,6 +23,10 @@ import static me.academeg.blog.api.Constants.IMAGE_PATH;
  */
 @Service
 public class ImageServiceImpl implements ImageService {
+
+    @Value("${me.academeg.blog.images.path:image/}")
+    @Getter
+    private String path;
 
     private ImageRepository imageRepository;
 
@@ -33,8 +38,8 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public Image create(MultipartFile file) {
         Image image = new Image();
-        image.setOriginalPath(ImageUtils.saveImage(IMAGE_PATH, file));
-        image.setThumbnailPath(ImageUtils.compressImage(image.getOriginalPath(), IMAGE_PATH));
+        image.setOriginalPath(ImageUtils.saveImage(path, file));
+        image.setThumbnailPath(ImageUtils.compressImage(image.getOriginalPath(), path));
         return imageRepository.save(image);
     }
 
@@ -52,12 +57,17 @@ public class ImageServiceImpl implements ImageService {
     public void delete(UUID id) {
         Image image = Optional
             .ofNullable(imageRepository.findOne(id))
-            .orElseThrow(() -> new EntityNotExistException("Image with id %s not exist", id));
+            .orElseThrow(() -> new BlogEntityNotExistException("Image with id %s not exist", id));
 
         if (image.getArticle() != null) {
-            image.getArticle().getImages().remove(image);
+            image.setArticle(null);
         }
-        ImageUtils.deleteImages(IMAGE_PATH, image.getOriginalPath(), image.getThumbnailPath());
+        ImageUtils.deleteImages(path, image.getOriginalPath(), image.getThumbnailPath());
         imageRepository.delete(image);
+    }
+
+    @Override
+    public byte[] getFile(String name) {
+        return ImageUtils.toByteArray(new File(path + name));
     }
 }

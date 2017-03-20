@@ -27,7 +27,7 @@ public interface ArticleService {
 
     Article update(Article article);
 
-    Article lock(Article article);
+    Article lock(UUID id);
 
-    Article unlock(Article article);
+    Article unlock(UUID id);
 }

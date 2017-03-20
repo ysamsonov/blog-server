@@ -5,14 +5,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+
+import static me.academeg.blog.dal.utils.Relations.*;
 
 /**
  * Account Entity
@@ -22,6 +23,7 @@ import java.util.UUID;
  */
 @Setter
 @Getter
+@Accessors(chain = true)
 
 @Entity
 @Table(name = "account")
@@ -48,7 +50,7 @@ public class Account extends BaseEntity {
     @NotBlank
     private String password;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "account")
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "account")
     private Avatar avatar;
 
     @JsonIgnore
@@ -59,9 +61,8 @@ public class Account extends BaseEntity {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "author")
     private List<Comment> comments = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private AccountRole authority;
+    @ElementCollection(fetch = FetchType.LAZY)
+    private Set<String> roles = new HashSet<>();
 
     public Account() {
     }
@@ -69,4 +70,124 @@ public class Account extends BaseEntity {
     public Account(UUID id) {
         super(id);
     }
+
+    // Avatar ----------------------------------------------------------------------------------
+    public Account setAvatar(Avatar avatar) {
+        if (this.avatar == avatar) {
+            return this;
+        }
+
+        if (this.avatar != null) {
+            Avatar tmpAvatar = this.avatar;
+            this.avatar = null;
+            tmpAvatar.setAccount(null);
+        }
+
+        if (avatar != null) {
+            if (this.avatar == avatar) {
+                return this;
+            }
+            this.avatar = avatar;
+            avatar.setAccount(this);
+        }
+
+        return this;
+    }
+    // -----------------------------------------------------------------------------------------
+
+    // Articles --------------------------------------------------------------------------------
+    public Account addArticle(Article article) {
+        return addOneToMany(
+            this,
+            this.articles,
+            article,
+            Article::getAuthor,
+            Article::setAuthor
+        );
+    }
+
+    public Account removeArticle(Article article) {
+        return removeOneToMany(
+            this,
+            this.articles,
+            article,
+            Article::setAuthor
+        );
+    }
+
+    public Collection<Article> getArticles() {
+        return getOneToMany(this.articles);
+    }
+
+    public Account setArticles(Collection<Article> articles) {
+        return setOneToMany(
+            this,
+            this.articles,
+            articles,
+            Article::getAuthor,
+            Article::setAuthor
+        );
+    }
+    // -----------------------------------------------------------------------------------------
+
+    // Comments --------------------------------------------------------------------------------
+    public Account addComment(Comment comment) {
+        return addOneToMany(
+            this,
+            this.comments,
+            comment,
+            Comment::getAuthor,
+            Comment::setAuthor
+        );
+    }
+
+    public Account removeComment(Comment comment) {
+        return removeOneToMany(
+            this,
+            this.comments,
+            comment,
+            Comment::setAuthor
+        );
+    }
+
+    public Collection<Comment> getComments() {
+        return getOneToMany(this.comments);
+    }
+
+    public Account setComments(Collection<Comment> comments) {
+        return setOneToMany(
+            this,
+            this.comments,
+            comments,
+            Comment::getAuthor,
+            Comment::setAuthor
+        );
+    }
+    // -----------------------------------------------------------------------------------------
+
+    // Roles -----------------------------------------------------------------------------------
+    public Account addRole(String role) {
+        this.roles.add(role);
+        return this;
+    }
+
+    public Account removeRole(String role) {
+        this.roles.remove(role);
+        return this;
+    }
+
+    public boolean hasRole(String role) {
+        return this.roles.contains(role);
+    }
+
+    public Collection<String> getRoles() {
+        return getOneToMany(this.roles);
+    }
+
+    public Account setRoles(Collection<String> roles) {
+        this.roles.clear();
+        this.roles.addAll(roles);
+        return this;
+    }
+    // -----------------------------------------------------------------------------------------
 }
