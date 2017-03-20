@@ -125,7 +125,7 @@ public class ArticleServiceImpl implements ArticleService {
             return;
         }
 
-        images.forEach(image -> {
+        new ArrayList<>(images).forEach(image -> {
             Image imageFromDb = imageService.getById(image.getId());
             article.removeImage(image);
             if (imageFromDb != null && imageFromDb.getArticle() == null) {
