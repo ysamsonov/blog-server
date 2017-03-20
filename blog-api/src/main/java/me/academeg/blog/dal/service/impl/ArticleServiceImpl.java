@@ -1,18 +1,22 @@
 package me.academeg.blog.dal.service.impl;
 
 import com.querydsl.core.types.Predicate;
+import me.academeg.blog.api.exception.BlogEntityNotExistException;
+import me.academeg.blog.api.utils.WhiteListFactory;
 import me.academeg.blog.dal.domain.Article;
 import me.academeg.blog.dal.domain.ArticleStatus;
 import me.academeg.blog.dal.domain.Image;
 import me.academeg.blog.dal.repository.ArticleRepository;
 import me.academeg.blog.dal.service.ArticleService;
 import me.academeg.blog.dal.service.ImageService;
-import me.academeg.blog.dal.utils.ImageUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
@@ -25,13 +29,15 @@ import java.util.UUID;
  */
 @Service
 public class ArticleServiceImpl implements ArticleService {
-    private ArticleRepository articleRepository;
-    private ImageService imageService;
+
+    private final ArticleRepository articleRepository;
+    private final ImageService imageService;
+    private final Whitelist tagsWhiteList = WhiteListFactory.getDefaultWithVideos();
 
     @Autowired
     public ArticleServiceImpl(
-        ArticleRepository articleRepository,
-        ImageService imageService
+        final ArticleRepository articleRepository,
+        final ImageService imageService
     ) {
         this.articleRepository = articleRepository;
         this.imageService = imageService;
@@ -39,32 +45,19 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public Article create(Article article) {
-        Article saveArticle = new Article(UUID.randomUUID());
-        saveArticle.setAuthor(article.getAuthor());
-        saveArticle.setTitle(article.getTitle());
-        saveArticle.setText(article.getText());
         if (!article.getStatus().equals(ArticleStatus.PUBLISHED) && !article.getStatus().equals(ArticleStatus.DRAFT)) {
             article.setStatus(ArticleStatus.PUBLISHED);
         }
-        saveArticle.setStatus(article.getStatus());
-        saveArticle.setCreationDate(new Date());
-        saveArticle.setTags(article.getTags());
-
-        Article articleFromDb = articleRepository.save(saveArticle);
-        addImagesToArticle(article.getImages(), articleFromDb);
-
-        return articleFromDb;
+        article.setText(Jsoup.clean(article.getText(), tagsWhiteList));
+        article.setCreationDate(new Date());
+        addImagesToArticle(article.getImages(), article);
+        return articleRepository.saveAndFlush(article);
     }
 
     @Override
     public void delete(UUID id) {
         Article article = getById(id);
-        article.getImages().forEach(
-            image -> ImageUtils.deleteImages(
-                imageService.getPath(),
-                image.getThumbnailPath(),
-                image.getOriginalPath())
-        );
+        article.getImages().forEach(image -> imageService.delete(image.getId()));
         articleRepository.delete(id);
     }
 
@@ -88,6 +81,7 @@ public class ArticleServiceImpl implements ArticleService {
         Article articleFromDb = getById(article.getId());
         articleFromDb.setTitle(article.getTitle());
         articleFromDb.setText(article.getText());
+        articleFromDb.setText(Jsoup.clean(article.getText(), tagsWhiteList));
         if (!articleFromDb.getStatus().equals(ArticleStatus.LOCKED)) {
             if (article.getStatus() != null) {
                 if (article.getStatus().equals(ArticleStatus.LOCKED)) {
@@ -96,20 +90,32 @@ public class ArticleServiceImpl implements ArticleService {
                 articleFromDb.setStatus(article.getStatus());
             }
         }
-        articleFromDb.getTags().clear();
-        articleFromDb.getTags().addAll(article.getTags());
+        articleFromDb.getTags().forEach(articleFromDb::removeTag);
+        new ArrayList<>(article.getTags()).forEach(tag -> {
+            articleFromDb.addTag(tag);
+            article.removeTag(tag);
+        });
+
         addImagesToArticle(article.getImages(), articleFromDb);
         return articleRepository.save(articleFromDb);
     }
 
     @Override
-    public Article lock(Article article) {
+    public Article lock(UUID id) {
+        Article article = getById(id);
+        if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
+            throw new BlogEntityNotExistException("Article with id %s not exist", id);
+        }
         article.setStatus(ArticleStatus.LOCKED);
         return articleRepository.save(article);
     }
 
     @Override
-    public Article unlock(Article article) {
+    public Article unlock(UUID id) {
+        Article article = getById(id);
+        if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
+            throw new BlogEntityNotExistException("Article with id %s not exist", id);
+        }
         article.setStatus(ArticleStatus.PUBLISHED);
         return articleRepository.save(article);
     }
@@ -119,12 +125,12 @@ public class ArticleServiceImpl implements ArticleService {
             return;
         }
 
-        images.forEach(image -> {
+        new ArrayList<>(images).forEach(image -> {
             Image imageFromDb = imageService.getById(image.getId());
+            article.removeImage(image);
             if (imageFromDb != null && imageFromDb.getArticle() == null) {
                 imageFromDb.setArticle(article);
-                imageService.update(imageFromDb);
-                article.getImages().add(imageFromDb);
+                article.addImage(imageFromDb);
             }
         });
     }

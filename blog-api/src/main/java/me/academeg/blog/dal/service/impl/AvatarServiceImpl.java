@@ -22,10 +22,10 @@ import java.util.UUID;
 @Service
 public class AvatarServiceImpl implements AvatarService {
 
+    private final AvatarRepository avatarRepository;
+
     @Value("${me.academeg.blog.avatars.path:avatar/}")
     private String avatarPath;
-
-    private AvatarRepository avatarRepository;
 
     @Autowired
     public AvatarServiceImpl(AvatarRepository avatarRepository) {
@@ -37,17 +37,17 @@ public class AvatarServiceImpl implements AvatarService {
         Avatar avatar = new Avatar();
         avatar.setOriginalPath(ImageUtils.saveImage(avatarPath, file));
         avatar.setThumbnailPath(ImageUtils.compressImage(avatar.getOriginalPath(), avatarPath));
-        avatar.setAccount(account);
-
-        if (account.getAvatar() != null) {
+        Avatar oldAvatar = account.getAvatar();
+        if (oldAvatar != null) {
             ImageUtils.deleteImages(
                 avatarPath,
-                account.getAvatar().getOriginalPath(),
-                account.getAvatar().getThumbnailPath()
+                oldAvatar.getOriginalPath(),
+                oldAvatar.getThumbnailPath()
             );
-            avatarRepository.delete(account.getAvatar());
+            account.setAvatar(null);
+            avatarRepository.delete(oldAvatar);
         }
-
+        avatar.setAccount(new Account(account.getId()));
         return avatarRepository.save(avatar);
     }
 
@@ -58,13 +58,12 @@ public class AvatarServiceImpl implements AvatarService {
 
     @Override
     public void delete(UUID id) {
-        Avatar avatar = avatarRepository.findOne(id);
+        Avatar avatar = getById(id);
         ImageUtils.deleteImages(
             avatarPath,
             avatar.getOriginalPath(),
             avatar.getThumbnailPath()
         );
-        avatar.getAccount().setAvatar(null);
         avatar.setAccount(null);
         avatarRepository.delete(id);
     }

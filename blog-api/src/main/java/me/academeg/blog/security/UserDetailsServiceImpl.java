@@ -2,12 +2,10 @@ package me.academeg.blog.security;
 
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.dal.domain.Account;
-import me.academeg.blog.dal.domain.AccountRole;
 import me.academeg.blog.dal.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,19 +16,19 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 /**
- * CustomUserDetailsServiceImpl Service
+ * UserDetailsServiceImpl Service
  *
  * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
  * @version 1.0
  */
 @Component
 @Slf4j
-public class CustomUserDetailsServiceImpl implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService {
 
     private AccountRepository accountRepository;
 
     @Autowired
-    public CustomUserDetailsServiceImpl(AccountRepository accountRepository) {
+    public UserDetailsServiceImpl(final AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
     }
 
@@ -39,7 +37,7 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Account accountFromDb = accountRepository.getByEmailIgnoreCase(username);
         if (accountFromDb == null) {
-            String msg = "User " + username + " was not found";
+            String msg = String.format("User %s was not found", username);
             log.warn(msg);
             throw new UsernameNotFoundException(msg);
         }
@@ -47,11 +45,11 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService {
         Collection<GrantedAuthority> grantedAuthorities = accountFromDb
             .getRoles()
             .stream()
-            .map(AccountRole::name)
             .map(SimpleGrantedAuthority::new)
             .collect(Collectors.toList());
 
-        return new User(
+        return new UserDetailsImpl(
+            accountFromDb.getId(),
             accountFromDb.getEmail(),
             accountFromDb.getPassword(),
             grantedAuthorities

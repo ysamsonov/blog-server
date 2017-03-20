@@ -45,7 +45,7 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
             .anyRequest().authenticated()
             .and().httpBasic();
 
-        // @TODO remove on production
+        // @TODO remove on production or use run profiles (client-integration for this filter)
         http.addFilterBefore(corsFilter, ChannelProcessingFilter.class);
     }
 }

@@ -77,7 +77,8 @@ project(':blog-api') {
         compile "com.querydsl:querydsl-jpa:${queryDslVersion}"
         querydslapt "com.querydsl:querydsl-apt:${queryDslVersion}"
 
-//        compile project(':blog-frontend')
+        // Html parser
+        compile 'org.jsoup:jsoup:1.10.2'
 
         testCompile 'junit:junit:4.12'
         testCompile 'org.assertj:assertj-core:3.6.1'

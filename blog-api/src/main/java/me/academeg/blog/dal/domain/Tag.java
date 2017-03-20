@@ -4,12 +4,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+
+import static me.academeg.blog.dal.utils.Relations.*;
 
 /**
  * Tag Entity
@@ -19,6 +23,7 @@ import java.util.UUID;
  */
 @Setter
 @Getter
+@Accessors(chain = true)
 
 @Entity
 @Table(name = "tag")
@@ -39,4 +44,44 @@ public class Tag extends BaseEntity {
     public Tag(UUID id) {
         super(id);
     }
+
+    // Articles --------------------------------------------------------------------------------
+    public Tag addArticle(Article article) {
+        return addManyToMany(
+            this,
+            article,
+            Tag::hasArticle,
+            this.articles::add,
+            Article::addTag
+        );
+    }
+
+    public Tag removeArticle(Article article) {
+        return removeManyToMany(
+            this,
+            article,
+            Tag::hasArticle,
+            this.articles::remove,
+            Article::removeTag
+        );
+    }
+
+    public boolean hasArticle(Article article) {
+        return this.articles.contains(article);
+    }
+
+    public Collection<Article> getArticles() {
+        return getOneToMany(this.articles);
+    }
+
+    public Tag setArticles(Collection<Article> articles) {
+        setManyToMany(
+            articles,
+            this.articles,
+            this::removeArticle,
+            this::addArticle
+        );
+        return this;
+    }
+    // -----------------------------------------------------------------------------------------
 }
