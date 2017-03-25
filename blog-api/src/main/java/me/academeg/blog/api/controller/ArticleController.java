@@ -180,7 +180,7 @@ public class ArticleController {
             throw new BlogEntityNotExistException("Article with id %s not exist", id);
         }
 
-        if (user.hasAuthority(RoleConstants.MODERATOR) || user.hasAuthority(RoleConstants.ADMIN)) {
+        if (user.hasAuthority(RoleConstants.ADMIN)) {
             articleService.delete(article.getId());
             return okResult();
         }
