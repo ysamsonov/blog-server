@@ -4,6 +4,7 @@ import me.academeg.blog.dal.domain.Account;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -27,4 +28,8 @@ public interface AccountService {
     Page<Account> getPage(Pageable pageable);
 
     Account update(Account account);
+
+    void block(Collection<UUID> ids);
+
+    void unlock(Collection<UUID> ids);
 }

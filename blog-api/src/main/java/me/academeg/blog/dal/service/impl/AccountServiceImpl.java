@@ -1,5 +1,6 @@
 package me.academeg.blog.dal.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.api.exception.BlogEntityExistException;
 import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.Account;
@@ -12,7 +13,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -21,6 +25,7 @@ import java.util.UUID;
  * @author Yuriy A. Samsonov <yuriy.samsonov96@gmail.com>
  * @version 1.0
  */
+@Slf4j
 @Service
 public class AccountServiceImpl implements AccountService {
 
@@ -44,14 +49,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account create(Account account) {
-        if (getByEmail(account.getEmail()) != null) {
-            throw new BlogEntityExistException(
-                String.format("Account with email %s is already exist", account.getEmail()));
-        }
-        if (getByLogin(account.getLogin()) != null) {
-            throw new BlogEntityExistException(
-                String.format("Account with login %s is already exist", account.getLogin()));
-        }
+        checkUniqueness(account);
 
         Account accountDb = new Account();
         accountDb.setLogin(account.getLogin());
@@ -59,6 +57,7 @@ public class AccountServiceImpl implements AccountService {
         accountDb.setSurname(account.getSurname());
         accountDb.setEmail(account.getEmail().toLowerCase());
         accountDb.setPassword(passwordEncoder.encode(account.getPassword()));
+        accountDb.setEnable(true);
         accountDb.addRole(RoleConstants.USER);
         return accountRepository.save(accountDb);
     }
@@ -103,15 +102,54 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account update(Account account) {
-        Account accountDB = getById(account.getId());
-        if (!accountDB.getLogin().equals(account.getLogin()) && getByLogin(account.getLogin()) != null) {
-            throw new BlogEntityExistException(
-                String.format("Account with login %s is already exist", account.getLogin()));
+        checkUniqueness(account);
+
+        Account accountDb = getById(account.getId());
+        accountDb.setLogin(account.getLogin());
+        accountDb.setName(account.getName());
+        accountDb.setSurname(account.getSurname());
+        accountDb.setEmail(account.getEmail().toLowerCase());
+        if (!StringUtils.isEmpty(account.getPassword())) {
+            accountDb.setPassword(passwordEncoder.encode(account.getPassword()));
+        }
+        return accountRepository.save(accountDb);
+    }
+
+    @Override
+    public void block(Collection<UUID> ids) {
+        List<Account> accounts = accountRepository.findAll(ids);
+        accounts.forEach(acc -> acc.setEnable(false));
+        accountRepository.save(accounts);
+        accountRepository.flush();
+    }
+
+    @Override
+    public void unlock(Collection<UUID> ids) {
+        List<Account> accounts = accountRepository.findAll(ids);
+        accounts.forEach(acc -> acc.setEnable(true));
+        accountRepository.save(accounts);
+        accountRepository.flush();
+    }
+
+    protected void checkUniqueness(Account account) {
+        if (emailExist(account.getEmail(), account.getId())) {
+            log.warn("Attempt to create an account with an existing email");
+            throw new BlogEntityExistException("Account with email '%s' is already exist", account.getEmail());
         }
 
-        accountDB.setSurname(account.getSurname());
-        accountDB.setName(account.getName());
-        accountDB.setLogin(account.getLogin());
-        return accountRepository.save(accountDB);
+        if (loginExist(account.getLogin(), account.getId())) {
+            log.warn("Attempt to create an account with an existing login");
+            throw new BlogEntityExistException("Account with login '%s' is already exist", account.getLogin());
+        }
+    }
+
+    private boolean loginExist(final String login, final UUID accountId) {
+        Account account = getByLogin(login);
+        return account != null && !account.getId().equals(accountId);
+    }
+
+    private boolean emailExist(final String email, final UUID accountId) {
+        Account account = getByEmail(email);
+        return account != null && !account.getId().equals(accountId);
     }
 }

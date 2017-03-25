@@ -8,10 +8,12 @@ import me.academeg.blog.security.RoleConstants;
 import me.academeg.blog.security.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
 import java.util.UUID;
 
 import static me.academeg.blog.api.utils.ApiUtils.*;
@@ -82,6 +84,30 @@ public class AccountController {
             throw new AccessDeniedException(String.format("You don't have rights to delete account with id %s", id));
         }
         accountService.delete(id);
+        return okResult();
+    }
+
+    @Secured({RoleConstants.MODERATOR, RoleConstants.ADMIN})
+    @RequestMapping(value = "/block/{ids}", method = {RequestMethod.POST, RequestMethod.PUT})
+    public ApiResult block(
+        @PathVariable final Set<UUID> ids,
+        @AuthenticationPrincipal final UserDetailsImpl user
+    ) {
+        log.info("/BLOCK method invoked for {}", resourceClass.getSimpleName());
+        ids.remove(user.getId());
+        accountService.block(ids);
+        return okResult();
+    }
+
+    @Secured({RoleConstants.MODERATOR, RoleConstants.ADMIN})
+    @RequestMapping(value = "/unlock/{ids}", method = {RequestMethod.POST, RequestMethod.PUT})
+    public ApiResult unlock(
+        @PathVariable final Set<UUID> ids,
+        @AuthenticationPrincipal final UserDetailsImpl user
+    ) {
+        log.info("/UNLOCK method invoked for {}", resourceClass.getSimpleName());
+        ids.remove(user.getId());
+        accountService.unlock(ids);
         return okResult();
     }
 }

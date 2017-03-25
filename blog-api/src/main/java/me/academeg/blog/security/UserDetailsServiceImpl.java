@@ -35,23 +35,27 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Account accountFromDb = accountRepository.getByEmailIgnoreCase(username);
-        if (accountFromDb == null) {
-            String msg = String.format("User %s was not found", username);
+        Account account = accountRepository.getByEmailIgnoreCase(username);
+        if (account == null) {
+            String msg = String.format("User '%s' was not found", username);
             log.warn(msg);
             throw new UsernameNotFoundException(msg);
         }
 
-        Collection<GrantedAuthority> grantedAuthorities = accountFromDb
+        Collection<GrantedAuthority> grantedAuthorities = account
             .getRoles()
             .stream()
             .map(SimpleGrantedAuthority::new)
             .collect(Collectors.toList());
 
         return new UserDetailsImpl(
-            accountFromDb.getId(),
-            accountFromDb.getEmail(),
-            accountFromDb.getPassword(),
+            account.getId(),
+            account.getEmail(),
+            account.getPassword(),
+            account.isEnable(),
+            true,
+            true,
+            true,
             grantedAuthorities
         );
     }
