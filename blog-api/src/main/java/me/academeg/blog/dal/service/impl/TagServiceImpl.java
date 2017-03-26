@@ -38,7 +38,7 @@ public class TagServiceImpl implements TagService {
         }
 
         tag.setValue(tag.getValue().toLowerCase());
-        return tagRepository.save(tag);
+        return tagRepository.saveAndFlush(tag);
     }
 
     @Transactional
@@ -80,6 +80,6 @@ public class TagServiceImpl implements TagService {
             throw new BlogEntityExistException("Tag with value %s already exist", tag.getValue());
         }
         tagFromDb.setValue(tag.getValue());
-        return tagRepository.save(tagFromDb);
+        return tagRepository.saveAndFlush(tagFromDb);
     }
 }
