@@ -64,7 +64,7 @@ public class ArticleController {
             return singleResult(article);
         }
 
-        if (user == null) {
+        if (user == null || article.getAuthor() == null) {
             throw new AccessDeniedException("You don\'t have rights to get article");
         }
 
