@@ -22,6 +22,7 @@ import java.util.UUID;
  * @version 1.0
  */
 @Service
+@Transactional
 public class TagServiceImpl implements TagService {
     private TagRepository tagRepository;
 
@@ -41,7 +42,6 @@ public class TagServiceImpl implements TagService {
         return tagRepository.save(tag);
     }
 
-    @Transactional
     @Override
     public void delete(UUID id) {
         Tag tag = Optional
@@ -67,7 +67,6 @@ public class TagServiceImpl implements TagService {
         return tagRepository.findAll(pageable);
     }
 
-    @Transactional
     @Override
     public Tag update(Tag tag) {
         tag.setValue(tag.getValue().toLowerCase());

@@ -1,5 +1,7 @@
 package me.academeg.blog.security;
 
+import me.academeg.blog.Profiles;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -13,6 +15,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
  * @author Yuriy A. Samsonov <y.samsonov@erpscan.com>
  * @version 1.0
  */
+@Profile(Profiles.CLIENT_INTEGRATION)
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorsFilter extends org.springframework.web.filter.CorsFilter {

@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.Collection;
@@ -27,6 +28,7 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
+@Transactional
 public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
