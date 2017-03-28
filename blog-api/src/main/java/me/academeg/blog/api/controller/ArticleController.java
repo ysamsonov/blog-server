@@ -24,6 +24,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static me.academeg.blog.api.utils.ApiUtils.*;
@@ -196,19 +197,19 @@ public class ArticleController {
         throw new AccessDeniedException("You don\'t have rights to delete article");
     }
 
-    @Secured({RoleConstants.ADMIN, RoleConstants.MODERATOR})
-    @RequestMapping(value = "/{id}/lock", method = RequestMethod.GET)
-    public ApiResult lock(@PathVariable final UUID id) {
-        log.info("/LOCK invoked for {} id {}", resourceClass.getSimpleName(), id);
-        articleService.lock(id);
+    @Secured({RoleConstants.MODERATOR, RoleConstants.ADMIN})
+    @RequestMapping(value = "/block", method = {RequestMethod.POST, RequestMethod.PUT})
+    public ApiResult block(@RequestBody final Set<UUID> ids) {
+        log.info("/BLOCK invoked for {}", resourceClass.getSimpleName());
+        articleService.block(ids);
         return okResult();
     }
 
-    @Secured({RoleConstants.ADMIN, RoleConstants.MODERATOR})
-    @RequestMapping(value = "/{id}/unlock", method = RequestMethod.GET)
-    public ApiResult unlock(@PathVariable final UUID id) {
-        log.info("/UNLOCK invoked for {} id {}", resourceClass.getSimpleName(), id);
-        articleService.unlock(id);
+    @Secured({RoleConstants.MODERATOR, RoleConstants.ADMIN})
+    @RequestMapping(value = "/unlock", method = {RequestMethod.POST, RequestMethod.PUT})
+    public ApiResult unlock(@RequestBody final Set<UUID> ids) {
+        log.info("/UNLOCK invoked for {}", resourceClass.getSimpleName());
+        articleService.unlock(ids);
         return okResult();
     }
 

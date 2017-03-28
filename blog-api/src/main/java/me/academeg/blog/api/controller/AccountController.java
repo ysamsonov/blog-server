@@ -88,9 +88,9 @@ public class AccountController {
     }
 
     @Secured({RoleConstants.MODERATOR, RoleConstants.ADMIN})
-    @RequestMapping(value = "/block/{ids}", method = {RequestMethod.POST, RequestMethod.PUT})
+    @RequestMapping(value = "/block", method = {RequestMethod.POST, RequestMethod.PUT})
     public ApiResult block(
-        @PathVariable final Set<UUID> ids,
+        @RequestBody final Set<UUID> ids,
         @AuthenticationPrincipal final UserDetailsImpl user
     ) {
         log.info("/BLOCK method invoked for {}", resourceClass.getSimpleName());
@@ -100,9 +100,9 @@ public class AccountController {
     }
 
     @Secured({RoleConstants.MODERATOR, RoleConstants.ADMIN})
-    @RequestMapping(value = "/unlock/{ids}", method = {RequestMethod.POST, RequestMethod.PUT})
+    @RequestMapping(value = "/unlock", method = {RequestMethod.POST, RequestMethod.PUT})
     public ApiResult unlock(
-        @PathVariable final Set<UUID> ids,
+        @RequestBody final Set<UUID> ids,
         @AuthenticationPrincipal final UserDetailsImpl user
     ) {
         log.info("/UNLOCK method invoked for {}", resourceClass.getSimpleName());

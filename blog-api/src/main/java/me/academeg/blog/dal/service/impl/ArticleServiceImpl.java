@@ -1,7 +1,6 @@
 package me.academeg.blog.dal.service.impl;
 
 import com.querydsl.core.types.Predicate;
-import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.api.utils.WhiteListFactory;
 import me.academeg.blog.dal.domain.Article;
 import me.academeg.blog.dal.domain.ArticleStatus;
@@ -15,11 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * ArticleServiceImpl
@@ -28,6 +26,7 @@ import java.util.UUID;
  * @version 1.0
  */
 @Service
+@Transactional
 public class ArticleServiceImpl implements ArticleService {
 
     private final ArticleRepository articleRepository;
@@ -97,27 +96,35 @@ public class ArticleServiceImpl implements ArticleService {
         });
 
         addImagesToArticle(article.getImages(), articleFromDb);
-        return articleRepository.save(articleFromDb);
+        return articleRepository.saveAndFlush(articleFromDb);
     }
 
     @Override
-    public Article lock(UUID id) {
-        Article article = getById(id);
-        if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
-            throw new BlogEntityNotExistException("Article with id %s not exist", id);
-        }
-        article.setStatus(ArticleStatus.LOCKED);
-        return articleRepository.save(article);
+    public void block(Collection<UUID> ids) {
+        List<Article> articles = articleRepository
+            .findAll(ids)
+            .stream()
+            .unordered()
+            .filter(a -> !a.getStatus().equals(ArticleStatus.DRAFT))
+            .map(a -> a.setStatus(ArticleStatus.LOCKED))
+            .collect(Collectors.toList());
+
+        articleRepository.save(articles);
+        articleRepository.flush();
     }
 
     @Override
-    public Article unlock(UUID id) {
-        Article article = getById(id);
-        if (article == null || article.getStatus().equals(ArticleStatus.DRAFT)) {
-            throw new BlogEntityNotExistException("Article with id %s not exist", id);
-        }
-        article.setStatus(ArticleStatus.PUBLISHED);
-        return articleRepository.save(article);
+    public void unlock(Collection<UUID> ids) {
+        List<Article> articles = articleRepository
+            .findAll(ids)
+            .stream()
+            .unordered()
+            .filter(a -> !a.getStatus().equals(ArticleStatus.DRAFT))
+            .map(a -> a.setStatus(ArticleStatus.PUBLISHED))
+            .collect(Collectors.toList());
+
+        articleRepository.save(articles);
+        articleRepository.flush();
     }
 
     private void addImagesToArticle(Collection<Image> images, Article article) {
