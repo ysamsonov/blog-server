@@ -20,12 +20,7 @@ import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 @EnableResourceServer
 public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
 
-    private final CorsFilter corsFilter;
-
-    @Autowired
-    public ResourceServerConfiguration(CorsFilter corsFilter) {
-        this.corsFilter = corsFilter;
-    }
+    private CorsFilter corsFilter;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -45,7 +40,13 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
             .anyRequest().authenticated()
             .and().httpBasic();
 
-        // @TODO remove on production or use run profiles (client-integration for this filter)
-        http.addFilterBefore(corsFilter, ChannelProcessingFilter.class);
+        if (corsFilter != null) {
+            http.addFilterBefore(corsFilter, ChannelProcessingFilter.class);
+        }
+    }
+
+    @Autowired(required = false)
+    public void setCorsFilter(CorsFilter corsFilter) {
+        this.corsFilter = corsFilter;
     }
 }
