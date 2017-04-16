@@ -104,7 +104,8 @@ public final class ImageUtils {
         Arrays
             .stream(fileNames)
             .map(f -> Optional.ofNullable(path).orElse("") + f)
-            .forEach(f -> new File(f).delete());
+            .map(File::new)
+            .forEach(File::delete);
     }
 
     private static void createFileStorage(final String path) {
