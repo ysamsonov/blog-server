@@ -50,7 +50,7 @@ public class Account extends BaseEntity {
     @NotBlank
     private String password;
 
-    private boolean enable;
+    private Boolean enable;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "account")
     private Avatar avatar;

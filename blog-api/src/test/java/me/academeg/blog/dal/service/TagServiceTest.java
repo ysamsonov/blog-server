@@ -35,11 +35,10 @@ public class TagServiceTest extends BaseServiceTest {
 
     @Test
     public void createTwice() throws Exception {
-        Tag tag = new Tag().setValue("cars");
-        tag = tagService.create(tag);
+        tagService.create(new Tag().setValue("cars"));
 
-        Tag tag2 = new Tag().setValue("cars");
-        tagService.create(tag2);
+        Tag tag = new Tag().setValue("cars");
+        tagService.create(tag);
 
         List<Tag> tags = tagService.getPage(null).getContent();
         assertThat(tags.size()).isEqualTo(1);
@@ -66,13 +65,12 @@ public class TagServiceTest extends BaseServiceTest {
 
     @Test(expected = BlogEntityExistException.class)
     public void updateWithExistValue() throws Exception {
-        Tag tag1 = new Tag().setValue("car");
-        tag1 = tagService.create(tag1);
+        tagService.create(new Tag().setValue("car"));
 
-        Tag tag2 = new Tag().setValue("caar");
-        tag2 = tagService.create(tag2);
+        Tag tag = new Tag().setValue("caar");
+        tag = tagService.create(tag);
 
-        Tag tagNew = new Tag(tag2.getId()).setValue("car");
+        Tag tagNew = new Tag(tag.getId()).setValue("car");
         tagService.update(tagNew);
     }
 

@@ -114,6 +114,7 @@ public class AccountService {
     public void block(Collection<UUID> ids) {
         List<Account> accounts = accountRepository.findAll(ids);
         accounts.forEach(acc -> acc.setEnable(false));
+        // TODO: 16.04.2017 remove token when block account
         accountRepository.save(accounts);
         accountRepository.flush();
     }

@@ -52,7 +52,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             account.getId(),
             account.getEmail(),
             account.getPassword(),
-            account.isEnable(),
+            account.getEnable(),
             true,
             true,
             true,
