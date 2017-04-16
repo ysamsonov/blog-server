@@ -1,11 +1,10 @@
-package me.academeg.blog.dal.service.impl;
+package me.academeg.blog.dal.service;
 
 import me.academeg.blog.api.exception.BlogEntityExistException;
 import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.Article;
 import me.academeg.blog.dal.domain.ArticleStatus;
 import me.academeg.blog.dal.domain.Tag;
-import me.academeg.blog.dal.service.BaseServiceTest;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,10 +17,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Yuriy A. Samsonov <y.samsonov@erpscan.com>
  * @since 25.03.2017
  */
-public class TagServiceImplTest extends BaseServiceTest {
+public class TagServiceTest extends BaseServiceTest {
 
     @Autowired
-    private TagServiceImpl tagService;
+    private me.academeg.blog.dal.service.TagService tagService;
 
     @Test
     public void create() throws Exception {
