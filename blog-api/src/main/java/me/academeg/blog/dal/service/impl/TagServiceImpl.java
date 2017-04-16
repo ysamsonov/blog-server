@@ -22,7 +22,9 @@ import java.util.UUID;
  * @version 1.0
  */
 @Service
+@Transactional
 public class TagServiceImpl implements TagService {
+
     private TagRepository tagRepository;
 
     @Autowired
@@ -41,7 +43,6 @@ public class TagServiceImpl implements TagService {
         return tagRepository.saveAndFlush(tag);
     }
 
-    @Transactional
     @Override
     public void delete(UUID id) {
         Tag tag = Optional
@@ -53,21 +54,23 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Tag getById(UUID id) {
         return tagRepository.findOne(id);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Tag getByValue(String value) {
         return tagRepository.getByValue(value.toLowerCase());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Tag> getPage(Pageable pageable) {
         return tagRepository.findAll(pageable);
     }
 
-    @Transactional
     @Override
     public Tag update(Tag tag) {
         tag.setValue(tag.getValue().toLowerCase());

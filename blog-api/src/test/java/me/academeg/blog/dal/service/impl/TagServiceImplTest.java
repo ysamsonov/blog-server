@@ -1,15 +1,15 @@
 package me.academeg.blog.dal.service.impl;
 
+import me.academeg.blog.api.exception.BlogEntityExistException;
 import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.Article;
 import me.academeg.blog.dal.domain.ArticleStatus;
 import me.academeg.blog.dal.domain.Tag;
-import me.academeg.blog.dal.service.ArticleService;
 import me.academeg.blog.dal.service.BaseServiceTest;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,32 +23,26 @@ public class TagServiceImplTest extends BaseServiceTest {
     @Autowired
     private TagServiceImpl tagService;
 
-    @Autowired
-    private ArticleService articleService;
-
     @Test
     public void create() throws Exception {
         Tag tag = new Tag();
         tag.setValue("cars");
+        tag = tagService.create(tag);
 
-        tagService.create(tag);
-
-        List<Tag> tags = tagService.getPage(null).getContent();
-
-        assertThat(tags.size()).isEqualTo(1);
-        assertThat(tags).extracting(Tag::getValue).containsExactly("cars");
+        Tag savedTag = tagService.getById(tag.getId());
+        assertThat(savedTag.getValue()).isEqualTo("cars");
+        assertThat(savedTag.getArticles()).isEmpty();
     }
 
     @Test
     public void createTwice() throws Exception {
         Tag tag = new Tag().setValue("cars");
-        Tag tag2 = new Tag().setValue("cars");
+        tag = tagService.create(tag);
 
-        tagService.create(tag);
+        Tag tag2 = new Tag().setValue("cars");
         tagService.create(tag2);
 
         List<Tag> tags = tagService.getPage(null).getContent();
-
         assertThat(tags.size()).isEqualTo(1);
         assertThat(tags).extracting(Tag::getValue).containsExactly("cars");
     }
@@ -71,13 +65,13 @@ public class TagServiceImplTest extends BaseServiceTest {
         tagService.update(tag);
     }
 
-    @Test(expected = BlogEntityNotExistException.class)
+    @Test(expected = BlogEntityExistException.class)
     public void updateWithExistValue() throws Exception {
         Tag tag1 = new Tag().setValue("car");
-        tagService.create(tag1);
+        tag1 = tagService.create(tag1);
 
         Tag tag2 = new Tag().setValue("caar");
-        tagService.create(tag2);
+        tag2 = tagService.create(tag2);
 
         Tag tagNew = new Tag(tag2.getId()).setValue("car");
         tagService.update(tagNew);
@@ -86,33 +80,42 @@ public class TagServiceImplTest extends BaseServiceTest {
     @Test
     public void getByValue() throws Exception {
         Tag tag = new Tag().setValue("Cars");
-        tagService.create(tag);
+        tag = tagService.create(tag);
 
         Tag cars = tagService.getByValue("caRs");
         assertThat(cars).isNotNull();
+        assertThat(cars.getId()).isEqualTo(tag.getId());
         assertThat(cars.getValue()).isEqualTo("cars");
     }
 
-    // h2 db incorrect get list tags because article list empty
-    @Ignore
     @Test
     public void delete() throws Exception {
-        Tag tag = new Tag();
-        tag.setValue("car");
+        Tag tag = new Tag().setValue("car");
         tag = tagService.create(tag);
 
         Article article = new Article();
         article.setTitle("Test title");
         article.setText("Test text");
+        article.setCreationDate(new Date());
         article.setStatus(ArticleStatus.PUBLISHED);
         article.addTag(new Tag(tag.getId()));
-        articleService.create(article);
+
+        article = entityManager.merge(article);
+        entityManager.flush();
+        entityManager.clear();
+
+        Tag savedTag = tagService.getById(tag.getId());
+        assertThat(savedTag.getArticles().size() > 0).isTrue();
+
+        Article savedArticle = entityManager.find(Article.class, article.getId());
+        assertThat(savedArticle.getTags().size() > 0).isTrue();
 
         tagService.delete(tag.getId());
 
         List<Tag> content = tagService.getPage(null).getContent();
+        assertThat(content).isEmpty();
 
-
-        System.out.println();
+        savedArticle = entityManager.find(Article.class, article.getId());
+        assertThat(savedArticle.getTags()).isEmpty();
     }
 }
