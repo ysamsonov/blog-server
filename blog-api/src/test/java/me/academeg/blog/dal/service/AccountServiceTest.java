@@ -3,7 +3,6 @@ package me.academeg.blog.dal.service;
 import me.academeg.blog.api.exception.BlogEntityExistException;
 import me.academeg.blog.api.exception.BlogEntityNotExistException;
 import me.academeg.blog.dal.domain.Account;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,8 +61,6 @@ public class AccountServiceTest extends BaseServiceTest {
     }
 
     // TODO: 16.04.2017 improve test to delete avatar, remove link to articles and comments
-    // TODO: 16.04.2017 разобраться почему не создается таблица для токена
-    @Ignore
     @Test
     public void delete() throws Exception {
         Account savedAccount = accountService.create(prepareEntity());
