@@ -11,6 +11,7 @@ import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.*;
 
@@ -51,7 +52,8 @@ public class Account extends BaseEntity {
     @NotBlank
     private String password;
 
-    private Boolean enable;
+    @NotNull
+    private Boolean enable = true;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "account")
     private Avatar avatar;
