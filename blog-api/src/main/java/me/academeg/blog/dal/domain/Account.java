@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import me.academeg.blog.dal.validation.Login;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -30,7 +31,7 @@ import static me.academeg.blog.dal.utils.Relations.*;
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 public class Account extends BaseEntity {
 
-    @NotBlank
+    @Login
     @Column(nullable = false, unique = true)
     private String login;
 
