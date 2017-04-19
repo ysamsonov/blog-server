@@ -72,7 +72,6 @@ public class ArticleService {
     public Article update(Article article) {
         Article articleFromDb = getById(article.getId());
         articleFromDb.setTitle(article.getTitle());
-        articleFromDb.setText(article.getText());
         articleFromDb.setText(Jsoup.clean(article.getText(), tagsWhiteList));
         if (!articleFromDb.getStatus().equals(ArticleStatus.LOCKED)) {
             if (article.getStatus() != null) {
