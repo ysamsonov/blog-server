@@ -5,6 +5,7 @@ import me.academeg.blog.api.utils.WhiteListFactory;
 import me.academeg.blog.dal.domain.Article;
 import me.academeg.blog.dal.domain.ArticleStatus;
 import me.academeg.blog.dal.domain.Image;
+import me.academeg.blog.dal.domain.Tag;
 import me.academeg.blog.dal.repository.ArticleRepository;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
@@ -81,11 +82,11 @@ public class ArticleService {
                 articleFromDb.setStatus(article.getStatus());
             }
         }
+
+        ArrayList<Tag> newTags = new ArrayList<>(article.getTags());
         articleFromDb.getTags().forEach(articleFromDb::removeTag);
-        new ArrayList<>(article.getTags()).forEach(tag -> {
-            articleFromDb.addTag(tag);
-            article.removeTag(tag);
-        });
+        article.getTags().forEach(article::removeTag);
+        articleFromDb.setTags(newTags);
 
         addImagesToArticle(article.getImages(), articleFromDb);
         return articleRepository.saveAndFlush(articleFromDb);

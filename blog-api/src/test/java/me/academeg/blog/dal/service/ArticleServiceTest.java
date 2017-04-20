@@ -45,7 +45,6 @@ public class ArticleServiceTest extends BaseServiceTest {
         Article article = prepareEntity();
         article.addImage(new Image(imageId));
         article = articleService.create(article);
-        article = articleService.getById(article.getId());
 
         assertThat(article.getTitle()).isEqualTo(expected.getTitle());
         assertThat(article.getText()).isEqualTo(expected.getText());
@@ -79,10 +78,8 @@ public class ArticleServiceTest extends BaseServiceTest {
         Article expected = modifyEntity(prepareEntity());
 
         Article article = articleService.create(prepareEntity());
-        article = articleService.getById(article.getId());
         article = modifyEntity(article);
         article = articleService.update(article);
-        article = articleService.getById(article.getId());
 
         assertThat(article.getTitle()).isEqualTo(expected.getTitle());
         assertThat(article.getText()).isEqualTo(expected.getText());
@@ -95,12 +92,25 @@ public class ArticleServiceTest extends BaseServiceTest {
 
     @Test
     public void editLocked() throws Exception {
+        Article article = articleService.create(prepareEntity());
+        articleService.block(Collections.singleton(article.getId()));
 
+        Article modifyArticle = prepareEntity().setStatus(ArticleStatus.PUBLISHED);
+        modifyArticle.setId(article.getId());
+        article = articleService.update(modifyArticle);
+
+        assertThat(article.getStatus()).isEqualTo(ArticleStatus.LOCKED);
     }
 
     @Test
     public void editDraft() throws Exception {
+        Article article = articleService.create(prepareEntity().setStatus(ArticleStatus.DRAFT));
 
+        Article modifyArticle = prepareEntity().setStatus(ArticleStatus.PUBLISHED);
+        modifyArticle.setId(article.getId());
+        article = articleService.update(modifyArticle);
+
+        assertThat(article.getStatus()).isEqualTo(ArticleStatus.PUBLISHED);
     }
 
     @Test
@@ -138,7 +148,6 @@ public class ArticleServiceTest extends BaseServiceTest {
     public void blockDraftArticle() throws Exception {
         Article article = articleService.create(prepareEntity().setStatus(ArticleStatus.DRAFT));
         articleService.block(Collections.singleton(article.getId()));
-        article = articleService.getById(article.getId());
 
         assertThat(article.getStatus()).isEqualTo(ArticleStatus.DRAFT);
     }
@@ -172,7 +181,6 @@ public class ArticleServiceTest extends BaseServiceTest {
     public void unlockDraftArticle() throws Exception {
         Article article = articleService.create(prepareEntity().setStatus(ArticleStatus.DRAFT));
         articleService.unlock(Collections.singleton(article.getId()));
-        article = articleService.getById(article.getId());
 
         assertThat(article.getStatus()).isEqualTo(ArticleStatus.DRAFT);
     }
