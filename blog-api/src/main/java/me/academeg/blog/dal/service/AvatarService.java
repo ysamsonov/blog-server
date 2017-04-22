@@ -46,7 +46,7 @@ public class AvatarService {
             avatarRepository.delete(oldAvatar);
         }
         avatar.setAccount(new Account(account.getId()));
-        return avatarRepository.save(avatar);
+        return avatarRepository.saveAndFlush(avatar);
     }
 
     @Transactional(readOnly = true)

@@ -26,7 +26,7 @@ public class ImageServiceTest extends BaseServiceTest {
 
     private static final String TEST_IMAGE = "images/big_image.jpg";
 
-    @Value("${me.academeg.blog.images.path:image/}")
+    @Value("${me.academeg.blog.images.path}")
     private String path;
 
     @Autowired
