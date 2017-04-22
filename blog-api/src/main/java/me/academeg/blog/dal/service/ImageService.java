@@ -53,10 +53,8 @@ public class ImageService {
             .ofNullable(imageRepository.findOne(id))
             .orElseThrow(() -> new BlogEntityNotExistException("Image with id %s not exist", id));
 
-        if (image.getArticle() != null) {
-            image.setArticle(null);
-        }
         ImageUtils.deleteImages(path, image.getOriginalPath(), image.getThumbnailPath());
+        image.setArticle(null);
         imageRepository.delete(image);
     }
 

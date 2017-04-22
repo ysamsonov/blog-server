@@ -1,6 +1,8 @@
 package me.academeg.blog.dal.utils;
 
 import me.academeg.blog.api.Constants;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.junit.After;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.util.DigestUtils;
@@ -25,6 +27,11 @@ public class ImageUtilsTest {
     private static final String IMAGE_PATH = "testImages/";
     private static final String BIG_IMAGE = "images/big_image.jpg";
     private static final String SMALL_IMAGE = "images/small_image.jpg";
+
+    @After
+    public void tearDown() throws Exception {
+        FileUtils.deleteDirectory(new File(IMAGE_PATH));
+    }
 
     @Test
     public void saveCompressDeleteBigImage() throws Exception {
