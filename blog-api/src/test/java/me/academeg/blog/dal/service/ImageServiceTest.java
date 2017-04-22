@@ -32,7 +32,6 @@ public class ImageServiceTest extends BaseServiceTest {
     @Autowired
     private ImageService imageService;
 
-
     @After
     public void tearDown() throws Exception {
         FileUtils.deleteDirectory(new File(path));
@@ -40,11 +39,7 @@ public class ImageServiceTest extends BaseServiceTest {
 
     @Test
     public void create() throws Exception {
-        MultipartFile multipartFile = Mockito.mock(MultipartFile.class);
-        Mockito
-            .when(multipartFile.getInputStream())
-            .thenReturn(getResourceAsStream(TEST_IMAGE));
-
+        MultipartFile multipartFile = prepareFile();
         Image image = imageService.create(multipartFile);
         image = imageService.getById(image.getId());
 
@@ -55,11 +50,7 @@ public class ImageServiceTest extends BaseServiceTest {
 
     @Test
     public void update() throws Exception {
-        MultipartFile multipartFile = Mockito.mock(MultipartFile.class);
-        Mockito
-            .when(multipartFile.getInputStream())
-            .thenReturn(getResourceAsStream(TEST_IMAGE));
-
+        MultipartFile multipartFile = prepareFile();
         Image image = imageService.create(multipartFile);
         image = imageService.getById(image.getId());
 
@@ -75,7 +66,31 @@ public class ImageServiceTest extends BaseServiceTest {
 
     @Test
     public void delete() throws Exception {
-        // TODO: 22.04.2017 write test
+        MultipartFile multipartFile = prepareFile();
+        Image image = imageService.create(multipartFile);
+        image = imageService.getById(image.getId());
+
+        UUID articleId = createArticle();
+        Image updatedImage = new Image(image.getId());
+        updatedImage.setOriginalPath(image.getOriginalPath());
+        updatedImage.setThumbnailPath(image.getThumbnailPath());
+        updatedImage.setArticle(new Article(articleId));
+        image = imageService.update(updatedImage);
+
+        imageService.delete(image.getId());
+
+        assertThat(imageService.getById(image.getId())).isNull();
+        Article article = entityManager.find(Article.class, articleId);
+        assertThat(article.getImages()).isEmpty();
+    }
+
+    private MultipartFile prepareFile() throws Exception {
+        MultipartFile multipartFile = Mockito.mock(MultipartFile.class);
+        Mockito
+            .when(multipartFile.getInputStream())
+            .thenReturn(getResourceAsStream(TEST_IMAGE));
+
+        return multipartFile;
     }
 
     private UUID createArticle() {
