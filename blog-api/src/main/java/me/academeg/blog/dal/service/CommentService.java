@@ -47,7 +47,7 @@ public class CommentService {
                 () -> new BlogEntityNotExistException("Article with id %s not exist", comment.getArticle().getId()));
 
         comment.setCreationDate(new Date());
-        return commentRepository.save(comment);
+        return commentRepository.saveAndFlush(comment);
     }
 
     public void delete(UUID id) {
@@ -60,7 +60,7 @@ public class CommentService {
     }
 
     public Comment update(Comment comment) {
-        return commentRepository.save(comment);
+        return commentRepository.saveAndFlush(comment);
     }
 
     @Transactional(readOnly = true)
