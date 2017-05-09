@@ -6,10 +6,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import me.academeg.blog.dal.validation.Login;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.*;
 
@@ -30,7 +32,7 @@ import static me.academeg.blog.dal.utils.Relations.*;
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 public class Account extends BaseEntity {
 
-    @NotBlank
+    @Login
     @Column(nullable = false, unique = true)
     private String login;
 
@@ -50,7 +52,8 @@ public class Account extends BaseEntity {
     @NotBlank
     private String password;
 
-    private boolean enable;
+    @NotNull
+    private Boolean enable = true;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "account")
     private Avatar avatar;

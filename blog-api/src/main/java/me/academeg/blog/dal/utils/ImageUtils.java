@@ -2,6 +2,7 @@ package me.academeg.blog.dal.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import me.academeg.blog.api.Constants;
+import me.academeg.blog.api.exception.BlogClientException;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
@@ -35,9 +36,8 @@ public final class ImageUtils {
                 outputStream.write(cache, 0, count);
             }
         } catch (IOException e) {
-            // TODO: 08.02.2017 наверное имеет смысл кидать эксепшен дальше
             log.error("Error during save image in path '{}'", path);
-            e.printStackTrace();
+            throw new BlogClientException(e);
         }
         return fileName;
     }
@@ -57,9 +57,8 @@ public final class ImageUtils {
             BufferedImage resizeImagePng = resizeImage(originalImage, type);
             ImageIO.write(resizeImagePng, "png", new File(dir, fileName));
         } catch (IOException e) {
-            // TODO: 08.02.2017 наверное имеет смысл кидать эксепшен дальше
             log.error("Error during compress image '{}' in path '{}'", originalImageFileName, dir);
-            e.printStackTrace();
+            throw new BlogClientException(e);
         }
         return fileName;
     }
@@ -78,11 +77,9 @@ public final class ImageUtils {
             buffer.flush();
             return buffer.toByteArray();
         } catch (IOException e) {
-            // TODO: 08.02.2017 наверное имеет смысл кидать эксепшен дальше
             log.error("Cannot read file {}", file.getAbsolutePath());
-            e.printStackTrace();
+            throw new BlogClientException(e);
         }
-        return null;
     }
 
     private static BufferedImage resizeImage(final BufferedImage image, final int type) {
@@ -104,7 +101,8 @@ public final class ImageUtils {
         Arrays
             .stream(fileNames)
             .map(f -> Optional.ofNullable(path).orElse("") + f)
-            .forEach(f -> new File(f).delete());
+            .map(File::new)
+            .forEach(File::delete);
     }
 
     private static void createFileStorage(final String path) {

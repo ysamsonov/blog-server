@@ -34,8 +34,16 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     @Transactional
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Account account = accountRepository.getByEmailIgnoreCase(username);
+    public UserDetailsImpl loadUserByUsername(String username) throws UsernameNotFoundException {
+        log.info("Find user with username '{}'", username);
+
+        Account account;
+        if (username.contains("@")) {
+            account = accountRepository.getByEmailIgnoreCase(username);
+        } else {
+            account = accountRepository.getByLoginIgnoreCase(username);
+        }
+
         if (account == null) {
             String msg = String.format("User '%s' was not found", username);
             log.warn(msg);
@@ -52,7 +60,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             account.getId(),
             account.getEmail(),
             account.getPassword(),
-            account.isEnable(),
+            account.getEnable(),
             true,
             true,
             true,
