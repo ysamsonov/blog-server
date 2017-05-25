@@ -41,7 +41,7 @@ RUN_OPTIONS="${RUN_OPTIONS} -Dspring.profiles.active=${RUN_PROFILE}"
 RUN_OPTIONS="${RUN_OPTIONS} -Dorg.slf4j.simpleLogger.logFile=${LOG_FILE}"
 RUN_OPTIONS="${RUN_OPTIONS} -Dlogging.level.root=INFO"
 RUN_OPTIONS="${RUN_OPTIONS} -Dlogging.level.org.hibernate.engine.internal.StatisticalLoggingSessionEventListener=ERROR"
-RUN_OPTIONS="${RUN_OPTIONS} -Dme.academeg.blog.images.path=${BASE_PATH}images/"
-RUN_OPTIONS="${RUN_OPTIONS} -Dme.academeg.blog.avatars.path=${BASE_PATH}avatar/"
+RUN_OPTIONS="${RUN_OPTIONS} -Dme.academeg.blog.images.path=${BASE_PATH}/images/"
+RUN_OPTIONS="${RUN_OPTIONS} -Dme.academeg.blog.avatars.path=${BASE_PATH}/avatar/"
 
 ${JAVA_EXEC} ${RUN_OPTIONS} -jar ${JAR_PATH}
