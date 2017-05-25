@@ -1,5 +1,5 @@
 # Blog-server
-![Travis build](https://api.travis-ci.com/jaguar51/Blog-server.svg?token=eeiUqii3zoxH4p569Lqh&branch=master)
+![Travis build](https://travis-ci.org/jaguar51/blog-server.svg?branch=develop)
 
 The server part of the blogging system implemented with Spring Boot/JPA + Hibernate + MySQL.   
 Client part you can see [here](https://github.com/jaguar51/blog-client).
