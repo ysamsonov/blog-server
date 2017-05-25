@@ -66,6 +66,7 @@ project(':blog-api') {
         compile "org.springframework.security.oauth:spring-security-oauth2:${springSecurityVersion}"
 
         compile "mysql:mysql-connector-java:${mysqlConnectorVersion}"
+        compile 'com.h2database:h2'
 
         compile "org.projectlombok:lombok:${lombokVersion}"
 
@@ -79,7 +80,6 @@ project(':blog-api') {
         testCompile 'com.tngtech.java:junit-dataprovider:1.12.0'
         testCompile 'org.assertj:assertj-core:3.6.1'
         testCompile 'org.mockito:mockito-core:2.6.8'
-        testCompile 'com.h2database:h2'
         testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
     }
 
